@@ -115,9 +115,9 @@ setup.evaluateDalleCharacterDescription = function(mc) {
 
 	if (mc.hasCurse("Horny")) {
 		// Ensure these variables are defined
-		let hornCount = state.variables.hornCount || 0; // Adjust as needed
-		let hornAdjective = state.variables.hornAdjective || ""; // Adjust as needed
-		let hornVariation = state.variables.hornVariation || ""; // Adjust as needed
+		let hornCount = State.variables.hornCount || 0;
+		let hornAdjective = State.variables.hornAdjective || "";
+		let hornVariation = State.variables.hornVariation || "";
 		description += `with ${(hornCount === 1) ? "a" : "two"} noticeable ${hornAdjective} ${hornVariation} horn${(hornCount > 1) ? "s" : ""}. `;
 	}
 
