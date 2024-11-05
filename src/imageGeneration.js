@@ -174,6 +174,7 @@ setup.evaluateDalleCharacterDescription = function(mc) {
 	if (mc.hasCurse("Eye-scream")) description += `${mc.extraEyes} extra eyes on their body. `;
 	if (mc.hasCurse("A Mouthful")) description += `${mc.extraMouths} extra mouths on their body. `;
 	if (mc.hasCurse("Below the Veil")) description += "A strange, eldritch entity that seems very creepy and *wrong* in subtle ways. ";
+	description += "\n"+ SugarCube.setup.manualDesc;
 
 	return description;
 };
