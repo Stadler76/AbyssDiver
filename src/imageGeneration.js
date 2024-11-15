@@ -546,12 +546,132 @@ setup.comfyUI_PrepareCharacterData = async function() {
 	return payload;
 }
 
-// TODO: ItsTheTwin is doing this
-setup.comfyUI_GeneratePositiveNegative = async function() {
-	const character_data = await setup.comfyUI_PrepareCharacterData();
+const PREFIX_POSITIVE_PROMPT = "Score_9_up, score_8_up, score_7_up, HD quality, raw quality, best quality, extremely detailed, stunning beautiful, high definition, masterpiece, best quality, high quality, medium quality, normal quality, HD <lora:Dalle3_AnimeStyle_PONY_Lora:1>,";
+const PREFIX_NEGATIVE_PROMPT = "Score_6_up, Score_5_up, score_4_up, paintings, sketches, (worst quality:2), (low quality:2), (normal quality:2), lowres, normal quality, ((monochrome)), ((grayscale)), skin spots, acnes, skin blemishes, age spot, glans, badhandsv5-neg, badhandv4, easynegative, ng_deepnegative_v1_75t, medieval, natural, rural, bad_prompt_version2, negative_hand, multiple cigarette, extra cigarette, floating cigarette, disconnected cigarette, merged digits, fused digits, merged fingers, fused fingers, extra digits, extra fingers, lowres, text, error, cropped, worst quality, low quality, jpeg artifacts, ugly, duplicate, morbid, mutilated, out of frame, extra fingers, mutated hands, poorly drawn hands, poorly drawn face, mutation, deformed, blurry, dehydrated, bad anatomy, bad proportions, extra limbs, cloned face, disfigured, gross proportions, malformed limbs, missing arms, missing legs, extra arms, extra legs, fused fingers, too many fingers, long neck, username, watermark, signature,";
+const BODY_FITNESS = ["fragile body", "weak body", "average body", "fit body", "very fit body",];
+const HEIGHT_RANGES = [ ["dwarf", 150], ["midget", 160], ["short", 170], ["", 183], ["tall", 195] ];
+const PENIS_SIZES = ["small penis", "below average penis", "average penis", "large penis", "huge penis",];
 
-	var positive = "";
-	var negative = "";
+function heightToRangedValue(height) {
+	for (const [label, maxHeight] of HEIGHT_RANGES) {
+		if (height < maxHeight) {
+			return label;
+		}
+	}
+	return HEIGHT_RANGES[HEIGHT_RANGES.length-1][0];
+}
+
+// TODO: ItsTheTwin is doing this (temporary code)
+setup.comfyUI_GeneratePositiveNegative = async function() {
+	const characterData = await setup.comfyUI_PrepareCharacterData();
+
+	var positive = PREFIX_POSITIVE_PROMPT;
+	positive += ",solo,portrait,upper_body,plain dark background,";
+
+	var negative = PREFIX_NEGATIVE_PROMPT;
+
+	positive += `${characterData.state.sex},`;
+	positive += `${Math.max(characterData.state.apparent_age, 21)} years old,`;
+	positive += BODY_FITNESS[Math.max(Math.min(characterData.character.fit + 2, 4), 0)] + ",";
+	positive += `${heightToRangedValue(characterData.state.height)},`;
+	positive += `${characterData.state.hair} hair,`;
+	for (const tail of characterData.state.tail) {
+		positive += `${characterData.state.hair} ${tail} tail,`;
+	}
+	positive += `${characterData.state.hair} ${characterData.state.ears} ears,`;
+
+	// CreatureOfTheNight -> Vampire
+	if (characterData.curses.includes("CreatureOfTheNight")) {
+		positive += "vampire,fangs,red eyes,glowing eyes,pale skin,";
+	} else {
+		positive += `${characterData.state.eyeColor} eyes,`;
+		positive += `${characterData.state.skinColor} skin,`;
+	}
+
+	if (characterData.curses.includes("WrigglyAntennae")) {
+		positive += "pink antennae,";
+	}
+	if (characterData.curses.includes("Megadontia")) {
+		positive += "sharp teeth,";
+	}
+	if (characterData.curses.includes("FreckleSpeckle")) {
+		positive += "freckles,";
+	}
+	if (characterData.curses.includes("KnifeEar")) {
+		positive += "pointy ears,";
+	}
+	if (characterData.curses.includes("Horny")) {
+		positive += "succubus horns,";
+	}
+	if (characterData.curses.includes("DrawingSpades")) {
+		positive += "spade tail,";
+	}
+
+	if (!characterData.curses.includes("ClothingRestrictionA")) {
+		positive += "earrings,";
+	}
+
+	if (!characterData.curses.includes("ClothingRestrictionC")) {
+		positive += "adventurer,leather armor,";
+	}
+
+	if (characterData.curses.includes("ClothingRestrictionC")) {
+		if (characterData.curses.includes("ClothingRestrictionB")) {
+			positive += "nude,";
+		} else {
+			if (characterData.state.sex === "female") {
+				positive += "bra,panties,";
+			} else {
+				positive += "underwear,shirtless,no pants,small penis bulge,";
+			}
+		}
+
+		if (characterData.curses.includes("ClothingRestrictionC") && characterData.curses.includes("ClothingRestrictionB")) {
+			// NUDE
+			if (characterData.curses.includes("Null")) {
+				// null curse
+				positive += "smooth featureless body, no genitalia, soft abstract body aesthetic without explicit details,";
+			} else {
+				// sex-specific
+				if (characterData.state.sex === "female") {
+					if (characterData.curses.includes("TattooTally")) {
+						positive += "succubus tattoo,";
+					}
+					if (characterData.curses.includes("Leaky")) {
+						positive += "pussy juice,";
+					}
+				} else {
+					if (characterData.curses.includes("TattooTally")) {
+						positive += "incubus tattoo,";
+					}
+					if (characterData.curses.includes("Leaky")) {
+						positive += "pre-ejaculation,";
+					}
+				}
+
+				// lactation (both M/F)
+				let lactation = 0;
+				if (characterData.curses.includes("LactationRejuvenationA")) {
+					lactation += 1;
+				}
+				if (characterData.curses.includes("LactationRejuvenationB")) {
+					lactation += 1;
+				}
+
+				if (lactation === 2) {
+					positive += "milk,lactating,lactation,";
+				} else if (lactation === 1) {
+					positive += "dripping lactation,";
+				}
+
+				if (characterData.state.penis_size > 0) {
+					positive += PENIS_SIZES[characterData.state.penis_size-1] + ",";
+				}
+			}
+		}
+	}
+
+	positive += `${characterData.state.breastsLabel} breasts,`;
 
 	return [positive, negative];
 }
@@ -564,14 +684,14 @@ setup.comfyUI_GeneratePortraitWorkflow = async function() {
 	const width = 1024;
 	const height = 1024;
 
-	const positive_negative = await setup.comfyUI_GeneratePositiveNegative();
+	const [positive, negative] = await setup.comfyUI_GeneratePositiveNegative();
 
 	// clone workflow so it can be edited
 	var workflow = JSON.parse(JSON.stringify(SIMPLE_T2I_PORTRAIT_WORKFLOW));
 
 	workflow["5"]["inputs"]["ckpt_name"] = checkpoint
-	workflow["9"]["inputs"]["text"] = positive_negative[0]
-	workflow["10"]["inputs"]["text"] = positive_negative[1]
+	workflow["9"]["inputs"]["text"] = positive
+	workflow["10"]["inputs"]["text"] = negative
 	workflow["11"]["inputs"]["steps"] = steps
 	workflow["11"]["inputs"]["cfg"] = cfg
 	workflow["11"]["inputs"]["seed"] = seed
@@ -583,7 +703,6 @@ setup.comfyUI_GeneratePortraitWorkflow = async function() {
 
 // http://127.0.0.1:8000/generate_image
 var is_generation_busy = false;
-
 setup.comfyUI_GeneratePortrait = async function() {
 	if (is_generation_busy) {
 		return;
