@@ -373,7 +373,7 @@ def comfyui_linux_runner() -> None:
 	os.system(f"{PYTHON_COMMAND} {COMFYUI_INSTALLATION_FOLDER}/main.py")
 
 def proxy_runner() -> subprocess.Popen:
-	return subprocess.Popen([PYTHON_COMMAND, 'python/main.py', '--normalvram', '--disable-auto-launch'], shell=True)
+	return subprocess.Popen([PYTHON_COMMAND, 'python/main.py', '--lowvram', '--xformers', '--disable-auto-launch'], shell=True)
 
 def main() -> None:
 	os_platform : str = platform.system() # Windows, Linux
