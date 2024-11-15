@@ -188,7 +188,7 @@ class ComfyUI_API:
 	async def cleanup_prompt_id(self, prompt_id : str) -> None:
 		self._active_ids.pop(prompt_id, None)
 
-	async def generate_images_using_worflow_prompt(self, prompt : dict, include_previews : bool = True) -> list[dict]:
+	async def generate_images_using_workflow_prompt(self, prompt : dict, include_previews : bool = True) -> list[dict]:
 		'''Complete the full sequence of giving a prompt and receiving the images.'''
 		prompt_id : str = await self.queue_prompt(prompt)
 		await self.track_progress( prompt_id, prompt.keys() )
