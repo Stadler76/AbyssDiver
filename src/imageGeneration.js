@@ -248,6 +248,214 @@ setup.openAI_GenerateDallePortrait = async function() {
 		notificationElement.textContent = 'Error generating image: ' + error.message + (error.response ? (await error.response.json()).error : 'No additional error information from OpenAI.');
 	}
 }
+
+/*
+	===============================================
+	(LOCAL) COMFYUI GENERATOR
+	===============================================
+*/
+
+setup.comfyUI_InvokeGenerator = async function(url, payload) {
+	console.log(url, JSON.stringify(payload));
+
+	const response = await fetch(url, {
+		method: 'POST',
+		headers: {'Origin' : 'AbyssDiver.html', 'Content-Type': 'application/json'},
+		body: JSON.stringify(payload)
+	});
+
+	if (!response.ok) {
+		throw new Error('Failed to connect to Proxy. Please check your Proxy and ensure the server is running.');
+	}
+
+	const data = await response.json();
+	// Debugging: Inspect the structure of the response
+	console.log(data);
+	// Return the data for further processing
+	return data;
+}
+
+setup.comfyUI_PrepareCharacterData = async function() {
+	// get the character curses
+	const mc_curses = State.variables.mc.curses; // property: getter
+	const mc_curse_names = mc_curses.map(curse => curse.name);
+
+	// get special character data
+	const mc_state = {
+		'real_age' : State.variables.mc.realAge,
+		'apparent_age' : State.variables.mc.appAge,
+		'real_gender' : State.variables.mc.gender,
+		'apparent_gender' : State.variables.mc.appGender,
+		'penis_size' : State.variables.mc.penisCor,
+		'vagina_count' : State.variables.mc.vagina,
+		'double_penis' : State.variables.mc.doublePenis,
+		'sex' : State.variables.mc.sex,
+		'wombs' : State.variables.mc.womb,
+		'lactation' : State.variables.mc.lactation,
+		'breasts' : State.variables.mc.breastsCor,
+		'breastsLabel' : State.variables.mc.breastsLabel,
+		'height' : State.variables.mc.heightCor,
+		'libido' : State.variables.mc.libido,
+		'subdom' : State.variables.mc.subdom,
+
+		'hair' : State.variables.mc.hair,
+		'ears' : State.variables.mc.ears,
+		'bodyHair' : State.variables.mc.bodyHair,
+		'skinType' : State.variables.mc.skinType,
+		'skinColor' : State.variables.mc.skinColor,
+		'eyeColor' : State.variables.mc.eyeColor,
+		'tail' : State.variables.mc.tail,
+		'description' : State.variables.mc.desc,
+		'blood' : State.variables.mc.blood,
+		'genderVoice' : State.variables.mc.genderVoice,
+		'fluids' : State.variables.mc.fluids,
+		'lewdness' : State.variables.mc.lewdness,
+		'horns' : State.variables.mc.horns,
+		'inhuman' : State.variables.mc.inhuman,
+		'eyeCount' : State.variables.mc.eyeCount,
+		'armCount' : State.variables.mc.armCount,
+		'legCount' : State.variables.mc.legCount,
+		'tentacles' : State.variables.mc.tentacles,
+		'extraEyes' : State.variables.mc.extraEyes,
+		'extraMouths' : State.variables.mc.extraMouths
+	};
+	console.log(mc_state);
+
+	// get the character internal state (deep clone it)
+	const mc_internal_state_clone = Object.fromEntries(Object.entries(State.variables.mc._internalState()));
+	delete mc_internal_state_clone.image; // don't need the image to be sent
+	delete mc_internal_state_clone.events; // dont need the events to be sent
+	delete mc_internal_state_clone.imageIcon; // don't need the image icon to be sent
+
+	// payload to send to proxy/comfyui
+	const payload = {'character' : mc_internal_state_clone, 'curses' : mc_curse_names, 'state' : mc_state,};
+	return payload;
+}
+
+// TODO: ItsTheTwin is doing this
+setup.comfyUI_GeneratePromptPrompt = async function() {
+	return {
+		"positive" : "",
+		"negative" : ""
+	}
+}
+
+// http://127.0.0.1:8000/generate_portrait
+setup.comfyUI_GenerateUIPortrait = async function() {
+	if (is_generation_busy) {
+		return;
+	}
+	is_generation_busy = true;
+
+	// notification element
+	const notificationElement = document.getElementById('notification-bad');
+
+	const notificationGood = document.getElementById('notification-good');
+	notificationGood.style.removeProperty('display');
+
+	// data to be sent to comfyui
+	const url = "http://127.0.0.1:8000/generate_portrait"
+
+	// prepare payload
+	const payload = await setup.comfyUI_GeneratePromptPrompt();
+
+	// log payload
+	console.log(payload);
+
+	// request to the proxy to generate the portrait
+	let data = null;
+	try {
+		notificationElement.style.display = 'hidden';
+		data = await setup.comfyUI_InvokeGenerator(url, payload);
+	} catch (error) {
+		console.error('Unable to invoke ComfyUI generator.');
+		console.error(error);
+		notificationElement.textContent = 'Unable to contact the ComfyUI proxy. Make sure the Python code is running!';
+		notificationElement.style.display = 'block';
+		is_generation_busy = false;
+		return;
+	}
+
+	// check if we actually received any images
+	if (data.images == null || data.images.length == 0) {
+		console.error('No images returned from server. This might be due to an issue with the Stable Diffusion model or the server.');
+		notificationElement.textContent = 'No images were returned from the proxy! Is ComfyUI running? ' + JSON.stringify(data);
+		notificationElement.style.display = 'block';
+		is_generation_busy = false;
+		return;
+	}
+
+	// once we receive the image, save it as the player portrait
+	const storeKey = "generatedImage";
+	const b64Image = data.images[0]; // Assuming the images are returned as base64 strings
+	console.log("Base64 Data Length: ", b64Image.length);
+	setup.storeImage(storeKey, b64Image)
+		.then(() => console.log('Image successfully stored.'))
+		.finally(() => is_generation_busy)
+		.catch((error) => console.error('Failed to store image:', error));
+}
+
+/*
+	// TODO: future update
+	setup.comfyUI_PrepareSceneData = async function(scene_id, scene_params) {
+		return {'scene_id' : scene_id, 'scene_params' : scene_params}
+	}
+
+	// http://127.0.0.1:8000/generate_scene
+	setup.comfyUI_GenerateCharacterScene = async function(scene_id, scene_params) {
+		if (is_generation_busy) {
+			return;
+		}
+		is_generation_busy = true;
+
+		// notification element
+		const notificationElement = document.getElementById('notification-bad');
+
+		const notificationGood = document.getElementById('notification-good');
+		notificationGood.style.removeProperty('display');
+
+		// data to be sent to comfyui
+		const url = "http://127.0.0.1:8000/generate_scene";
+
+		// prepare Payload
+		const payload = {'character' : setup.comfyUI_PrepareCharacterData(), 'scene' : setup.comfyUI_PrepareSceneData(scene_id, scene_params)}
+
+		// inspect payload
+		console.log(payload);
+
+		// request to the proxy to generate the portrait
+		let data = null;
+		try {
+			notificationElement.style.display = 'hidden';
+			data = await setup.comfyUI_InvokeGenerator(url, {'character' : payload});
+		} catch (error) {
+			console.error('Unable to invoke ComfyUI generator.');
+			notificationElement.textContent = 'Unable to contact the ComfyUI proxy. Make sure the Python code is running!';
+			notificationElement.style.display = 'block';
+			is_generation_busy = false;
+			return;
+		}
+
+		// check if we actually received any images
+		if (data.images == null || data.images.length == 0) {
+			console.error('No images returned from server. This might be due to an issue with the proxy server or ComfyUI!');
+			notificationElement.textContent = 'Error generating image: ' + error.message + (error.response ? (await error.response.json()).error : 'No additional error information from OpenAI.');
+			notificationElement.style.display = 'block';
+			is_generation_busy = false;
+			return;
+		}
+
+		// once we receive the images, save it under the key
+		const storeKey = scene_id;
+		const b64Images = data.images; // Assuming the images are returned as base64 strings
+		console.log("Base64 Data Length: ", b64Images.reduce((sum, str) => sum + str.length, 0));
+		setup.storeImage(storeKey, b64Images)
+			.then(() => console.log('Image successfully stored.'))
+			.finally(() => is_generation_busy)
+			.catch((error) => console.error('Failed to store image:', error));
+	}
+/*
+
 /*
 	===============================================
 	ENTRY POINT
