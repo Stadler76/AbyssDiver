@@ -93,11 +93,11 @@ const SIMPLE_T2I_PORTRAIT_WORKFLOW = {
 	},
 	"11": {
 		"inputs": {
-			"seed": 961176784184834,
+			"seed": 0,
 			"steps": 35,
 			"cfg": 7,
-			"sampler_name": "dpmpp_3m_sde_gpu",
-			"scheduler": "exponential",
+			"sampler_name": "euler",
+			"scheduler": "normal",
 			"denoise": 1,
 			"model": ["5",0],
 			"positive": ["9",0],
@@ -546,8 +546,8 @@ setup.comfyUI_PrepareCharacterData = async function() {
 	return payload;
 }
 
-const PREFIX_POSITIVE_PROMPT = "Score_9_up, score_8_up, score_7_up, HD quality, raw quality, best quality, extremely detailed, stunning beautiful, high definition, masterpiece, best quality, high quality, medium quality, normal quality, HD <lora:Dalle3_AnimeStyle_PONY_Lora:1>,";
-const PREFIX_NEGATIVE_PROMPT = "Score_6_up, Score_5_up, score_4_up, paintings, sketches, (worst quality:2), (low quality:2), (normal quality:2), lowres, normal quality, ((monochrome)), ((grayscale)), skin spots, acnes, skin blemishes, age spot, glans, badhandsv5-neg, badhandv4, easynegative, ng_deepnegative_v1_75t, medieval, natural, rural, bad_prompt_version2, negative_hand, multiple cigarette, extra cigarette, floating cigarette, disconnected cigarette, merged digits, fused digits, merged fingers, fused fingers, extra digits, extra fingers, lowres, text, error, cropped, worst quality, low quality, jpeg artifacts, ugly, duplicate, morbid, mutilated, out of frame, extra fingers, mutated hands, poorly drawn hands, poorly drawn face, mutation, deformed, blurry, dehydrated, bad anatomy, bad proportions, extra limbs, cloned face, disfigured, gross proportions, malformed limbs, missing arms, missing legs, extra arms, extra legs, fused fingers, too many fingers, long neck, username, watermark, signature,";
+const PREFIX_POSITIVE_PROMPT = "score_9, score_8_up, score_7_up, masterpiece, best quality, cowboy shot, 1girl, solo, source_anime, front view <lora:Dalle3_AnimeStyle_PONY_Lora:1>";
+const PREFIX_NEGATIVE_PROMPT = "score_5, score_4, pony, ugly, ugly face, poorly drawn face, blurry, blurry face, (3d), realistic, muscular, long torso, blurry eyes, poorly drawn eyes, patreon, artist name, (sd, super deformed),";
 const BODY_FITNESS = ["fragile body", "weak body", "average body", "fit body", "very fit body",];
 const HEIGHT_RANGES = [ ["dwarf", 150], ["midget", 160], ["short", 170], ["", 183], ["tall", 195] ];
 const PENIS_SIZES = ["small penis", "below average penis", "average penis", "large penis", "huge penis",];
