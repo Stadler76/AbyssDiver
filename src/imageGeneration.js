@@ -333,15 +333,23 @@ setup.comfyUI_PrepareCharacterData = async function() {
 }
 
 // TODO: ItsTheTwin is doing this
-setup.comfyUI_GeneratePromptPrompt = async function() {
+setup.comfyUI_GeneratePayload = async function() {
+	const character_data = await comfyUI_PrepareCharacterData();
+
 	return {
+		"checkpoint" : "PonyV6HassakuXLHentai.safetensors",
 		"positive" : "",
-		"negative" : ""
+		"negative" : "",
+		"steps" : 20,
+		"cfg" : 7.0,
+		"width" : 768,
+		"height" : 768,
+		"seed" : 0
 	}
 }
 
-// http://127.0.0.1:8000/generate_portrait
-setup.comfyUI_GenerateUIPortrait = async function() {
+// http://127.0.0.1:8000/generate_image
+setup.comfyUI_GeneratePortrait = async function() {
 	if (is_generation_busy) {
 		return;
 	}
@@ -354,10 +362,10 @@ setup.comfyUI_GenerateUIPortrait = async function() {
 	notificationGood.style.removeProperty('display');
 
 	// data to be sent to comfyui
-	const url = "http://127.0.0.1:8000/generate_portrait"
+	const url = "http://127.0.0.1:8000/generate_image"
 
 	// prepare payload
-	const payload = await setup.comfyUI_GeneratePromptPrompt();
+	const payload = await setup.comfyUI_GeneratePayload();
 
 	// log payload
 	console.log(payload);
@@ -463,5 +471,5 @@ setup.comfyUI_GenerateUIPortrait = async function() {
 */
 
 setup.call_PortraitImageGenerator = async function() {
-	await setup.comfyUI_GenerateUIPortrait();
+	await setup.comfyUI_GeneratePortrait();
 }

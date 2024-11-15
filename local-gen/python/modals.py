@@ -39,89 +39,15 @@
 from typing import List
 from pydantic import BaseModel
 
-class CharacterInfo(BaseModel):
-	id : int
-	name : str
-	cost : int
-	carry : int
-	affec : int
-	swap : bool
-	mindSex : str
-	osex : str
-	obreasts : int
-	desiredBreasts : int
-	openis : int
-	ogender : int
-	fit : int
-	oheight : int
-	comfortableHeight : int
-	age : int
-	appDesc : str
-	fear : str
-	ohair : str
-	oskinColor : str
-	oskinType : str
-	oears : str
-	oeyeColor : str
-	oblood : str
-	pregnantT : int
-	due : int
-	tentaclePreg : bool
-	lastBirth : int
-	switched : bool
-	gestationJumps : int
-	location : int
-
-class CharacterState(BaseModel):
-	apparent_age : int | float
-	apparent_gender : int | float
-	armCount : int
-	blood : str
-	bodyHair : int
-	breasts : int | float
-	breastsLabel : str
-	description : str
-	double_penis : int
-	ears : str
-	extraEyes : int
-	extraMouths : int
-	eyeColor : str
-	eyeCount : int
-	fluids : int
-	genderVoice : int
-	hair : str
-	height : int | float
-	horns : int
-	inhuman : int
-	lactation : int
-	legCount : int
-	lewdness : int
-	libido : int
-	penis_size : int
-	real_age : int | float
-	real_gender : int | float
-	sex : str
-	skinColor : str
-	skinType : str
-	subdom : int
-	tail : list[str]
-	tentacles : int
-	vagina_count : int
-	wombs : int
-
-class CharacterData(BaseModel):
-	character : CharacterInfo
-	curses : list[str]
-	state : CharacterState
-
-class SceneData(BaseModel):
-	scene_id : str
-	scene_params : list
-	character_data : CharacterData
-
-class GeneratePortraitPromptResponse(BaseModel):
+class GeneratePortraitPrompt(BaseModel):
 	positive_prompt : str
 	negative_prompt : str
+
+class GenerateScenePrompt(BaseModel):
+	positive_prompt : str
+	negative_prompt : str
+
+	depth_image : str
 
 class GenerateImagesResponse(BaseModel):
 	images : List[str]
