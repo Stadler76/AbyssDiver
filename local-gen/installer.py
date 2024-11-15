@@ -30,8 +30,8 @@ COMFYUI_REPOSITORY_URL : str = "https://github.com/comfyanonymous/ComfyUI"
 COMFYUI_API_REPOSITORY_URL : str = "https://api.github.com/repos/comfyanonymous/ComfyUI"
 COMFYUI_CUSTOM_NODES : list[str] = ["https://github.com/ltdrdata/ComfyUI-Manager", "https://github.com/Fannovel16/comfyui_controlnet_aux", "https://github.com/jags111/efficiency-nodes-comfyui", "https://github.com/WASasquatch/was-node-suite-comfyui"]
 
-# MODELS_TO_DOWNLOAD : dict[str, str] = {"hassakuXLHentai_v13.safetensors" : "https://civitai.com/api/download/models/575495?type=Model&format=SafeTensor&size=pruned&fp=bf16"}
 MODELS_TO_DOWNLOAD : dict[str, str] = {"PonyV6HassakuXLHentai.safetensors" : "https://civitai.com/api/download/models/575495?type=Model&format=SafeTensor&size=pruned&fp=bf16"}
+LORAS_TO_DOWNLOAD : dict[str, str] = {"Dalle3_AnimeStyle_PONY_Lora.safetensors" : "https://civitai.com/api/download/models/695621?type=Model&format=SafeTensor"}
 
 WHITELISTED_OPERATION_SYSTEMS : list[str] = ["Linux", "Windows"]
 WINDOWS_ZIP_FILENAME : str = "ComfyUI_windows_portable_nvidia.7z"
@@ -204,6 +204,23 @@ def install_comfyui_checkpoints(checkpoints_folder : str) -> None:
 			raise ValueError(f"Missing checkpoint! {filename} in directory {checkpoints_folder}")
 		index += 1
 
+def install_comfyui_loras(loras_folder : str) -> None:
+	index = 0
+	for filename, download_url in LORAS_TO_DOWNLOAD.items():
+		if os.path.exists(os.path.join(loras_folder, filename)) is True:
+			index += 1
+			continue
+		print(index, '/', len(LORAS_TO_DOWNLOAD.values()))
+		print("Due to age restrictions you have to download LORAs manually.")
+		print(f"Download the following lora: {download_url}")
+		print(f"Place the lora in the folder: {loras_folder}")
+		print(f"Rename the file to {filename}.")
+		print("Press any key to continue once downloaded... ")
+		input()
+		if os.path.exists(os.path.join(loras_folder, filename)) is False:
+			raise ValueError(f"Missing checkpoint! {filename} in directory {loras_folder}")
+		index += 1
+
 def download_comfyui_latest(filename : str, directory : str) -> None:
 	"""Download the latest release."""
 	os.makedirs(directory, exist_ok=True)
@@ -250,6 +267,7 @@ def comfyui_windows_installer() -> None:
 
 	install_comfyui_nodes(os.path.join(COMFYUI_INSTALLATION_FOLDER, "ComfyUI", "custom_nodes"))
 	install_comfyui_checkpoints(os.path.join(COMFYUI_INSTALLATION_FOLDER, "ComfyUI", "models", "checkpoints"))
+	install_comfyui_loras(os.path.join(COMFYUI_INSTALLATION_FOLDER, "ComfyUI", "models", "loras"))
 
 def comfyui_linux_installer() -> None:
 	"""Install ComfyUI on Linux"""
@@ -355,7 +373,7 @@ def comfyui_linux_runner() -> None:
 	os.system(f"{PYTHON_COMMAND} {COMFYUI_INSTALLATION_FOLDER}/main.py")
 
 def proxy_runner() -> subprocess.Popen:
-	return subprocess.Popen([PYTHON_COMMAND, 'python/main.py'], shell=True)
+	return subprocess.Popen([PYTHON_COMMAND, 'python/main.py', '--normalvram', '--disable-auto-launch'], shell=True)
 
 def main() -> None:
 	os_platform : str = platform.system() # Windows, Linux
