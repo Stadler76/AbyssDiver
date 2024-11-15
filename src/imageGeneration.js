@@ -422,7 +422,7 @@ setup.openAI_InvokeDalleGenerator = async function(prompt) {
 	const data = await response.json();
 
 	// Debugging: Inspect the structure of the response
-	console.log(data);
+	// console.log(data);
 
 	if (data.data && data.data.length > 0) {
 		/*
@@ -470,7 +470,7 @@ setup.openAI_GenerateDallePortrait = async function() {
 */
 
 setup.comfyUI_InvokeGenerator = async function(url, payload) {
-	console.log(url, JSON.stringify(payload));
+	// console.log(url, JSON.stringify(payload));
 
 	const response = await fetch(url, {
 		method: 'POST',
@@ -484,7 +484,7 @@ setup.comfyUI_InvokeGenerator = async function(url, payload) {
 
 	const data = await response.json();
 	// Debugging: Inspect the structure of the response
-	console.log(data);
+	// console.log(data);
 	// Return the data for further processing
 	return data;
 }
@@ -533,7 +533,7 @@ setup.comfyUI_PrepareCharacterData = async function() {
 		'extraEyes' : State.variables.mc.extraEyes,
 		'extraMouths' : State.variables.mc.extraMouths
 	};
-	console.log(mc_state);
+	// console.log(mc_state);
 
 	// get the character internal state (deep clone it)
 	const mc_internal_state_clone = Object.fromEntries(Object.entries(State.variables.mc._internalState()));
@@ -719,7 +719,7 @@ setup.comfyUI_GeneratePortrait = async function() {
 	const workflow = await setup.comfyUI_GeneratePortraitWorkflow();
 
 	// log workflow
-	console.log(workflow);
+	// console.log(workflow);
 
 	// request to the proxy to generate the portrait
 	let data = null;
@@ -735,7 +735,7 @@ setup.comfyUI_GeneratePortrait = async function() {
 		return;
 	}
 
-	console.log(data);
+	// console.log(data);
 
 	// check if we actually received any images
 	if (data.images == null || data.images.length == 0) {
