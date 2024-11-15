@@ -6,7 +6,7 @@ from io import BytesIO
 from pydantic import BaseModel
 from typing import List
 
-from comfyui import ComfyUI_API
+from comfyui import ComfyUI_API, image_to_base64
 
 import uvicorn
 import asyncio
@@ -27,10 +27,12 @@ async def generate_image(workflow : dict) -> GenerateImagesResponse:
 	await COMFYUI_NODE.close_websocket()
 	if len(image_array) == 0: return None
 	raw_image : bytes = image_array[0]['image_data']
-	return Image.open(BytesIO(raw_image))
+	image = Image.open(BytesIO(raw_image))
+	b64_image = image_to_base64(image)
+	return GenerateImagesResponse(images=[b64_image])
 
 async def uvicorn_run(app : FastAPI, host : str = "127.0.0.1", port : int = 8000) -> None:
-	config = uvicorn.Config(app, host=host, port=port, access_log=False, server_header=False, date_header=False, proxy_headers=False)
+	config = uvicorn.Config(app, host=host, port=port, access_log=False, server_header=True, date_header=False, proxy_headers=False)
 	await uvicorn.Server(config).serve()
 
 if __name__ == '__main__':

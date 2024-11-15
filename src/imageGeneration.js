@@ -71,6 +71,220 @@ variables
 
 /*
 	===============================================
+	WORKFLOWS
+	===============================================
+*/
+
+const SIMPLE_T2I_PORTRAIT_WORKFLOW = {
+	"5": {
+		"inputs": {"ckpt_name": "sd_xl_base_1.0.safetensors"},
+		"class_type": "CheckpointLoaderSimple",
+		"_meta": {"title": "Load Checkpoint"}
+	},
+	"9": {
+		"inputs": {"text": "","clip": ["5",1]},
+		"class_type": "CLIPTextEncode",
+		"_meta": {"title": "Positive Prompt"}
+	},
+	"10": {
+		"inputs": {"text": "","clip": ["5",1]},
+		"class_type": "CLIPTextEncode",
+		"_meta": {"title": "Negative Prompt"}
+	},
+	"11": {
+		"inputs": {
+			"seed": 961176784184834,
+			"steps": 35,
+			"cfg": 7,
+			"sampler_name": "dpmpp_3m_sde_gpu",
+			"scheduler": "exponential",
+			"denoise": 1,
+			"model": ["5",0],
+			"positive": ["9",0],
+			"negative": ["10",0],
+			"latent_image": ["12",0]
+		},
+		"class_type": "KSampler",
+		"_meta": {"title": "KSampler"}
+	},
+	"12": {
+		"inputs": {"width": 1024,"height": 1024,"batch_size": 1},
+		"class_type": "EmptyLatentImage",
+		"_meta": {"title": "Empty Latent Image"}
+	},
+	"15": {
+		"inputs": {"samples": ["11",0],"vae": ["5",2]},
+		"class_type": "VAEDecode",
+		"_meta": {"title": "VAE Decode"}
+	},
+	"16": {
+		"inputs": {"filename_prefix": "ComfyUI","images": ["15",0]},
+		"class_type": "SaveImage",
+		"_meta": {"title": "Save Image"}
+	}
+}
+
+const SCENE_GENERATION_WITH_MIDAS_WORKFLOW = {
+	"1": {
+		"inputs": {"image": "00007-4032934194.png","upload": "image"},
+		"class_type": "LoadImage",
+		"_meta": {"title": "Load Image"}
+	},
+	"2": {
+		"inputs": {"a": 6.2832,"bg_threshold": 0.1,"resolution": 512,"image": ["1",0]},
+		"class_type": "MiDaS-DepthMapPreprocessor",
+		"_meta": {"title": "MiDaS Depth Map"}
+	},
+	"3": {
+		"inputs": {"images": ["2",0]},
+		"class_type": "PreviewImage",
+		"_meta": {"title": "Preview Image"}
+	},
+	"5": {
+		"inputs": {"ckpt_name": "ThinkDiffusionXL.safetensors"},
+		"class_type": "CheckpointLoaderSimple",
+		"_meta": {"title": "Load Checkpoint"}
+	},
+	"7": {
+		"inputs": {"control_net_name": "control-lora-depth-rank256.safetensors"},
+		"class_type": "ControlNetLoader",
+		"_meta": {"title": "Load ControlNet Model"}
+	},
+	"8": {
+		"inputs": {
+			"strength": 1,
+			"start_percent": 0,
+			"end_percent": 1,
+			"positive": ["9",0],
+			"negative": ["10",0],
+			"control_net": ["7",0],
+			"image": ["2",0]
+		},
+		"class_type": "ControlNetApplyAdvanced",
+		"_meta": {"title": "Apply ControlNet (Advanced)"}
+	},
+	"9": {
+		"inputs": {"text": "a futuristic cyborg on an alien spaceship","clip": ["5",1]},
+		"class_type": "CLIPTextEncode",
+		"_meta": {"title": "Positive Prompt"}
+	},
+	"10": {
+		"inputs": {"text": "","clip": ["5",1]},
+		"class_type": "CLIPTextEncode",
+		"_meta": {"title": "Negative Prompt"}
+	},
+	"11": {
+		"inputs": {
+			"seed": 961176784184834,
+			"steps": 35,
+			"cfg": 7,
+			"sampler_name": "dpmpp_3m_sde_gpu",
+			"scheduler": "exponential",
+			"denoise": 1,
+			"model": ["5",0],
+			"positive": ["8",0],
+			"negative": ["8",1],
+			"latent_image": ["12",0]
+		},
+		"class_type": "KSampler",
+		"_meta": {"title": "KSampler"}
+	},
+	"12": {
+		"inputs": {"width": 1024,"height": 1024,"batch_size": 1},
+		"class_type": "EmptyLatentImage",
+		"_meta": {"title": "Empty Latent Image"}
+	},
+	"15": {
+		"inputs": {"samples": ["11",0], "vae": ["5",2]},
+		"class_type": "VAEDecode",
+		"_meta": {"title": "VAE Decode"}
+	},
+	"16": {
+		"inputs": {"filename_prefix": "ComfyUI", "images": ["15",0]},
+		"class_type": "SaveImage",
+		"_meta": {"title": "Save Image"}
+	}
+}
+
+const SCENE_GENERATION_WITHOUT_MIDAS_WORKFLOW = {
+	"1": {
+		"inputs": {"image": "00007-4032934194.png","upload": "image"},
+		"class_type": "LoadImage",
+		"_meta": {"title": "Load Image"}
+	},
+	"3": {
+		"inputs": {"images": ["1",0]},
+		"class_type": "PreviewImage",
+		"_meta": {"title": "Preview Image"}
+	},
+	"5": {
+		"inputs": {"ckpt_name": "ThinkDiffusionXL.safetensors"},
+		"class_type": "CheckpointLoaderSimple",
+		"_meta": {"title": "Load Checkpoint"}
+	},
+	"7": {
+		"inputs": {"control_net_name": "control-lora-depth-rank256.safetensors"},
+		"class_type": "ControlNetLoader",
+		"_meta": {"title": "Load ControlNet Model"}
+	},
+	"8": {
+		"inputs": {
+			"strength": 1,
+			"start_percent": 0,
+			"end_percent": 1,
+			"positive": ["9",0],
+			"negative": ["10",0],
+			"control_net": ["7",0],
+			"image": ["1",0]
+		},
+		"class_type": "ControlNetApplyAdvanced",
+		"_meta": {"title": "Apply ControlNet (Advanced)"}
+	},
+	"9": {
+		"inputs": {"text": "a futuristic cyborg on an alien spaceship","clip": ["5",1]},
+		"class_type": "CLIPTextEncode",
+		"_meta": {"title": "Positive Prompt"}
+	},
+	"10": {
+		"inputs": {"text": "","clip": ["5",1]},
+		"class_type": "CLIPTextEncode",
+		"_meta": {"title": "Negative Prompt"}
+	},
+	"11": {
+		"inputs": {
+			"seed": 961176784184834,
+			"steps": 35,
+			"cfg": 7,
+			"sampler_name": "dpmpp_3m_sde_gpu",
+			"scheduler": "exponential",
+			"denoise": 1,
+			"model": ["5",0],
+			"positive": ["8",0],
+			"negative": ["8",1],
+			"latent_image": ["12",0]
+		},
+		"class_type": "KSampler",
+		"_meta": {"title": "KSampler"}
+	},
+	"12": {
+		"inputs": {"width": 1024,"height": 1024,"batch_size": 1},
+		"class_type": "EmptyLatentImage",
+		"_meta": {"title": "Empty Latent Image"}
+	},
+	"15": {
+		"inputs": {"samples": ["11",0], "vae": ["5",2]},
+		"class_type": "VAEDecode",
+		"_meta": {"title": "VAE Decode"}
+	},
+	"16": {
+		"inputs": {"filename_prefix": "ComfyUI", "images": ["15",0]},
+		"class_type": "SaveImage",
+		"_meta": {"title": "Save Image"}
+	}
+}
+
+/*
+	===============================================
 	OPENAI DALLE GENERATOR
 	===============================================
 */
@@ -333,22 +547,43 @@ setup.comfyUI_PrepareCharacterData = async function() {
 }
 
 // TODO: ItsTheTwin is doing this
-setup.comfyUI_GeneratePayload = async function() {
-	const character_data = await comfyUI_PrepareCharacterData();
+setup.comfyUI_GeneratePositiveNegative = async function() {
+	const character_data = await setup.comfyUI_PrepareCharacterData();
 
-	return {
-		"checkpoint" : "PonyV6HassakuXLHentai.safetensors",
-		"positive" : "",
-		"negative" : "",
-		"steps" : 20,
-		"cfg" : 7.0,
-		"width" : 768,
-		"height" : 768,
-		"seed" : 0
-	}
+	var positive = "";
+	var negative = "";
+
+	return [positive, negative];
+}
+
+setup.comfyUI_GeneratePortraitWorkflow = async function() {
+	const checkpoint = "PonyV6HassakuXLHentai.safetensors";
+	const steps = 20;
+	const cfg = 7.0;
+	const seed = 0;
+	const width = 1024;
+	const height = 1024;
+
+	const positive_negative = await setup.comfyUI_GeneratePositiveNegative();
+
+	// clone workflow so it can be edited
+	var workflow = JSON.parse(JSON.stringify(SIMPLE_T2I_PORTRAIT_WORKFLOW));
+
+	workflow["5"]["inputs"]["ckpt_name"] = checkpoint
+	workflow["9"]["inputs"]["text"] = positive_negative[0]
+	workflow["10"]["inputs"]["text"] = positive_negative[1]
+	workflow["11"]["inputs"]["steps"] = steps
+	workflow["11"]["inputs"]["cfg"] = cfg
+	workflow["11"]["inputs"]["seed"] = seed
+	workflow["12"]["inputs"]["width"] = width
+	workflow["12"]["inputs"]["height"] = height
+
+	return workflow;
 }
 
 // http://127.0.0.1:8000/generate_image
+var is_generation_busy = false;
+
 setup.comfyUI_GeneratePortrait = async function() {
 	if (is_generation_busy) {
 		return;
@@ -356,25 +591,22 @@ setup.comfyUI_GeneratePortrait = async function() {
 	is_generation_busy = true;
 
 	// notification element
-	const notificationElement = document.getElementById('notification-bad');
-
-	const notificationGood = document.getElementById('notification-good');
-	notificationGood.style.removeProperty('display');
+	const notificationElement = document.getElementById('notification');
 
 	// data to be sent to comfyui
-	const url = "http://127.0.0.1:8000/generate_image"
+	const url = "http://127.0.0.1:8000/generate_workflow"
 
-	// prepare payload
-	const payload = await setup.comfyUI_GeneratePayload();
+	// prepare workflow
+	const workflow = await setup.comfyUI_GeneratePortraitWorkflow();
 
-	// log payload
-	console.log(payload);
+	// log workflow
+	console.log(workflow);
 
 	// request to the proxy to generate the portrait
 	let data = null;
 	try {
-		notificationElement.style.display = 'hidden';
-		data = await setup.comfyUI_InvokeGenerator(url, payload);
+		notificationElement.style.display = 'none';
+		data = await setup.comfyUI_InvokeGenerator(url, workflow);
 	} catch (error) {
 		console.error('Unable to invoke ComfyUI generator.');
 		console.error(error);
@@ -383,6 +615,8 @@ setup.comfyUI_GeneratePortrait = async function() {
 		is_generation_busy = false;
 		return;
 	}
+
+	console.log(data);
 
 	// check if we actually received any images
 	if (data.images == null || data.images.length == 0) {
@@ -394,8 +628,9 @@ setup.comfyUI_GeneratePortrait = async function() {
 	}
 
 	// once we receive the image, save it as the player portrait
-	const storeKey = "generatedImage";
-	const b64Image = data.images[0]; // Assuming the images are returned as base64 strings
+
+	var storeKey = "playerPortrait";
+	var b64Image = data.images[0]; // Assuming the images are returned as base64 strings
 	console.log("Base64 Data Length: ", b64Image.length);
 	setup.storeImage(storeKey, b64Image)
 		.then(() => console.log('Image successfully stored.'))
@@ -417,10 +652,7 @@ setup.comfyUI_GeneratePortrait = async function() {
 		is_generation_busy = true;
 
 		// notification element
-		const notificationElement = document.getElementById('notification-bad');
-
-		const notificationGood = document.getElementById('notification-good');
-		notificationGood.style.removeProperty('display');
+		const notificationElement = document.getElementById('notification');
 
 		// data to be sent to comfyui
 		const url = "http://127.0.0.1:8000/generate_scene";
