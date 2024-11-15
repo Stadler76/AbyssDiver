@@ -1,0 +1,11 @@
+aiohttp
+fastapi
+huggingface_hub
+numpy
+opencv-python
+pillow
+pydantic
+requests_toolbelt
+uvicorn[standard]
+websocket-client
+tqdm

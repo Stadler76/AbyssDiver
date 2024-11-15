@@ -463,5 +463,5 @@ setup.comfyUI_GenerateUIPortrait = async function() {
 */
 
 setup.call_PortraitImageGenerator = async function() {
-	await setup.openAI_GenerateDallePortrait();
+	await setup.comfyUI_GenerateUIPortrait();
 }
