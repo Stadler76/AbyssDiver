@@ -352,7 +352,7 @@ def comfyui_windows_installer() -> None:
 
 		download_comfyui_latest(WINDOWS_ZIP_FILENAME, directory)
 
-		os.system(f'7z x -y {os.path.join(directory, WINDOWS_ZIP_FILENAME)} .')
+		unzip_7zip(os.path.join(directory, WINDOWS_ZIP_FILENAME), ".")
 	else:
 		print("ComfyUI is already downloaded - skipping 7zip and release download.")
 
