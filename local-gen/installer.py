@@ -33,8 +33,8 @@ COMFYUI_CUSTOM_NODES : list[str] = ["https://github.com/ltdrdata/ComfyUI-Manager
 CIVITAI_MODELS_TO_DOWNLOAD : dict[str, str] = {"PonyV6HassakuXLHentai.safetensors" : "https://civitai.com/api/download/models/575495?type=Model&format=SafeTensor&size=pruned&fp=bf16"}
 CIVITAI_LORAS_TO_DOWNLOAD : dict[str, str] = {"Dalle3_AnimeStyle_PONY_Lora.safetensors" : "https://civitai.com/api/download/models/695621?type=Model&format=SafeTensor"}
 
-HUGGINGFACE_CHECKPOINTS_TO_DOWNLOAD : dict[str, str] = {"PonyV6HassakuXLHentai.safetensors" : ""}
-HUGGINGFACE_LORAS_TO_DOWNLOAD : dict[str, str] = {"Dalle3_AnimeStyle_PONY_Lora.safetensors" : ""}
+HUGGINGFACE_CHECKPOINTS_TO_DOWNLOAD : dict[str, str] = {"PonyV6HassakuXLHentai.safetensors" : "https://huggingface.co/FloricSpacer/AbyssDiverModels/resolve/main/hassakuXLPony_v13BetterEyesVersion.safetensors?download=true"}
+HUGGINGFACE_LORAS_TO_DOWNLOAD : dict[str, str] = {"Dalle3_AnimeStyle_PONY_Lora.safetensors" : "https://huggingface.co/FloricSpacer/AbyssDiverModels/resolve/main/DallE3-magik.safetensors?download=true"}
 
 WHITELISTED_OPERATION_SYSTEMS : list[str] = ["Linux", "Windows"]
 WINDOWS_ZIP_FILENAME : str = "ComfyUI_windows_portable_nvidia.7z"
