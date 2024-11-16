@@ -17,6 +17,10 @@ class GenerateImagesResponse(BaseModel):
 app = FastAPI(title='Local Image Generation', description='This api allows local image generation with ComfyUI.', version="0.1.0")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
 
+@app.get('/echo', description='Echo back to let the client know the api is running.')
+async def echo() -> bool:
+	return True
+
 @app.post('/generate_workflow', description='Generate a image given the generation workflow.')
 async def generate_image(workflow : dict) -> GenerateImagesResponse:
 	print(workflow)

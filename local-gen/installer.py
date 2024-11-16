@@ -364,10 +364,10 @@ def comfyui_windows_runner() -> subprocess.Popen:
 	process : subprocess.Popen = None
 	if device == 0:
 		# os.system(PYTHON_COMMAND + ' f"{COMFYUI_INSTALLATION_FOLDER}/run_cpu.bat"')
-		process = subprocess.Popen(["run_cpu.bat"], cwd=COMFYUI_INSTALLATION_FOLDER, shell=True)
+		process = subprocess.Popen(["run_cpu.bat", '--lowvram', '--xformers', '--disable-auto-launch'], cwd=COMFYUI_INSTALLATION_FOLDER, shell=True)
 	else:
 		# os.system(PYTHON_COMMAND + ' f"{COMFYUI_INSTALLATION_FOLDER}/run_nvidia_gpu.bat"')
-		process = subprocess.Popen(["run_nvidia_gpu.bat"], cwd=COMFYUI_INSTALLATION_FOLDER, shell=True)
+		process = subprocess.Popen(["run_nvidia_gpu.bat", '--lowvram', '--xformers', '--disable-auto-launch'], cwd=COMFYUI_INSTALLATION_FOLDER, shell=True)
 
 	return process
 
@@ -416,6 +416,13 @@ def main() -> None:
 	PYTHON_COMMAND = py_cmd
 
 	print(f"Found python ({py_cmd}) of version {version}.")
+
+	print("="*20)
+	print("Note: The total file size required for ComfyUI will add up over 9GB.")
+	print("Note: The total file size required for the Abyss Diver content will add up to 7.1GB")
+	print("You will need a total of at least 17GBs available.")
+	print("Press any key to continue...")
+	input()
 
 	process_proxy : subprocess.Popen
 	process_comfyui : subprocess.Popen

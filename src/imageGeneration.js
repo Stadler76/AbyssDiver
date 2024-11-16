@@ -461,7 +461,15 @@ setup.openAI_GenerateDallePortrait = async function() {
 	let characterDescription = setup.evaluateDalleCharacterDescription(State.variables.mc); // Assuming $mc is stored in State.variables.mc
 
 	// Concatenate the static prompt with the dynamic description
-	const prompt = staticPrompt + characterDescription;
+	var prompt = staticPrompt + characterDescription;
+
+	if (setup.customPromptPrefix != null) {
+		prompt = setup.customPromptPrefix + prompt
+	}
+
+	if (setup.customPromptSuffix != null) {
+		prompt = prompt + setup.customPromptSuffix
+	}
 
 	try {
 		await setup.openAI_InvokeDalleGenerator(prompt);
@@ -484,6 +492,20 @@ setup.openAI_GenerateDallePortrait = async function() {
 	(LOCAL) COMFYUI GENERATOR
 	===============================================
 */
+
+setup.updateComfyUIStatus = async function() {
+	const url = "http://127.0.0.1:8000/echo";
+
+	const response = await fetch(url, {
+		method: 'GET',
+		headers: {'Origin' : 'AbyssDiver.html', 'Content-Type': 'application/json'}
+	});
+
+	const is_running = (response.ok == true);
+	const notificationElement = document.getElementById('comfyui-enabled');
+	notificationElement.textContent = is_running ? "ComfyUI is currently running." : "ComfyUI is NOT currently running."
+	notificationElement.style.color = is_running ? "green" : "red"
+}
 
 setup.comfyUI_InvokeGenerator = async function(url, payload) {
 	// console.log(url, JSON.stringify(payload));
@@ -692,17 +714,25 @@ setup.comfyUI_GeneratePositiveNegative = async function() {
 }
 
 setup.comfyUI_GeneratePortraitWorkflow = async function() {
-	const checkpoint = "PonyV6HassakuXLHentai.safetensors";
-	const steps = 20;
-	const cfg = 7.0;
-	const seed = 0;
-	const width = 1024;
-	const height = 1024;
+	var checkpoint = "PonyV6HassakuXLHentai.safetensors";
+	var steps = 20;
+	var cfg = 7.0;
+	var seed = 0;
+	var width = 1024;
+	var height = 1024;
 
-	const [positive, negative] = await setup.comfyUI_GeneratePositiveNegative();
+	var [positive, negative] = await setup.comfyUI_GeneratePositiveNegative();
 
 	// clone workflow so it can be edited
 	var workflow = JSON.parse(JSON.stringify(SIMPLE_T2I_PORTRAIT_WORKFLOW));
+
+	if (setup.customPromptPrefix != null) {
+		positive = setup.customPromptPrefix + positive
+	}
+
+	if (setup.customPromptSuffix != null) {
+		positive = positive + setup.customPromptSuffix
+	}
 
 	workflow["5"]["inputs"]["ckpt_name"] = checkpoint
 	workflow["9"]["inputs"]["text"] = positive
@@ -757,7 +787,7 @@ setup.comfyUI_GeneratePortrait = async function() {
 		return;
 	}
 
-	// console.log(data);
+	console.log(data);
 
 	// check if we actually received any images
 	if (data.images == null || data.images.length == 0) {
