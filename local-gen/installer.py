@@ -184,6 +184,7 @@ def find_github_file_of_name(files : list[GithubFile], name : str) -> Optional[G
 
 def install_comfyui_nodes(custom_nodes_folder : str) -> None:
 	print("Installing ComfyUI Custom Nodes")
+	os.makedirs(custom_nodes_folder, exist_ok=True)
 	before_cwd : str = os.getcwd()
 	os.chdir(custom_nodes_folder)
 	for url in COMFYUI_CUSTOM_NODES:
@@ -350,6 +351,8 @@ def comfyui_windows_installer() -> None:
 		print("7zip is installed - continuing.")
 
 		download_comfyui_latest(WINDOWS_ZIP_FILENAME, directory)
+
+		os.system(f'7z x -y {os.path.join(directory, WINDOWS_ZIP_FILENAME)} .')
 	else:
 		print("ComfyUI is already downloaded - skipping 7zip and release download.")
 
