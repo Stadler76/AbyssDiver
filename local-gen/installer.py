@@ -336,31 +336,37 @@ def install_comfyui_and_models_process(install_directory : str) -> None:
 
 def comfyui_windows_installer() -> None:
 	"""Install the ComfyUI portable on Windows."""
-	download_git_portal_windows()
-
-	global FILEPATH_FOR_7z
-	FILEPATH_FOR_7z = download_7zip_portal() # needed to extract .7z
-	assert FILEPATH_FOR_7z, "Could not locate 7zip in 'Program Files' or 'Program Files (x86)'  or 'Environment Variables'."
-	print("7zip is installed - continuing.")
-
 	directory : str = "tools"
-	download_comfyui_latest(WINDOWS_ZIP_FILENAME, directory)
 
 	# unzip the file if not already done
 	install_directory : str = os.path.join(directory, "ComfyUI_windows_portable")
+
+	if os.path.exists(install_directory) is False:
+		download_git_portal_windows()
+
+		global FILEPATH_FOR_7z
+		FILEPATH_FOR_7z = download_7zip_portal() # needed to extract .7z
+		assert FILEPATH_FOR_7z, "Could not locate 7zip in 'Program Files' or 'Program Files (x86)'  or 'Environment Variables'."
+		print("7zip is installed - continuing.")
+
+		download_comfyui_latest(WINDOWS_ZIP_FILENAME, directory)
+	else:
+		print("ComfyUI is already downloaded - skipping 7zip and release download.")
+
 	install_comfyui_and_models_process(install_directory)
 
 def comfyui_linux_installer() -> None:
 	"""Install ComfyUI on Linux"""
 	directory : str = "tools"
 
-	download_git_portal_linux() # make sure git is installed
-
-	status, message = run_command(f"git clone {COMFYUI_REPOSITORY_URL}")
-	assert status == 0, f"Failed to clone repository {COMFYUI_REPOSITORY_URL}: {message}"
-
 	# install directory
 	install_directory = os.path.abspath(os.path.join(directory, "ComfyUI"))
+	if os.path.exists(install_directory) is False:
+		download_git_portal_linux() # make sure git is installed
+
+		status, message = run_command(f"git clone {COMFYUI_REPOSITORY_URL}")
+		assert status == 0, f"Failed to clone repository {COMFYUI_REPOSITORY_URL}: {message}"
+
 	install_comfyui_and_models_process(install_directory)
 
 def ask_windows_gpu_cpu() -> int:
