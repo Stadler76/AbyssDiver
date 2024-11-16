@@ -432,7 +432,7 @@ setup.openAI_InvokeDalleGenerator = async function(prompt) {
 	}
 
 	// once we receive the image, save it as the player portrait
-	const storeKey = "playerPortrait";
+	const storeKey = "generatedImage";
 	const b64Image = data.data[0].b64_json;
 	console.log("Base64 Data Length: ", b64Image.length);
 
@@ -501,6 +501,9 @@ setup.updateComfyUIStatus = async function() {
 	try {
 		await fetch(url, {method: 'GET', headers: {'Origin' : 'AbyssDiver.html', 'Content-Type': 'application/json'}});
 		is_running = true;
+		// try display any image if any are available
+		// setup.displaySavedImage().catch(() => null)
+		setup.displayRecentGeneratedImage().catch(() => null)
 	} catch (error) {}
 
 	const notificationElement = document.getElementById('comfyui-enabled');
@@ -794,7 +797,7 @@ setup.comfyUI_GeneratePortrait = async function() {
 		return;
 	}
 
-	console.log(data);
+	// console.log(data);
 
 	// check if we actually received any images
 	if (data.images == null || data.images.length == 0) {
@@ -808,7 +811,7 @@ setup.comfyUI_GeneratePortrait = async function() {
 	// once we receive the image, save it as the player portrait
 	is_generation_busy = false;
 
-	var storeKey = "playerPortrait";
+	var storeKey = "generatedImage";
 	var b64Image = data.images[0];
 	console.log("Base64 Data Length: ", b64Image.length);
 	try {
