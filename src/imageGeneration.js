@@ -464,11 +464,11 @@ setup.openAI_GenerateDallePortrait = async function() {
 	var prompt = staticPrompt + characterDescription;
 
 	if (setup.customPromptPrefix != null) {
-		prompt = setup.customPromptPrefix + prompt
+		prompt = setup.customPromptPrefix + "," + prompt
 	}
 
 	if (setup.customPromptSuffix != null) {
-		prompt = prompt + setup.customPromptSuffix
+		prompt = prompt + "," + setup.customPromptSuffix
 	}
 
 	try {
@@ -727,11 +727,11 @@ setup.comfyUI_GeneratePortraitWorkflow = async function() {
 	var workflow = JSON.parse(JSON.stringify(SIMPLE_T2I_PORTRAIT_WORKFLOW));
 
 	if (setup.customPromptPrefix != null) {
-		positive = setup.customPromptPrefix + positive
+		positive = setup.customPromptPrefix + "," + positive
 	}
 
 	if (setup.customPromptSuffix != null) {
-		positive = positive + setup.customPromptSuffix
+		positive = positive + "," + setup.customPromptSuffix
 	}
 
 	workflow["5"]["inputs"]["ckpt_name"] = checkpoint
