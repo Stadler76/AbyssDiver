@@ -30,8 +30,11 @@ COMFYUI_REPOSITORY_URL : str = "https://github.com/comfyanonymous/ComfyUI"
 COMFYUI_API_REPOSITORY_URL : str = "https://api.github.com/repos/comfyanonymous/ComfyUI"
 COMFYUI_CUSTOM_NODES : list[str] = ["https://github.com/ltdrdata/ComfyUI-Manager", "https://github.com/Fannovel16/comfyui_controlnet_aux", "https://github.com/jags111/efficiency-nodes-comfyui", "https://github.com/WASasquatch/was-node-suite-comfyui"]
 
-MODELS_TO_DOWNLOAD : dict[str, str] = {"PonyV6HassakuXLHentai.safetensors" : "https://civitai.com/api/download/models/575495?type=Model&format=SafeTensor&size=pruned&fp=bf16"}
-LORAS_TO_DOWNLOAD : dict[str, str] = {"Dalle3_AnimeStyle_PONY_Lora.safetensors" : "https://civitai.com/api/download/models/695621?type=Model&format=SafeTensor"}
+CIVITAI_MODELS_TO_DOWNLOAD : dict[str, str] = {"PonyV6HassakuXLHentai.safetensors" : "https://civitai.com/api/download/models/575495?type=Model&format=SafeTensor&size=pruned&fp=bf16"}
+CIVITAI_LORAS_TO_DOWNLOAD : dict[str, str] = {"Dalle3_AnimeStyle_PONY_Lora.safetensors" : "https://civitai.com/api/download/models/695621?type=Model&format=SafeTensor"}
+
+HUGGINGFACE_CHECKPOINTS_TO_DOWNLOAD : dict[str, str] = {"PonyV6HassakuXLHentai.safetensors" : ""}
+HUGGINGFACE_LORAS_TO_DOWNLOAD : dict[str, str] = {"Dalle3_AnimeStyle_PONY_Lora.safetensors" : ""}
 
 WHITELISTED_OPERATION_SYSTEMS : list[str] = ["Linux", "Windows"]
 WINDOWS_ZIP_FILENAME : str = "ComfyUI_windows_portable_nvidia.7z"
@@ -202,11 +205,11 @@ def prompt_safetensor_file_install(folder : str, filename : str, download_url : 
 
 def install_comfyui_checkpoints(checkpoints_folder : str) -> None:
 	index = 0
-	for filename, download_url in MODELS_TO_DOWNLOAD.items():
+	for filename, download_url in CIVITAI_MODELS_TO_DOWNLOAD.items():
 		if os.path.exists(os.path.join(checkpoints_folder, filename)) is True:
 			index += 1
 			continue
-		print(index, '/', len(MODELS_TO_DOWNLOAD.values()))
+		print(index, '/', len(CIVITAI_MODELS_TO_DOWNLOAD.values()))
 		print("Due to age restrictions you have to download models manually.")
 		print(f"Download the following model: {download_url}")
 		print(f"Place the model in the folder: {checkpoints_folder}")
@@ -218,11 +221,11 @@ def install_comfyui_checkpoints(checkpoints_folder : str) -> None:
 
 def install_comfyui_loras(loras_folder : str) -> None:
 	index = 0
-	for filename, download_url in LORAS_TO_DOWNLOAD.items():
+	for filename, download_url in CIVITAI_LORAS_TO_DOWNLOAD.items():
 		if os.path.exists(os.path.join(loras_folder, filename)) is True:
 			index += 1
 			continue
-		print(index, '/', len(LORAS_TO_DOWNLOAD.values()))
+		print(index, '/', len(CIVITAI_LORAS_TO_DOWNLOAD.values()))
 		print("Due to age restrictions you have to download LORAs manually.")
 		print(f"Download the following lora: {download_url}")
 		print(f"Place the lora in the folder: {loras_folder}")
@@ -231,6 +234,52 @@ def install_comfyui_loras(loras_folder : str) -> None:
 		os.system(f"explorer {loras_folder}")
 		prompt_safetensor_file_install(loras_folder, filename, download_url)
 		index += 1
+
+def is_huggingface_models_available() -> bool:
+	for name, url in HUGGINGFACE_CHECKPOINTS_TO_DOWNLOAD.items():
+		if requests.get(url, stream=True).status_code != 200:
+			print(f"Model {name} is unavailable on huggingface!")
+			return False
+	for name, url in HUGGINGFACE_LORAS_TO_DOWNLOAD.items():
+		if requests.get(url, stream=True).status_code != 200:
+			print(f"Model {name} is unavailable on huggingface!")
+			return False
+	return True
+
+def has_all_required_comfyui_models() -> bool:
+	if COMFYUI_INSTALLATION_FOLDER is None or os.path.exists(COMFYUI_INSTALLATION_FOLDER) is False:
+		print("Missing ComfyUI.")
+		return False
+	checkpoints_folder : str = os.path.join(COMFYUI_INSTALLATION_FOLDER, "ComfyUI", "models", "checkpoints")
+	for name, _ in HUGGINGFACE_CHECKPOINTS_TO_DOWNLOAD.items():
+		if os.path.exists(os.path.join(checkpoints_folder, name)) is False:
+			print(f"Missing Checkpoint: {os.path.join(checkpoints_folder, name)}")
+			return False
+	loras_folder : str = os.path.join(COMFYUI_INSTALLATION_FOLDER, "ComfyUI", "models", "loras")
+	for name, _ in HUGGINGFACE_LORAS_TO_DOWNLOAD.items():
+		if os.path.exists(os.path.join(loras_folder, name)) is False:
+			print(f"Missing LORA: {os.path.join(loras_folder, name)}")
+			return False
+	return True
+
+def install_comfyui_models_from_hugginface() -> None:
+	checkpoints_folder : str = os.path.join(COMFYUI_INSTALLATION_FOLDER, "ComfyUI", "models", "checkpoints")
+	for name, url in HUGGINGFACE_CHECKPOINTS_TO_DOWNLOAD.items():
+		try:
+			download_file(url, os.path.join(checkpoints_folder, name))
+		except Exception as e:
+			print("Failed to download model file:")
+			print(e)
+			exit()
+
+	loras_folder : str = os.path.join(COMFYUI_INSTALLATION_FOLDER, "ComfyUI", "models", "loras")
+	for name, url in HUGGINGFACE_LORAS_TO_DOWNLOAD.items():
+		try:
+			download_file(url, os.path.join(loras_folder, name))
+		except Exception as e:
+			print("Failed to download model file:")
+			print(e)
+			exit()
 
 def download_comfyui_latest(filename : str, directory : str) -> None:
 	"""Download the latest release."""
@@ -249,6 +298,42 @@ def download_comfyui_latest(filename : str, directory : str) -> None:
 
 	download_file(target_file.browser_download_url, filepath)
 
+def install_comfyui_and_models_process(install_directory : str) -> None:
+	global COMFYUI_INSTALLATION_FOLDER
+	COMFYUI_INSTALLATION_FOLDER = os.path.abspath(install_directory) # install_directory
+
+	if has_all_required_comfyui_models() is False:
+		print("="*20)
+		print("Note: The total file size required for ComfyUI will add up over 9GB.")
+		print("Note: The total file size required for the Abyss Diver content will add up to 7.1GB")
+		print("You will need a total of at least 17GBs available.")
+		print("Press enter to continue...")
+		input()
+
+	print("ComfyUI is located at: ", os.path.abspath(install_directory)) # install_directory)
+	install_comfyui_nodes(os.path.join(COMFYUI_INSTALLATION_FOLDER, "ComfyUI", "custom_nodes"))
+
+	print("="*20)
+
+	if has_all_required_comfyui_models():
+		print("All models are already downloaded - skipping step.")
+		return
+
+	if is_huggingface_models_available():
+		print("HuggingFace resource is available - automatically downloading models.")
+		install_comfyui_models_from_hugginface()
+	else:
+		print("HuggingFace resource unavailable - manual installation needed.")
+		print("For this section you will be manually installing and placing safetensor (AI Model) files in the given directories.")
+		print("Both the directory and the download will automatically open/start when you proceed.")
+		print("This is REQUIRED to run the local generation.")
+		print(f"You will need to download a total of {len(CIVITAI_MODELS_TO_DOWNLOAD.values()) + len(CIVITAI_LORAS_TO_DOWNLOAD.values())} files.")
+		print("Press enter to continue...")
+		input()
+
+		install_comfyui_checkpoints(os.path.join(COMFYUI_INSTALLATION_FOLDER, "ComfyUI", "models", "checkpoints"))
+		install_comfyui_loras(os.path.join(COMFYUI_INSTALLATION_FOLDER, "ComfyUI", "models", "loras"))
+
 def comfyui_windows_installer() -> None:
 	"""Install the ComfyUI portable on Windows."""
 	download_git_portal_windows()
@@ -263,31 +348,7 @@ def comfyui_windows_installer() -> None:
 
 	# unzip the file if not already done
 	install_directory : str = os.path.join(directory, "ComfyUI_windows_portable")
-
-	if os.path.exists(install_directory) is False:
-		print(f'Extracting ComfyUI to {directory}')
-		status, message = run_command(f'"{FILEPATH_FOR_7z}" x {os.path.join(directory, WINDOWS_ZIP_FILENAME)} -o{directory} -aos')
-		print(status, message)
-		assert status == 0, f"Failed to extract ComfyUI {os.path.join(directory, WINDOWS_ZIP_FILENAME)} to directory {directory}.\n{message}"
-	else:
-		print("ComfyUI has already been extracted.")
-
-	global COMFYUI_INSTALLATION_FOLDER
-	COMFYUI_INSTALLATION_FOLDER = os.path.abspath(install_directory) # install_directory
-	print("ComfyUI is located at: ", os.path.abspath(install_directory)) # install_directory)
-	install_comfyui_nodes(os.path.join(COMFYUI_INSTALLATION_FOLDER, "ComfyUI", "custom_nodes"))
-
-	print("="*20)
-
-	print("For this section you will be manually installing and placing safetensor (AI Model) files in the given directories.")
-	print("Both the directory and the download will automatically open/start when you proceed.")
-	print("This is REQUIRED to run the local generation.")
-	print(f"You will need to download a total of {len(MODELS_TO_DOWNLOAD.values()) + len(LORAS_TO_DOWNLOAD.values())} files.")
-	print("Press enter to continue...")
-	input()
-
-	install_comfyui_checkpoints(os.path.join(COMFYUI_INSTALLATION_FOLDER, "ComfyUI", "models", "checkpoints"))
-	install_comfyui_loras(os.path.join(COMFYUI_INSTALLATION_FOLDER, "ComfyUI", "models", "loras"))
+	install_comfyui_and_models_process(install_directory)
 
 def comfyui_linux_installer() -> None:
 	"""Install ComfyUI on Linux"""
@@ -300,21 +361,7 @@ def comfyui_linux_installer() -> None:
 
 	# install directory
 	install_directory = os.path.abspath(os.path.join(directory, "ComfyUI"))
-	global COMFYUI_INSTALLATION_FOLDER
-	COMFYUI_INSTALLATION_FOLDER = os.path.abspath(install_directory)
-	print("ComfyUI is located at: ", os.path.abspath(install_directory))
-	install_comfyui_nodes(os.path.join(COMFYUI_INSTALLATION_FOLDER, "ComfyUI", "custom_nodes"))
-
-	print("="*20)
-
-	print("For this section you will be manually installing and placing safetensor (AI Model) files in the given directories.")
-	print("Both the directory and the download will automatically open/start when you proceed.")
-	print("This is REQUIRED to run the local generation.")
-	print("Press enter to continue...")
-	input()
-
-	install_comfyui_checkpoints(os.path.join(COMFYUI_INSTALLATION_FOLDER, "ComfyUI", "models", "checkpoints"))
-	install_comfyui_loras(os.path.join(COMFYUI_INSTALLATION_FOLDER, "ComfyUI", "models", "loras"))
+	install_comfyui_and_models_process(install_directory)
 
 def ask_windows_gpu_cpu() -> int:
 	is_gpu_mode : str = request_prompt("Will you be running image generation on your graphics card? (y/n)", ["y", "n"])
@@ -418,13 +465,6 @@ def main() -> None:
 	PYTHON_COMMAND = py_cmd
 
 	print(f"Found python ({py_cmd}) of version {version}.")
-
-	print("="*20)
-	print("Note: The total file size required for ComfyUI will add up over 9GB.")
-	print("Note: The total file size required for the Abyss Diver content will add up to 7.1GB")
-	print("You will need a total of at least 17GBs available.")
-	print("Press enter to continue...")
-	input()
 
 	process_proxy : subprocess.Popen
 	process_comfyui : subprocess.Popen
