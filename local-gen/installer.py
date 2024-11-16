@@ -187,6 +187,15 @@ def install_comfyui_nodes(custom_nodes_folder : str) -> None:
 	os.chdir(before_cwd)
 	print("Installed ComfyUI Custom Nodes")
 
+def prompt_safetensor_file_install(folder : str, filename : str, download_url : str) -> None:
+	while True:
+		print("Press any key to continue once downloaded... ")
+		input()
+		if os.path.exists(os.path.join(folder, filename)) is True:
+			break
+		print(f"You have not renamed the safetensors file or placed it in the directory {folder}!")
+		print(f"Make sure to rename the downloaded file {download_url} to {filename} and place it in the directory specified above.")
+
 def install_comfyui_checkpoints(checkpoints_folder : str) -> None:
 	index = 0
 	for filename, download_url in MODELS_TO_DOWNLOAD.items():
@@ -198,10 +207,9 @@ def install_comfyui_checkpoints(checkpoints_folder : str) -> None:
 		print(f"Download the following model: {download_url}")
 		print(f"Place the model in the folder: {checkpoints_folder}")
 		print(f"Rename the file to {filename}.")
-		print("Press any key to continue once downloaded... ")
-		input()
-		if os.path.exists(os.path.join(checkpoints_folder, filename)) is False:
-			raise ValueError(f"Missing checkpoint! {filename} in directory {checkpoints_folder}")
+		os.system(f"start {download_url}")
+		os.system(f"explorer {checkpoints_folder}")
+		prompt_safetensor_file_install(checkpoints_folder, filename, download_url)
 		index += 1
 
 def install_comfyui_loras(loras_folder : str) -> None:
@@ -215,10 +223,9 @@ def install_comfyui_loras(loras_folder : str) -> None:
 		print(f"Download the following lora: {download_url}")
 		print(f"Place the lora in the folder: {loras_folder}")
 		print(f"Rename the file to {filename}.")
-		print("Press any key to continue once downloaded... ")
-		input()
-		if os.path.exists(os.path.join(loras_folder, filename)) is False:
-			raise ValueError(f"Missing checkpoint! {filename} in directory {loras_folder}")
+		os.system(f"start {download_url}")
+		os.system(f"explorer {loras_folder}")
+		prompt_safetensor_file_install(loras_folder, filename, download_url)
 		index += 1
 
 def download_comfyui_latest(filename : str, directory : str) -> None:
@@ -262,10 +269,19 @@ def comfyui_windows_installer() -> None:
 		print("ComfyUI has already been extracted.")
 
 	global COMFYUI_INSTALLATION_FOLDER
-	COMFYUI_INSTALLATION_FOLDER = os.path.abspath(install_directory)
-	print("ComfyUI is located at: ", os.path.abspath(install_directory))
-
+	COMFYUI_INSTALLATION_FOLDER = os.path.abspath(install_directory) # install_directory
+	print("ComfyUI is located at: ", os.path.abspath(install_directory)) # install_directory)
 	install_comfyui_nodes(os.path.join(COMFYUI_INSTALLATION_FOLDER, "ComfyUI", "custom_nodes"))
+
+	print("="*20)
+
+	print("For this section you will be manually installing and placing safetensor (AI Model) files in the given directories.")
+	print("Both the directory and the download will automatically open/start when you proceed.")
+	print("This is REQUIRED to run the local generation.")
+	print(f"You will need to download a total of {len(MODELS_TO_DOWNLOAD.values()) + len(LORAS_TO_DOWNLOAD.values())} files.")
+	print("Press any key to continue...")
+	input()
+
 	install_comfyui_checkpoints(os.path.join(COMFYUI_INSTALLATION_FOLDER, "ComfyUI", "models", "checkpoints"))
 	install_comfyui_loras(os.path.join(COMFYUI_INSTALLATION_FOLDER, "ComfyUI", "models", "loras"))
 
@@ -283,9 +299,18 @@ def comfyui_linux_installer() -> None:
 	global COMFYUI_INSTALLATION_FOLDER
 	COMFYUI_INSTALLATION_FOLDER = os.path.abspath(install_directory)
 	print("ComfyUI is located at: ", os.path.abspath(install_directory))
-
 	install_comfyui_nodes(os.path.join(COMFYUI_INSTALLATION_FOLDER, "ComfyUI", "custom_nodes"))
+
+	print("="*20)
+
+	print("For this section you will be manually installing and placing safetensor (AI Model) files in the given directories.")
+	print("Both the directory and the download will automatically open/start when you proceed.")
+	print("This is REQUIRED to run the local generation.")
+	print("Press any key to continue...")
+	input()
+
 	install_comfyui_checkpoints(os.path.join(COMFYUI_INSTALLATION_FOLDER, "ComfyUI", "models", "checkpoints"))
+	install_comfyui_loras(os.path.join(COMFYUI_INSTALLATION_FOLDER, "ComfyUI", "models", "loras"))
 
 def ask_windows_gpu_cpu() -> int:
 	is_gpu_mode : str = request_prompt("Will you be running image generation on your graphics card? (y/n)", ["y", "n"])

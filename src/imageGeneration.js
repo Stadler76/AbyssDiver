@@ -394,6 +394,11 @@ setup.evaluateDalleCharacterDescription = function(mc) {
 };
 
 setup.openAI_InvokeDalleGenerator = async function(prompt) {
+	if (is_generation_busy) {
+		throw new Error('An image is already being generated.');
+	}
+	is_generation_busy = true;
+
 	const apiKey = settings.OpenAIAPIKey;
 
 	const headers = {
@@ -415,29 +420,35 @@ setup.openAI_InvokeDalleGenerator = async function(prompt) {
 		body: body
 	});
 
+	// check if we connected to OpenAI
 	if (!response.ok) {
+		is_generation_busy = false;
 		throw new Error('Failed to connect to OpenAI. Please check your API key and network connection and try again. If those are both correct, this may be due to a content policy error from OpenAI.');
 	}
 
+	// check if any image was given from Dalle
 	const data = await response.json();
-
-	// Debugging: Inspect the structure of the response
 	// console.log(data);
 
-	if (data.data && data.data.length > 0) {
-		/*
-			const imageUrl = data.data[0].url;
-			$("#dalleImage").attr("src", imageUrl);
-		*/
-		const base64Image = data.data[0].b64_json;
-		console.log("Base64 Data Length: ", base64Image ? base64Image.length : "undefined");
-		setup.storeImage("playerPortrait", base64Image)
-			.then(() => console.log('Image successfully stored.'))
-			.catch((error) => console.error('Failed to store image:', error));
-	} else {
-		console.error('No images returned:', data);
+	if (!data.data || data.data.length == 0) {
+		is_generation_busy = false;
+		console.error('No images returned from Dalle:', data);
 		throw new Error('No images returned from server. This is likely due to a content policy error or server error from OpenAI.');
 	}
+
+	// once we receive the image, save it as the player portrait
+	const storeKey = "playerPortrait";
+	const b64Image = data.data[0].b64_json;
+	console.log("Base64 Data Length: ", b64Image.length);
+
+	// now save it in the local storage
+	try {
+		setup.storeImage(storeKey, b64Image);
+		console.log('Image successfully stored.');
+	} catch(error) {
+		console.error('Failed to store image due to error:', error);
+	}
+	is_generation_busy = false;
 }
 
 setup.openAI_GenerateDallePortrait = async function() {
@@ -705,7 +716,7 @@ setup.comfyUI_GeneratePortraitWorkflow = async function() {
 var is_generation_busy = false;
 setup.comfyUI_GeneratePortrait = async function() {
 	if (is_generation_busy) {
-		return;
+		throw new Error("An image is already being generated.");
 	}
 	is_generation_busy = true;
 
@@ -716,9 +727,22 @@ setup.comfyUI_GeneratePortrait = async function() {
 	const url = "http://127.0.0.1:8000/generate_workflow"
 
 	// prepare workflow
-	const workflow = await setup.comfyUI_GeneratePortraitWorkflow();
+	var workflow = null;
+	try {
+		workflow = await setup.comfyUI_GeneratePortraitWorkflow();
+	} catch (error) {
+		console.error("Internal prompt generation error for ComfyUI: ", error)
+		is_generation_busy = false;
+		throw new Error("Internal prompt generation error for ComfyUI: " + error);
+	}
 
-	// log workflow
+	if (workflow == null || workflow == undefined) {
+		console.error("No workflow was given from internal generate workflow.");
+		is_generation_busy = false;
+		throw new Error("No workflow was given from the internal generate portrait workflow function.");
+	}
+
+	// log outputted workflow
 	// console.log(workflow);
 
 	// request to the proxy to generate the portrait
@@ -727,12 +751,9 @@ setup.comfyUI_GeneratePortrait = async function() {
 		notificationElement.style.display = 'none';
 		data = await setup.comfyUI_InvokeGenerator(url, workflow);
 	} catch (error) {
-		console.error('Unable to invoke ComfyUI generator.');
-		console.error(error);
-		notificationElement.textContent = 'Unable to contact the ComfyUI proxy. Make sure the Python code is running!';
-		notificationElement.style.display = 'block';
+		console.error('Unable to invoke ComfyUI generator: ', error);
 		is_generation_busy = false;
-		return;
+		throw new Error("Unable to contact the ComfyUI proxy. Make sure the Python code is running! Chekc the one-click installer terminal. " + error);
 	}
 
 	// console.log(data);
@@ -740,21 +761,23 @@ setup.comfyUI_GeneratePortrait = async function() {
 	// check if we actually received any images
 	if (data.images == null || data.images.length == 0) {
 		console.error('No images returned from server. This might be due to an issue with the Stable Diffusion model or the server.');
-		notificationElement.textContent = 'No images were returned from the proxy! Is ComfyUI running? ' + JSON.stringify(data);
-		notificationElement.style.display = 'block';
 		is_generation_busy = false;
-		return;
+		throw new Error('No images were returned from the proxy! Is ComfyUI running? Check the one-click installer terminal. ' + JSON.stringify(data));
 	}
 
 	// once we receive the image, save it as the player portrait
+	is_generation_busy = false;
 
 	var storeKey = "playerPortrait";
-	var b64Image = data.images[0]; // Assuming the images are returned as base64 strings
+	var b64Image = data.images[0];
 	console.log("Base64 Data Length: ", b64Image.length);
-	setup.storeImage(storeKey, b64Image)
-		.then(() => console.log('Image successfully stored.'))
-		.finally(() => is_generation_busy)
-		.catch((error) => console.error('Failed to store image:', error));
+	try {
+		setup.storeImage(storeKey, b64Image);
+		console.log('Image successfully stored.');
+	} catch(error) {
+		console.error('Failed to store image due to error:', error);
+		throw new Error('Failed to store image due to error: ' + error);
+	}
 }
 
 /*
