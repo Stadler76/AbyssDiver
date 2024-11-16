@@ -342,7 +342,7 @@ def comfyui_windows_installer() -> None:
 	# unzip the file if not already done
 	install_directory : str = os.path.join(directory, "ComfyUI_windows_portable")
 
-	if os.path.exists(install_directory) is False:
+	if os.path.isdir(install_directory) is False:
 		download_git_portal_windows()
 
 		global FILEPATH_FOR_7z
