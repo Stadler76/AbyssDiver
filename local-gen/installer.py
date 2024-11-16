@@ -124,6 +124,7 @@ def download_7zip_portal() -> str:
 	print("You are required to install 7zip so the ComfyUI archive can be extracted. Please download from:")
 	print("https://www.7-zip.org/download.html")
 	print("Download the `64-bit Windows x64` version, which should be first, install it and then continue by pressing any key.")
+	os.system('start "https://www.7-zip.org/download.html"')
 	print("Press any key to continue once 7zip is installed... ")
 	input()
 
@@ -207,7 +208,7 @@ def install_comfyui_checkpoints(checkpoints_folder : str) -> None:
 		print(f"Download the following model: {download_url}")
 		print(f"Place the model in the folder: {checkpoints_folder}")
 		print(f"Rename the file to {filename}.")
-		os.system(f"start {download_url}")
+		os.system(f"start '{download_url}'")
 		os.system(f"explorer {checkpoints_folder}")
 		prompt_safetensor_file_install(checkpoints_folder, filename, download_url)
 		index += 1
@@ -223,7 +224,7 @@ def install_comfyui_loras(loras_folder : str) -> None:
 		print(f"Download the following lora: {download_url}")
 		print(f"Place the lora in the folder: {loras_folder}")
 		print(f"Rename the file to {filename}.")
-		os.system(f"start {download_url}")
+		os.system(f"start '{download_url}'")
 		os.system(f"explorer {loras_folder}")
 		prompt_safetensor_file_install(loras_folder, filename, download_url)
 		index += 1
