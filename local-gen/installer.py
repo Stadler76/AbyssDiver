@@ -189,6 +189,9 @@ def install_comfyui_nodes(custom_nodes_folder : str) -> None:
 	print("Installed ComfyUI Custom Nodes")
 
 def prompt_safetensor_file_install(folder : str, filename : str, download_url : str) -> None:
+	if os.path.exists(os.path.join(folder, filename)) is True:
+		print(filename, "already exists.")
+		return
 	while True:
 		print("Press enter to continue once downloaded... ")
 		input()

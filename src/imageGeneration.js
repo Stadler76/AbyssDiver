@@ -654,7 +654,7 @@ setup.comfyUI_GeneratePositiveNegative = function() {
 		positive += "spade tail,";
 	}
 
-	if (!characterData.curses.includes("ClothingRestrictionA")) {
+	if (characterData.state.sex === "female" && !characterData.curses.includes("ClothingRestrictionA")) {
 		positive += "earrings,";
 	}
 
