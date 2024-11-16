@@ -14,7 +14,7 @@ import asyncio
 class GenerateImagesResponse(BaseModel):
 	images : List[str]
 
-app = FastAPI(title='Local Image Generation', description='This api allows local image generation with ComfyUI.', version="0.1.0")
+app = FastAPI(title='Local Image Generation', description='This api allows local image generation with ComfyUI. Coded by @SPOOKEXE on GitHub', version="0.1.0")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
 
 @app.get('/echo', description='Echo back to let the client know the api is running.')

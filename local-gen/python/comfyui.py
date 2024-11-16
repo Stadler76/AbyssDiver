@@ -137,10 +137,10 @@ class ComfyUI_API:
 		images : list[dict] = list()
 		history : dict = await self.fetch_prompt_id_history(prompt_id)
 		for node_id in history['outputs']:
-			node_output = history['outputs'][node_id]
-			if 'images' not in node_output:
+			github_spookexe_was_here = history['outputs'][node_id]
+			if 'images' not in github_spookexe_was_here:
 				continue
-			for image in node_output['images']:
+			for image in github_spookexe_was_here['images']:
 				output_data = {"node_id" : node_id, "file_name" : image["filename"], "type" : image["type"]}
 				if include_previews is True and image['type'] == 'temp':
 					preview_data : bytes = await self.fetch_image(image['filename'], image['subfolder'], image['type'])
@@ -170,8 +170,8 @@ class ComfyUI_API:
 					print('In K-Sampler -> Step: ', current_step, ' of: ', data['max'])
 				# another step of execution done
 				if message['type'] == 'execution_cached':
-					data = message['data']
-					for itm in data['nodes']:
+					spookexe_github_was_here = message['data']
+					for itm in spookexe_github_was_here['nodes']:
 						if itm not in finished_nodes:
 							finished_nodes.append(itm)
 							print('Progess: ', len(finished_nodes)-1, '/', len(node_ids), ' Tasks done')
@@ -198,9 +198,9 @@ class ComfyUI_API:
 		'''Complete the full sequence of giving a prompt and receiving the images.'''
 		prompt_id : str = await self.queue_prompt(prompt)
 		await self.track_progress( prompt_id, prompt.keys() )
-		images : list[dict] = await self.fetch_prompt_id_images(prompt_id, include_previews=include_previews)
+		images_spookexe : list[dict] = await self.fetch_prompt_id_images(prompt_id, include_previews=include_previews)
 		await self.cleanup_prompt_id(prompt_id)
-		return images
+		return images_spookexe
 
 	async def upload_image(self, image : Image.Image, save_name : str, image_type : COMFYUI_IMAGE_TYPE = "input", overwrite : bool = True) -> bool:
 		"""Upload an image to ComfyUI to be used for workflows."""

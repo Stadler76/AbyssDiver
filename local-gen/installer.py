@@ -9,7 +9,7 @@ Installs the following:
 3. PonyV6HassakuXLHentai checkpoint and Dalle3_AnimeStyle_PONY Lora
 4. Additional python packages in a virtual environment (x2)
 
-To uninstall, delete the "tools" folder under this folder and optionally uninstall 7zip / git.
+To uninstall, delete the "tools" folder under this folder and optionally uninstall 7zip / git as needed.
 '''
 
 from pydantic import BaseModel
@@ -51,7 +51,7 @@ def request_prompt(prompt : str, allowed_responses : list[str]) -> str:
 	print(prompt)
 	value = input("")
 	while value not in allowed_responses:
-		print("Invalid response.")
+		print("Invalid response.") # github @spookexe was here
 		value = input("")
 	return value
 
