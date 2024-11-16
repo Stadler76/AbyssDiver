@@ -317,7 +317,7 @@ def comfyui_windows_installer() -> None:
 		download_comfyui_latest(WINDOWS_ZIP_FILENAME, directory)
 
 		print("Extracting the 7zip file using patool.")
-		result : int = os.system(f"patool extract {os.path.abspath(directory)}\\ComfyUI_windows_portable_nvidia.7z --outdir {os.path.abspath(directory)}")
+		result : int = os.system(f"patool extract {os.path.abspath(directory)}/ComfyUI_windows_portable_nvidia.7z --outdir {re.escape(os.path.abspath(directory))}".replace("¥", "/").replace("\\", "/"))
 		if result != 0:
 			print("Failed to extract ComfyUI_windows_portable_nvidia.7z - please do it manually.")
 			input()
