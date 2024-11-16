@@ -1,12 +1,12 @@
 '''
 @SPOOKEXE - GitHub
 
-One-click installer for Abyss Diver to install the ComfyUI Local Generator!
+One-click ComfyUI installer and runner for Abyss Diver to install the ComfyUI Local Generator!
 
 Installs the following:
 1. ComfyUI
 2. ComfyUI Manager
-3. [NAME]_XL model
+3. PonyV6HassakuXLHentai checkpoint and Dalle3_AnimeStyle_PONY Lora
 4. Additional python packages in a virtual environment (x2)
 
 To uninstall, delete the "tools" folder under this folder and optionally uninstall 7zip / git.
@@ -407,7 +407,7 @@ def main() -> None:
 	available_ops : str = ", ".join(WHITELISTED_OPERATION_SYSTEMS)
 	assert os_platform in WHITELISTED_OPERATION_SYSTEMS, f"Operating System {os_platform} is unsupported! Available platforms are: {available_ops}"
 
-	print(f'Running one-click installer on operating system {os_platform}.')
+	print(f'Running one-click-comfyui on operating system {os_platform}.')
 
 	py_cmd, version = get_python_version()
 	assert py_cmd and version, "You must install python before continuing. Recommended version is 3.10.9 which is available at: https://www.python.org/downloads/release/python-3109/"

@@ -61,7 +61,7 @@
 	</div>
 	<div hidden class="AIGeneratorOption" generator="LocalComfyUI">
 		Selected: <b>Local ComfyUI Generator</b><br>
-		You are required to run the "one-click installer" for this to function.<br>
+		You are required to run the "one-click comfyui" for this to function.<br>
 		<<button "Generate Portrait">>
 			<<script>>
 				(async () => {

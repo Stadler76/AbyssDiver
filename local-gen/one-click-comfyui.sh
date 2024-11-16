@@ -3,7 +3,7 @@
 # You may need to give file execution permissions on Linux!
 # chmod +x one-click-install.sh
 
-echo Installing minimum requirements for one-click installer.
+echo Installing minimum requirements for one-click comfyui installer.
 pip install --upgrade pip
 pip install -r requirements.txt
 py installer.py
