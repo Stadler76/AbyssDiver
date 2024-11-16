@@ -9,7 +9,7 @@ Installs the following:
 3. PonyV6HassakuXLHentai checkpoint and Dalle3_AnimeStyle_PONY Lora
 4. Additional python packages in a virtual environment (x2)
 
-To uninstall, delete the "tools" folder under this folder and optionally uninstall 7zip / git as needed.
+To uninstall, delete the "tools" folder under this folder and optionally uninstall git as needed.
 '''
 
 from pydantic import BaseModel
@@ -87,11 +87,6 @@ def unzip_targz(filepath : str, directory : str) -> None:
 	with tarfile.open(filepath, 'r:gz') as tar_ref:
 			tar_ref.extractall(directory)
 
-def unzip_7zip(filepath : str, directory : str) -> None:
-	os.makedirs(directory, exist_ok=True)
-	with py7zr.SevenZipFile(filepath, mode='r') as archive:
-		archive.extractall(path=directory)
-
 def get_python_version() -> tuple[Union[str, None], Union[str, None]]:
 	"""Find the python version that is installed."""
 	pattern = r"Python (.+)"
@@ -105,33 +100,6 @@ def get_python_version() -> tuple[Union[str, None], Union[str, None]]:
 		return "py", re.match(pattern, output).group(1)
 	# no python available
 	return None, None
-
-def check_7zip_path() -> Optional[str]:
-	# environment variable
-	status, _ = run_command("7z.exe")
-	if status == 0: return "7z.exe"
-	# direct filepath
-	filepath_x64 : str = 'C:\\Program Files\\7-Zip\\7z.exe'
-	if os.path.exists(filepath_x64): return filepath_x64
-	filepath_x86 : str = 'C:\\Program Files (x86)\\7-Zip\\7z.exe'
-	if os.path.exists(filepath_x86): return filepath_x86
-	# could not locate
-	return None
-
-def download_7zip_portal() -> str:
-	print("Checking for 7zip installation.")
-
-	filepath : Optional[str] = check_7zip_path()
-	if filepath is not None: return filepath
-
-	print("You are required to install 7zip so the ComfyUI archive can be extracted. Please download from:")
-	print("https://www.7-zip.org/download.html")
-	print("Download the `64-bit Windows x64` version, which should be first, install it and then continue by pressing enter.")
-	os.system('start "https://www.7-zip.org/download.html"')
-	print("Press enter to continue once 7zip is installed... ")
-	input()
-
-	return check_7zip_path()
 
 def download_git_portal_windows() -> None:
 	status, _ = run_command("git --version")
@@ -184,7 +152,6 @@ def find_github_file_of_name(files : list[GithubFile], name : str) -> Optional[G
 
 def install_comfyui_nodes(custom_nodes_folder : str) -> None:
 	print("Installing ComfyUI Custom Nodes")
-	os.makedirs(custom_nodes_folder, exist_ok=True)
 	before_cwd : str = os.getcwd()
 	os.chdir(custom_nodes_folder)
 	for url in COMFYUI_CUSTOM_NODES:
@@ -266,6 +233,7 @@ def has_all_required_comfyui_models() -> bool:
 def install_comfyui_models_from_hugginface() -> None:
 	checkpoints_folder : str = os.path.join(COMFYUI_INSTALLATION_FOLDER, "ComfyUI", "models", "checkpoints")
 	for name, url in HUGGINGFACE_CHECKPOINTS_TO_DOWNLOAD.items():
+		print(name)
 		try:
 			download_file(url, os.path.join(checkpoints_folder, name))
 		except Exception as e:
@@ -275,6 +243,7 @@ def install_comfyui_models_from_hugginface() -> None:
 
 	loras_folder : str = os.path.join(COMFYUI_INSTALLATION_FOLDER, "ComfyUI", "models", "loras")
 	for name, url in HUGGINGFACE_LORAS_TO_DOWNLOAD.items():
+		print(name)
 		try:
 			download_file(url, os.path.join(loras_folder, name))
 		except Exception as e:
@@ -345,16 +314,15 @@ def comfyui_windows_installer() -> None:
 	if os.path.isdir(install_directory) is False:
 		download_git_portal_windows()
 
-		global FILEPATH_FOR_7z
-		FILEPATH_FOR_7z = download_7zip_portal() # needed to extract .7z
-		assert FILEPATH_FOR_7z, "Could not locate 7zip in 'Program Files' or 'Program Files (x86)'  or 'Environment Variables'."
-		print("7zip is installed - continuing.")
-
 		download_comfyui_latest(WINDOWS_ZIP_FILENAME, directory)
 
-		unzip_7zip(os.path.join(directory, WINDOWS_ZIP_FILENAME), ".")
+		print("Extracting the 7zip file using patool.")
+		result : int = os.system(f"patool extract {os.path.abspath(directory)}\\ComfyUI_windows_portable_nvidia.7z --outdir {os.path.abspath(directory)}")
+		if result != 0:
+			print("Failed to extract ComfyUI_windows_portable_nvidia.7z - please do it manually.")
+			input()
 	else:
-		print("ComfyUI is already downloaded - skipping 7zip and release download.")
+		print("ComfyUI is already downloaded - skipping unpacking and release download.")
 
 	install_comfyui_and_models_process(install_directory)
 

@@ -6,4 +6,4 @@ pydantic
 requests_toolbelt
 uvicorn[standard]
 websocket-client
-py7zr
+patool
