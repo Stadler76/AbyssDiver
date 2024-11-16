@@ -717,7 +717,7 @@ setup.comfyUI_GeneratePortraitWorkflow = async function() {
 	var checkpoint = "PonyV6HassakuXLHentai.safetensors";
 	var steps = 20;
 	var cfg = 7.0;
-	var seed = 0;
+	var seed = (SugarCube.State.seed | 0);
 	var width = 1024;
 	var height = 1024;
 
