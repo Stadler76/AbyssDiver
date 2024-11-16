@@ -499,14 +499,9 @@ setup.updateComfyUIStatus = async function() {
 	var is_running = false;
 
 	try {
-		await fetch(url, {
-			method: 'GET',
-			headers: {'Origin' : 'AbyssDiver.html', 'Content-Type': 'application/json'}
-		});
+		await fetch(url, {method: 'GET', headers: {'Origin' : 'AbyssDiver.html', 'Content-Type': 'application/json'}});
 		is_running = true;
-	} catch (error) {
-
-	}
+	} catch (error) {}
 
 	const notificationElement = document.getElementById('comfyui-enabled');
 	notificationElement.textContent = is_running ? "ComfyUI is currently running." : "ComfyUI is NOT currently running."
@@ -515,11 +510,17 @@ setup.updateComfyUIStatus = async function() {
 
 setup.comfyUI_InvokeGenerator = async function(url, payload) {
 	// console.log(url, JSON.stringify(payload));
-	const response = await fetch(url, {
-		method: 'POST',
-		headers: {'Origin' : 'AbyssDiver.html', 'Content-Type': 'application/json'},
-		body: JSON.stringify(payload)
-	});
+
+	var response = null;
+	try {
+		response = await fetch(url, {
+			method: 'POST',
+			headers: {'Origin' : 'AbyssDiver.html', 'Content-Type': 'application/json'},
+			body: JSON.stringify(payload)
+		});
+	} catch (error) {
+		throw new Error('Failed to connect to Proxy. Please check your Proxy and ensure the server is running.');
+	}
 
 	if (!response.ok) {
 		throw new Error('Failed to connect to Proxy. Please check your Proxy and ensure the server is running.');
@@ -723,7 +724,7 @@ setup.comfyUI_GeneratePortraitWorkflow = async function() {
 	var checkpoint = "PonyV6HassakuXLHentai.safetensors";
 	var steps = 20;
 	var cfg = 7.0;
-	var seed = (SugarCube.State.seed | 0);
+	var seed = (SugarCube.State.prng.seed | Math.round(Math.random() * 10_000));
 	var width = 1024;
 	var height = 1024;
 
