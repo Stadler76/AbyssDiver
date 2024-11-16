@@ -161,6 +161,7 @@ class ComfyUI_API:
 				content = await socket.recv()
 				if isinstance(content, str) is False:
 					continue
+				print(content)
 				message = json.loads(content)
 				# progression of current
 				if message['type'] == 'progress':
@@ -184,6 +185,10 @@ class ComfyUI_API:
 						# execution is done
 						self._active_ids[prompt_id] = True
 						break
+				# check if status is queue empty (for if its already cached)
+				if message['type'] == "status":
+					if message["data"]["status"]["exec_info"]["queue_remaining"] == 0:
+						break # already finished
 
 	async def cleanup_prompt_id(self, prompt_id : str) -> None:
 		self._active_ids.pop(prompt_id, None)
