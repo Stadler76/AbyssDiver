@@ -526,7 +526,7 @@ setup.comfyUI_InvokeGenerator = async function(url, payload) {
 	return data;
 }
 
-setup.comfyUI_PrepareCharacterData = async function() {
+setup.comfyUI_PrepareCharacterData = function() {
 	// get the character curses
 	const mc_curses = State.variables.mc.curses; // property: getter
 	const mc_curse_names = mc_curses.map(curse => curse.name);
@@ -599,8 +599,8 @@ function heightToRangedValue(height) {
 }
 
 // TODO: ItsTheTwin is doing this (temporary code)
-setup.comfyUI_GeneratePositiveNegative = async function() {
-	const characterData = await setup.comfyUI_PrepareCharacterData();
+setup.comfyUI_GeneratePositiveNegative = function() {
+	const characterData = setup.comfyUI_PrepareCharacterData();
 
 	var positive = PREFIX_POSITIVE_PROMPT;
 	positive += ",solo,portrait,upper_body,plain dark background,";
@@ -721,7 +721,7 @@ setup.comfyUI_GeneratePortraitWorkflow = async function() {
 	var width = 1024;
 	var height = 1024;
 
-	var [positive, negative] = await setup.comfyUI_GeneratePositiveNegative();
+	var [positive, negative] = setup.comfyUI_GeneratePositiveNegative();
 
 	// clone workflow so it can be edited
 	var workflow = JSON.parse(JSON.stringify(SIMPLE_T2I_PORTRAIT_WORKFLOW));
@@ -812,6 +812,14 @@ setup.comfyUI_GeneratePortrait = async function() {
 		notificationElement.style.display = "block";
 		throw new Error('Failed to store image due to error: ' + error);
 	}
+}
+
+setup.copy_to_clipboard = async function(text) {
+	navigator.clipboard.writeText(text).then(function() {
+		alert("Prompt copied to clipboard! There are two parts separated by a newline for positive/negative prompts.");
+	}, function() {
+		alert("Failed to copy prompt. Please try again.");
+	});
 }
 
 /*
