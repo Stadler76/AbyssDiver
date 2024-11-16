@@ -362,13 +362,12 @@ def comfyui_windows_runner() -> subprocess.Popen:
 	device : int = ask_windows_gpu_cpu() # 0:cpu, 1:cuda
 
 	process : subprocess.Popen = None
+	args = [".\python_embeded\python.exe", "-s", "ComfyUI\main.py", "--windows-standalone-build", '--lowvram', '--disable-auto-launch']
 	if device == 0:
-		# os.system(PYTHON_COMMAND + ' f"{COMFYUI_INSTALLATION_FOLDER}/run_cpu.bat"')
-		process = subprocess.Popen(["run_cpu.bat", '--lowvram', '--xformers', '--disable-auto-launch'], cwd=COMFYUI_INSTALLATION_FOLDER, shell=True)
-	else:
-		# os.system(PYTHON_COMMAND + ' f"{COMFYUI_INSTALLATION_FOLDER}/run_nvidia_gpu.bat"')
-		process = subprocess.Popen(["run_nvidia_gpu.bat", '--lowvram', '--xformers', '--disable-auto-launch'], cwd=COMFYUI_INSTALLATION_FOLDER, shell=True)
+		# cpu
+		args.append("--cpu")
 
+	process = subprocess.Popen(args, cwd=COMFYUI_INSTALLATION_FOLDER, shell=True)
 	return process
 
 def comfyui_linux_runner() -> None:
@@ -396,10 +395,10 @@ def comfyui_linux_runner() -> None:
 	write_last_device(device)
 
 	os.system(f"pip install -r {COMFYUI_INSTALLATION_FOLDER}/requirements.txt")
-	os.system(f"{PYTHON_COMMAND} {COMFYUI_INSTALLATION_FOLDER}/main.py")
+	os.system(f"{PYTHON_COMMAND} {COMFYUI_INSTALLATION_FOLDER}/main.py --lowvram --disable-auto-launch")
 
 def proxy_runner() -> subprocess.Popen:
-	return subprocess.Popen([PYTHON_COMMAND, 'python/main.py', '--lowvram', '--xformers', '--disable-auto-launch'], shell=True)
+	return subprocess.Popen([PYTHON_COMMAND, 'python/main.py'], shell=True)
 
 def main() -> None:
 	os_platform : str = platform.system() # Windows, Linux
