@@ -821,14 +821,6 @@ setup.comfyUI_GeneratePortrait = async function() {
 	}
 }
 
-setup.copy_to_clipboard = async function(text) {
-	navigator.clipboard.writeText(text).then(function() {
-		alert("Prompt copied to clipboard! There are two parts separated by a newline for positive/negative prompts.");
-	}, function() {
-		alert("Failed to copy prompt. Please try again.");
-	});
-}
-
 /*
 	// TODO: future update (also edit return to be the raise Error)
 
