@@ -7,4 +7,4 @@ echo Installing minimum requirements for one-click comfyui installer.
 pip install --upgrade pip
 pip install -r requirements.txt
 py installer.py
-read -p "Press any key to continue..." -n1 -s
+read -p "Press enter to continue..." -n1 -s

@@ -123,9 +123,9 @@ def download_7zip_portal() -> str:
 
 	print("You are required to install 7zip so the ComfyUI archive can be extracted. Please download from:")
 	print("https://www.7-zip.org/download.html")
-	print("Download the `64-bit Windows x64` version, which should be first, install it and then continue by pressing any key.")
+	print("Download the `64-bit Windows x64` version, which should be first, install it and then continue by pressing enter.")
 	os.system('start "https://www.7-zip.org/download.html"')
-	print("Press any key to continue once 7zip is installed... ")
+	print("Press enter to continue once 7zip is installed... ")
 	input()
 
 	return check_7zip_path()
@@ -138,7 +138,7 @@ def download_git_portal_windows() -> None:
 	print("You are required to install git to download ComfyUI nodes on Windows.")
 	print("Please install by visiting https://git-scm.com/downloads and installing the Windows 64-bit version.")
 	print("Note: for most options, you can press next, if you aren't sure, press next.")
-	print("Press any key to continue once git is installed... ")
+	print("Press enter to continue once git is installed... ")
 	input()
 
 	status, _ = run_command("git --version")
@@ -151,7 +151,7 @@ def download_git_portal_linux() -> None:
 
 	print("You are required to install git to download ComfyUI on Linux.")
 	print("Please install with `sudo apt update && sudo apt install -y git`.")
-	print("Press any key to continue once git is installed... ")
+	print("Press enter to continue once git is installed... ")
 	input()
 
 	status, _ = run_command("git --version")
@@ -190,7 +190,7 @@ def install_comfyui_nodes(custom_nodes_folder : str) -> None:
 
 def prompt_safetensor_file_install(folder : str, filename : str, download_url : str) -> None:
 	while True:
-		print("Press any key to continue once downloaded... ")
+		print("Press enter to continue once downloaded... ")
 		input()
 		if os.path.exists(os.path.join(folder, filename)) is True:
 			break
@@ -280,7 +280,7 @@ def comfyui_windows_installer() -> None:
 	print("Both the directory and the download will automatically open/start when you proceed.")
 	print("This is REQUIRED to run the local generation.")
 	print(f"You will need to download a total of {len(MODELS_TO_DOWNLOAD.values()) + len(LORAS_TO_DOWNLOAD.values())} files.")
-	print("Press any key to continue...")
+	print("Press enter to continue...")
 	input()
 
 	install_comfyui_checkpoints(os.path.join(COMFYUI_INSTALLATION_FOLDER, "ComfyUI", "models", "checkpoints"))
@@ -307,7 +307,7 @@ def comfyui_linux_installer() -> None:
 	print("For this section you will be manually installing and placing safetensor (AI Model) files in the given directories.")
 	print("Both the directory and the download will automatically open/start when you proceed.")
 	print("This is REQUIRED to run the local generation.")
-	print("Press any key to continue...")
+	print("Press enter to continue...")
 	input()
 
 	install_comfyui_checkpoints(os.path.join(COMFYUI_INSTALLATION_FOLDER, "ComfyUI", "models", "checkpoints"))
@@ -421,7 +421,7 @@ def main() -> None:
 	print("Note: The total file size required for ComfyUI will add up over 9GB.")
 	print("Note: The total file size required for the Abyss Diver content will add up to 7.1GB")
 	print("You will need a total of at least 17GBs available.")
-	print("Press any key to continue...")
+	print("Press enter to continue...")
 	input()
 
 	process_proxy : subprocess.Popen
