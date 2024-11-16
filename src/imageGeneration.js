@@ -496,12 +496,18 @@ setup.openAI_GenerateDallePortrait = async function() {
 setup.updateComfyUIStatus = async function() {
 	const url = "http://127.0.0.1:8000/echo";
 
-	const response = await fetch(url, {
-		method: 'GET',
-		headers: {'Origin' : 'AbyssDiver.html', 'Content-Type': 'application/json'}
-	});
+	var is_running = false;
 
-	const is_running = (response.ok == true);
+	try {
+		await fetch(url, {
+			method: 'GET',
+			headers: {'Origin' : 'AbyssDiver.html', 'Content-Type': 'application/json'}
+		});
+		is_running = true;
+	} catch (error) {
+
+	}
+
 	const notificationElement = document.getElementById('comfyui-enabled');
 	notificationElement.textContent = is_running ? "ComfyUI is currently running." : "ComfyUI is NOT currently running."
 	notificationElement.style.color = is_running ? "green" : "red"
