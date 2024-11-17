@@ -71,6 +71,220 @@ variables
 
 /*
 	===============================================
+	WORKFLOWS
+	===============================================
+*/
+
+const SIMPLE_T2I_PORTRAIT_WORKFLOW = {
+	"5": {
+		"inputs": {"ckpt_name": "sd_xl_base_1.0.safetensors"},
+		"class_type": "CheckpointLoaderSimple",
+		"_meta": {"title": "Load Checkpoint"}
+	},
+	"9": {
+		"inputs": {"text": "","clip": ["5",1]},
+		"class_type": "CLIPTextEncode",
+		"_meta": {"title": "Positive Prompt"}
+	},
+	"10": {
+		"inputs": {"text": "","clip": ["5",1]},
+		"class_type": "CLIPTextEncode",
+		"_meta": {"title": "Negative Prompt"}
+	},
+	"11": {
+		"inputs": {
+			"seed": 0,
+			"steps": 35,
+			"cfg": 7,
+			"sampler_name": "euler",
+			"scheduler": "normal",
+			"denoise": 1,
+			"model": ["5",0],
+			"positive": ["9",0],
+			"negative": ["10",0],
+			"latent_image": ["12",0]
+		},
+		"class_type": "KSampler",
+		"_meta": {"title": "KSampler"}
+	},
+	"12": {
+		"inputs": {"width": 1024,"height": 1024,"batch_size": 1},
+		"class_type": "EmptyLatentImage",
+		"_meta": {"title": "Empty Latent Image"}
+	},
+	"15": {
+		"inputs": {"samples": ["11",0],"vae": ["5",2]},
+		"class_type": "VAEDecode",
+		"_meta": {"title": "VAE Decode"}
+	},
+	"16": {
+		"inputs": {"filename_prefix": "ComfyUI","images": ["15",0]},
+		"class_type": "SaveImage",
+		"_meta": {"title": "Save Image"}
+	}
+}
+
+const SCENE_GENERATION_WITH_MIDAS_WORKFLOW = {
+	"1": {
+		"inputs": {"image": "00007-4032934194.png","upload": "image"},
+		"class_type": "LoadImage",
+		"_meta": {"title": "Load Image"}
+	},
+	"2": {
+		"inputs": {"a": 6.2832,"bg_threshold": 0.1,"resolution": 512,"image": ["1",0]},
+		"class_type": "MiDaS-DepthMapPreprocessor",
+		"_meta": {"title": "MiDaS Depth Map"}
+	},
+	"3": {
+		"inputs": {"images": ["2",0]},
+		"class_type": "PreviewImage",
+		"_meta": {"title": "Preview Image"}
+	},
+	"5": {
+		"inputs": {"ckpt_name": "ThinkDiffusionXL.safetensors"},
+		"class_type": "CheckpointLoaderSimple",
+		"_meta": {"title": "Load Checkpoint"}
+	},
+	"7": {
+		"inputs": {"control_net_name": "control-lora-depth-rank256.safetensors"},
+		"class_type": "ControlNetLoader",
+		"_meta": {"title": "Load ControlNet Model"}
+	},
+	"8": {
+		"inputs": {
+			"strength": 1,
+			"start_percent": 0,
+			"end_percent": 1,
+			"positive": ["9",0],
+			"negative": ["10",0],
+			"control_net": ["7",0],
+			"image": ["2",0]
+		},
+		"class_type": "ControlNetApplyAdvanced",
+		"_meta": {"title": "Apply ControlNet (Advanced)"}
+	},
+	"9": {
+		"inputs": {"text": "a futuristic cyborg on an alien spaceship","clip": ["5",1]},
+		"class_type": "CLIPTextEncode",
+		"_meta": {"title": "Positive Prompt"}
+	},
+	"10": {
+		"inputs": {"text": "","clip": ["5",1]},
+		"class_type": "CLIPTextEncode",
+		"_meta": {"title": "Negative Prompt"}
+	},
+	"11": {
+		"inputs": {
+			"seed": 961176784184834,
+			"steps": 35,
+			"cfg": 7,
+			"sampler_name": "dpmpp_3m_sde_gpu",
+			"scheduler": "exponential",
+			"denoise": 1,
+			"model": ["5",0],
+			"positive": ["8",0],
+			"negative": ["8",1],
+			"latent_image": ["12",0]
+		},
+		"class_type": "KSampler",
+		"_meta": {"title": "KSampler"}
+	},
+	"12": {
+		"inputs": {"width": 1024,"height": 1024,"batch_size": 1},
+		"class_type": "EmptyLatentImage",
+		"_meta": {"title": "Empty Latent Image"}
+	},
+	"15": {
+		"inputs": {"samples": ["11",0], "vae": ["5",2]},
+		"class_type": "VAEDecode",
+		"_meta": {"title": "VAE Decode"}
+	},
+	"16": {
+		"inputs": {"filename_prefix": "ComfyUI", "images": ["15",0]},
+		"class_type": "SaveImage",
+		"_meta": {"title": "Save Image"}
+	}
+}
+
+const SCENE_GENERATION_WITHOUT_MIDAS_WORKFLOW = {
+	"1": {
+		"inputs": {"image": "00007-4032934194.png","upload": "image"},
+		"class_type": "LoadImage",
+		"_meta": {"title": "Load Image"}
+	},
+	"3": {
+		"inputs": {"images": ["1",0]},
+		"class_type": "PreviewImage",
+		"_meta": {"title": "Preview Image"}
+	},
+	"5": {
+		"inputs": {"ckpt_name": "ThinkDiffusionXL.safetensors"},
+		"class_type": "CheckpointLoaderSimple",
+		"_meta": {"title": "Load Checkpoint"}
+	},
+	"7": {
+		"inputs": {"control_net_name": "control-lora-depth-rank256.safetensors"},
+		"class_type": "ControlNetLoader",
+		"_meta": {"title": "Load ControlNet Model"}
+	},
+	"8": {
+		"inputs": {
+			"strength": 1,
+			"start_percent": 0,
+			"end_percent": 1,
+			"positive": ["9",0],
+			"negative": ["10",0],
+			"control_net": ["7",0],
+			"image": ["1",0]
+		},
+		"class_type": "ControlNetApplyAdvanced",
+		"_meta": {"title": "Apply ControlNet (Advanced)"}
+	},
+	"9": {
+		"inputs": {"text": "a futuristic cyborg on an alien spaceship","clip": ["5",1]},
+		"class_type": "CLIPTextEncode",
+		"_meta": {"title": "Positive Prompt"}
+	},
+	"10": {
+		"inputs": {"text": "","clip": ["5",1]},
+		"class_type": "CLIPTextEncode",
+		"_meta": {"title": "Negative Prompt"}
+	},
+	"11": {
+		"inputs": {
+			"seed": 961176784184834,
+			"steps": 35,
+			"cfg": 7,
+			"sampler_name": "dpmpp_3m_sde_gpu",
+			"scheduler": "exponential",
+			"denoise": 1,
+			"model": ["5",0],
+			"positive": ["8",0],
+			"negative": ["8",1],
+			"latent_image": ["12",0]
+		},
+		"class_type": "KSampler",
+		"_meta": {"title": "KSampler"}
+	},
+	"12": {
+		"inputs": {"width": 1024,"height": 1024,"batch_size": 1},
+		"class_type": "EmptyLatentImage",
+		"_meta": {"title": "Empty Latent Image"}
+	},
+	"15": {
+		"inputs": {"samples": ["11",0], "vae": ["5",2]},
+		"class_type": "VAEDecode",
+		"_meta": {"title": "VAE Decode"}
+	},
+	"16": {
+		"inputs": {"filename_prefix": "ComfyUI", "images": ["15",0]},
+		"class_type": "SaveImage",
+		"_meta": {"title": "Save Image"}
+	}
+}
+
+/*
+	===============================================
 	OPENAI DALLE GENERATOR
 	===============================================
 */
@@ -201,32 +415,42 @@ setup.openAI_InvokeDalleGenerator = async function(prompt) {
 		body: body
 	});
 
+	// check if we connected to OpenAI
 	if (!response.ok) {
+		is_generation_busy = false;
 		throw new Error('Failed to connect to OpenAI. Please check your API key and network connection and try again. If those are both correct, this may be due to a content policy error from OpenAI.');
 	}
 
+	// check if any image was given from Dalle
 	const data = await response.json();
+	// console.log(data);
 
-	// Debugging: Inspect the structure of the response
-	console.log(data);
-
-	if (data.data && data.data.length > 0) {
-		/*
-			const imageUrl = data.data[0].url;
-			$("#dalleImage").attr("src", imageUrl);
-		*/
-		const base64Image = data.data[0].b64_json;
-		console.log("Base64 Data Length: ", base64Image ? base64Image.length : "undefined");
-		setup.storeImage("playerPortrait", base64Image)
-			.then(() => console.log('Image successfully stored.'))
-			.catch((error) => console.error('Failed to store image:', error));
-	} else {
-		console.error('No images returned:', data);
+	if (!data.data || data.data.length == 0) {
+		is_generation_busy = false;
+		console.error('No images returned from Dalle:', data);
 		throw new Error('No images returned from server. This is likely due to a content policy error or server error from OpenAI.');
+	}
+
+	// once we receive the image, save it as the player portrait
+	const storeKey = "generatedImage";
+	const b64Image = data.data[0].b64_json;
+	console.log("Base64 Data Length: ", b64Image.length);
+
+	// now save it in the local storage
+	try {
+		setup.storeImage(storeKey, b64Image);
+		console.log('Image successfully stored.');
+	} catch(error) {
+		console.error('Failed to store image due to error:', error);
 	}
 }
 
 setup.openAI_GenerateDallePortrait = async function() {
+	if (is_generation_busy) {
+		return;
+	}
+	is_generation_busy = true;
+
 	// Notification element
 	const notificationElement = document.getElementById('notification');
 
@@ -237,23 +461,421 @@ setup.openAI_GenerateDallePortrait = async function() {
 	let characterDescription = setup.evaluateDalleCharacterDescription(State.variables.mc); // Assuming $mc is stored in State.variables.mc
 
 	// Concatenate the static prompt with the dynamic description
-	const prompt = staticPrompt + characterDescription;
+	var prompt = staticPrompt + characterDescription;
+
+	if (setup.customPromptPrefix != null) {
+		prompt = setup.customPromptPrefix + "," + prompt
+	}
+
+	if (setup.customPromptSuffix != null) {
+		prompt = prompt + "," + setup.customPromptSuffix
+	}
 
 	try {
 		await setup.openAI_InvokeDalleGenerator(prompt);
-		notificationElement.style.display = 'hidden';
+		if (notificationElement != null) {
+			notificationElement.style.display = 'hidden';
+		}
 	} catch (error) {
 		console.error('Error generating image:', error);
-		notificationElement.style.display = 'block';
-		notificationElement.textContent = 'Error generating image: ' + error.message + (error.response ? (await error.response.json()).error : 'No additional error information from OpenAI.');
+		if (notificationElement != null) {
+			notificationElement.style.display = 'block';
+			notificationElement.textContent = 'Error generating image: ' + error.message + (error.response ? (await error.response.json()).error : ' No additional error information from OpenAI.');
+		}
 	}
+
+	is_generation_busy = false;
 }
+
 /*
 	===============================================
-	ENTRY POINT
+	(LOCAL) COMFYUI GENERATOR
 	===============================================
 */
 
-setup.call_PortraitImageGenerator = async function() {
-	await setup.openAI_GenerateDallePortrait();
+setup.updateComfyUIStatus = async function() {
+	const url = "http://127.0.0.1:8000/echo";
+
+	var is_running = false;
+
+	try {
+		await fetch(url, {method: 'GET', headers: {'Origin' : 'AbyssDiver.html', 'Content-Type': 'application/json'}});
+		is_running = true;
+		// try display any image if any are available
+		// setup.displaySavedImage().catch(() => null)
+		setup.displayRecentGeneratedImage().catch(() => null)
+	} catch (error) {}
+
+	const notificationElement = document.getElementById('comfyui-enabled');
+	notificationElement.textContent = is_running ? "ComfyUI is currently running." : "ComfyUI is NOT currently running."
+	notificationElement.style.color = is_running ? "green" : "red"
 }
+
+setup.comfyUI_InvokeGenerator = async function(url, payload) {
+	// console.log(url, JSON.stringify(payload));
+
+	var response = null;
+	try {
+		response = await fetch(url, {
+			method: 'POST',
+			headers: {'Origin' : 'AbyssDiver.html', 'Content-Type': 'application/json'},
+			body: JSON.stringify(payload)
+		});
+	} catch (error) {
+		throw new Error('Failed to connect to Proxy. Please check your Proxy and ensure the server is running.');
+	}
+
+	if (!response.ok) {
+		throw new Error('Failed to connect to Proxy. Please check your Proxy and ensure the server is running.');
+	}
+
+	const data = await response.json();
+	// Debugging: Inspect the structure of the response
+	// console.log(data);
+	// Return the data for further processing
+	return data;
+}
+
+setup.comfyUI_PrepareCharacterData = function() {
+	// get the character curses
+	const mc_curses = State.variables.mc.curses; // property: getter
+	const mc_curse_names = mc_curses.map(curse => curse.name);
+
+	// get special character data
+	const mc_state = {
+		'real_age' : State.variables.mc.realAge,
+		'apparent_age' : State.variables.mc.appAge,
+		'real_gender' : State.variables.mc.gender,
+		'apparent_gender' : State.variables.mc.appGender,
+		'penis_size' : State.variables.mc.penisCor,
+		'vagina_count' : State.variables.mc.vagina,
+		'double_penis' : State.variables.mc.doublePenis,
+		'sex' : State.variables.mc.sex,
+		'wombs' : State.variables.mc.womb,
+		'lactation' : State.variables.mc.lactation,
+		'breasts' : State.variables.mc.breastsCor,
+		'breastsLabel' : State.variables.mc.breastsLabel,
+		'height' : State.variables.mc.heightCor,
+		'libido' : State.variables.mc.libido,
+		'subdom' : State.variables.mc.subdom,
+
+		'hair' : State.variables.mc.hair,
+		'ears' : State.variables.mc.ears,
+		'bodyHair' : State.variables.mc.bodyHair,
+		'skinType' : State.variables.mc.skinType,
+		'skinColor' : State.variables.mc.skinColor,
+		'eyeColor' : State.variables.mc.eyeColor,
+		'tail' : State.variables.mc.tail,
+		'description' : State.variables.mc.desc,
+		'blood' : State.variables.mc.blood,
+		'genderVoice' : State.variables.mc.genderVoice,
+		'fluids' : State.variables.mc.fluids,
+		'lewdness' : State.variables.mc.lewdness,
+		'horns' : State.variables.mc.horns,
+		'inhuman' : State.variables.mc.inhuman,
+		'eyeCount' : State.variables.mc.eyeCount,
+		'armCount' : State.variables.mc.armCount,
+		'legCount' : State.variables.mc.legCount,
+		'tentacles' : State.variables.mc.tentacles,
+		'extraEyes' : State.variables.mc.extraEyes,
+		'extraMouths' : State.variables.mc.extraMouths
+	};
+	// console.log(mc_state);
+
+	// get the character internal state (deep clone it)
+	const mc_internal_state_clone = Object.fromEntries(Object.entries(State.variables.mc._internalState()));
+	delete mc_internal_state_clone.image; // don't need the image to be sent
+	delete mc_internal_state_clone.events; // dont need the events to be sent
+	delete mc_internal_state_clone.imageIcon; // don't need the image icon to be sent
+
+	// payload to send to proxy/comfyui
+	const payload = {'character' : mc_internal_state_clone, 'curses' : mc_curse_names, 'state' : mc_state,};
+	return payload;
+}
+
+const PREFIX_POSITIVE_PROMPT = "score_9, score_8_up, score_7_up, masterpiece, best quality, cowboy shot, 1girl, solo, source_anime, front view <lora:Dalle3_AnimeStyle_PONY_Lora:1>";
+const PREFIX_NEGATIVE_PROMPT = "score_5, score_4, pony, ugly, ugly face, poorly drawn face, blurry, blurry face, (3d), realistic, muscular, long torso, blurry eyes, poorly drawn eyes, patreon, artist name, (sd, super deformed),";
+const BODY_FITNESS = ["fragile body", "weak body", "average body", "fit body", "very fit body",];
+const HEIGHT_RANGES = [ ["dwarf", 150], ["midget", 160], ["short", 170], ["", 183], ["tall", 195] ];
+const PENIS_SIZES = ["small penis", "below average penis", "average penis", "large penis", "huge penis",];
+
+function heightToRangedValue(height) {
+	for (const [label, maxHeight] of HEIGHT_RANGES) {
+		if (height < maxHeight) {
+			return label;
+		}
+	}
+	return HEIGHT_RANGES[HEIGHT_RANGES.length-1][0];
+}
+
+// TODO: ItsTheTwin is doing this (temporary code)
+setup.comfyUI_GeneratePositiveNegative = function() {
+	const characterData = setup.comfyUI_PrepareCharacterData();
+
+	var positive = PREFIX_POSITIVE_PROMPT;
+	positive += ",solo,portrait,upper_body,plain dark background,";
+
+	var negative = PREFIX_NEGATIVE_PROMPT;
+
+	positive += `${characterData.state.sex},`;
+	positive += `${Math.max(characterData.state.apparent_age, 21)} years old,`;
+	positive += BODY_FITNESS[Math.max(Math.min(characterData.character.fit + 2, 4), 0)] + ",";
+	positive += `${heightToRangedValue(characterData.state.height)},`;
+	positive += `${characterData.state.hair} hair,`;
+	for (const tail of characterData.state.tail) {
+		positive += `${characterData.state.hair} ${tail} tail,`;
+	}
+	positive += `${characterData.state.hair} ${characterData.state.ears} ears,`;
+
+	// CreatureOfTheNight -> Vampire
+	if (characterData.curses.includes("CreatureOfTheNight")) {
+		positive += "vampire,fangs,red eyes,glowing eyes,pale skin,";
+	} else {
+		positive += `${characterData.state.eyeColor} eyes,`;
+		positive += `${characterData.state.skinColor} skin,`;
+	}
+
+	if (characterData.curses.includes("WrigglyAntennae")) {
+		positive += "pink antennae,";
+	}
+	if (characterData.curses.includes("Megadontia")) {
+		positive += "sharp teeth,";
+	}
+	if (characterData.curses.includes("FreckleSpeckle")) {
+		positive += "freckles,";
+	}
+	if (characterData.curses.includes("KnifeEar")) {
+		positive += "pointy ears,";
+	}
+	if (characterData.curses.includes("Horny")) {
+		positive += "succubus horns,";
+	}
+	if (characterData.curses.includes("DrawingSpades")) {
+		positive += "spade tail,";
+	}
+
+	if (characterData.state.sex === "female" && !characterData.curses.includes("ClothingRestrictionA")) {
+		positive += "earrings,";
+	}
+
+	if (!characterData.curses.includes("ClothingRestrictionC")) {
+		positive += "adventurer,leather armor,";
+	}
+
+	if (characterData.curses.includes("ClothingRestrictionC")) {
+		if (characterData.curses.includes("ClothingRestrictionB")) {
+			positive += "nude,";
+		} else {
+			if (characterData.state.sex === "female") {
+				positive += "bra,panties,";
+			} else {
+				positive += "underwear,shirtless,no pants,small penis bulge,";
+			}
+		}
+
+		if (characterData.curses.includes("ClothingRestrictionC") && characterData.curses.includes("ClothingRestrictionB")) {
+			// NUDE
+			if (characterData.curses.includes("Null")) {
+				// null curse
+				positive += "smooth featureless body, no genitalia, soft abstract body aesthetic without explicit details,";
+			} else {
+				// sex-specific
+				if (characterData.state.sex === "female") {
+					if (characterData.curses.includes("TattooTally")) {
+						positive += "succubus tattoo,";
+					}
+					if (characterData.curses.includes("Leaky")) {
+						positive += "pussy juice,";
+					}
+				} else {
+					if (characterData.curses.includes("TattooTally")) {
+						positive += "incubus tattoo,";
+					}
+					if (characterData.curses.includes("Leaky")) {
+						positive += "pre-ejaculation,";
+					}
+				}
+
+				// lactation (both M/F)
+				let lactation = 0;
+				if (characterData.curses.includes("LactationRejuvenationA")) {
+					lactation += 1;
+				}
+				if (characterData.curses.includes("LactationRejuvenationB")) {
+					lactation += 1;
+				}
+
+				if (lactation === 2) {
+					positive += "milk,lactating,lactation,";
+				} else if (lactation === 1) {
+					positive += "dripping lactation,";
+				}
+
+				if (characterData.state.penis_size > 0) {
+					positive += PENIS_SIZES[characterData.state.penis_size-1] + ",";
+				}
+			}
+		}
+	}
+
+	positive += `${characterData.state.breastsLabel} breasts,`;
+
+	return [positive, negative];
+}
+
+setup.comfyUI_GeneratePortraitWorkflow = async function() {
+	var checkpoint = "PonyV6HassakuXLHentai.safetensors";
+	var steps = 20;
+	var cfg = 7.0;
+	var seed = (SugarCube.State.prng.seed | Math.round(Math.random() * 10_000));
+	var width = 1024;
+	var height = 1024;
+
+	var [positive, negative] = setup.comfyUI_GeneratePositiveNegative();
+
+	// clone workflow so it can be edited
+	var workflow = JSON.parse(JSON.stringify(SIMPLE_T2I_PORTRAIT_WORKFLOW));
+
+	if (setup.customPromptPrefix != null) {
+		positive = setup.customPromptPrefix + "," + positive
+	}
+
+	if (setup.customPromptSuffix != null) {
+		positive = positive + "," + setup.customPromptSuffix
+	}
+
+	workflow["5"]["inputs"]["ckpt_name"] = checkpoint
+	workflow["9"]["inputs"]["text"] = positive
+	workflow["10"]["inputs"]["text"] = negative
+	workflow["11"]["inputs"]["steps"] = steps
+	workflow["11"]["inputs"]["cfg"] = cfg
+	workflow["11"]["inputs"]["seed"] = seed
+	workflow["12"]["inputs"]["width"] = width
+	workflow["12"]["inputs"]["height"] = height
+
+	return workflow;
+}
+
+// http://127.0.0.1:8000/generate_image
+var is_generation_busy = false;
+var last_workflow = null;
+setup.comfyUI_GeneratePortrait = async function() {
+	const notificationElement = document.getElementById('notification');
+
+	if (is_generation_busy) {
+		console.log("generation busy");
+		notificationElement.style.display = "block";
+		notificationElement.textContent = "An image is already being generated.";
+		return;
+	}
+	is_generation_busy = true;
+
+	notificationElement.style.display = "none";
+
+	// data to be sent to comfyui
+	const url = "http://127.0.0.1:8000/generate_workflow"
+
+	// log outputted workflow
+	// console.log(workflow);
+
+	// request to the proxy to generate the portrait
+	let data = null;
+	try {
+		const workflow = await setup.comfyUI_GeneratePortraitWorkflow();
+		// if (last_workflow == JSON.stringify(workflow)) {
+		// 	is_generation_busy = false;
+		// 	return; // already the same
+		// }
+		// workflow was updated
+		last_workflow = JSON.stringify(workflow);
+		data = await setup.comfyUI_InvokeGenerator(url, workflow);
+	} catch (error) {
+		console.error('Unable to invoke ComfyUI generator: ', error);
+		is_generation_busy = false;
+		notificationElement.style.display = "block";
+		notificationElement.textContent = "Unable to contact the ComfyUI proxy. Make sure the Python code is running! Check the one-click installer terminal. " + error;
+		return;
+	}
+
+	// console.log(data);
+
+	// check if we actually received any images
+	if (data.images == null || data.images.length == 0) {
+		console.error('No images returned from server. This might be due to an issue with the Stable Diffusion model or the server.');
+		is_generation_busy = false;
+		notificationElement.style.display = "block";
+		notificationElement.textContent = "No images were returned from the proxy! Is ComfyUI running? Check the one-click installer terminal.";
+		return;
+	}
+
+	// once we receive the image, save it as the player portrait
+	is_generation_busy = false;
+
+	var storeKey = "generatedImage";
+	var b64Image = data.images[0];
+	console.log("Base64 Data Length: ", b64Image.length);
+	try {
+		setup.storeImage(storeKey, b64Image);
+		console.log('Image successfully stored.');
+	} catch(error) {
+		console.error('Failed to store image due to error:', error);
+		notificationElement.style.display = "block";
+		throw new Error('Failed to store image due to error: ' + error);
+	}
+}
+
+/*
+	// TODO: future update (also edit return to be the raise Error)
+
+	setup.comfyUI_PrepareSceneData = async function(scene_id, scene_params) {
+		return {'scene_id' : scene_id, 'scene_params' : scene_params}
+	}
+
+	// http://127.0.0.1:8000/generate_scene
+	setup.comfyUI_GenerateCharacterScene = async function(scene_id, scene_params) {
+		if (is_generation_busy) {
+			return;
+		}
+		is_generation_busy = true;
+
+		// notification element
+		const notificationElement = document.getElementById('notification');
+
+		// data to be sent to comfyui
+		const url = "http://127.0.0.1:8000/generate_scene";
+
+		// prepare Payload
+		const payload = {'character' : setup.comfyUI_PrepareCharacterData(), 'scene' : setup.comfyUI_PrepareSceneData(scene_id, scene_params)}
+
+		// inspect payload
+		console.log(payload);
+
+		// request to the proxy to generate the portrait
+		let data = null;
+		try {
+			data = await setup.comfyUI_InvokeGenerator(url, {'character' : payload});
+		} catch (error) {
+			console.error('Unable to invoke ComfyUI generator.');
+			is_generation_busy = false;
+			return;
+		}
+
+		// check if we actually received any images
+		if (data.images == null || data.images.length == 0) {
+			console.error('No images returned from server. This might be due to an issue with the proxy server or ComfyUI!');
+			notificationElement.textContent = 'Error generating image: ' + error.message + (error.response ? (await error.response.json()).error : 'No additional error information from OpenAI.');
+			notificationElement.style.display = 'block';
+			is_generation_busy = false;
+			return;
+		}
+
+		// once we receive the images, save it under the key
+		const storeKey = scene_id;
+		const b64Images = data.images; // Assuming the images are returned as base64 strings
+		console.log("Base64 Data Length: ", b64Images.reduce((sum, str) => sum + str.length, 0));
+		setup.storeImage(storeKey, b64Images)
+			.then(() => console.log('Image successfully stored.'))
+			.finally(() => is_generation_busy)
+			.catch((error) => console.error('Failed to store image:', error));
+	}
+*/
