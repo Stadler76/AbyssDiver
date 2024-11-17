@@ -64,7 +64,8 @@ def download_file(url : str, destination : str) -> None:
 	response = requests.get(url, stream=True)
 	response.raise_for_status()
 	total_size = int(response.headers.get('content-length', 0))
-	with tqdm(desc=destination, total=total_size, unit='iB', unit_scale=True, unit_divisor=1024,) as bar:
+	print(total_size / 1_000_000, "MB")
+	with tqdm(desc=destination, total=total_size, unit='iB', unit_scale=True, unit_divisor=1024) as bar:
 		with open(destination, 'wb') as file:
 			for data in response.iter_content(chunk_size=1024):
 				size = file.write(data)
@@ -243,7 +244,7 @@ def has_all_required_comfyui_models() -> bool:
 def install_comfyui_models_from_hugginface() -> None:
 	checkpoints_folder : str = Path(os.path.join(COMFYUI_INSTALLATION_FOLDER, "ComfyUI", "models", "checkpoints")).as_posix()
 	for name, url in HUGGINGFACE_CHECKPOINTS_TO_DOWNLOAD.items():
-		print(name)
+		print("Downloading:", name)
 		try:
 			download_file(url, Path(os.path.join(checkpoints_folder, name)).as_posix())
 		except Exception as e:
@@ -253,7 +254,7 @@ def install_comfyui_models_from_hugginface() -> None:
 
 	loras_folder : str = Path(os.path.join(COMFYUI_INSTALLATION_FOLDER, "ComfyUI", "models", "loras")).as_posix()
 	for name, url in HUGGINGFACE_LORAS_TO_DOWNLOAD.items():
-		print(name)
+		print("Downloading:", name)
 		try:
 			download_file(url, Path(os.path.join(loras_folder, name)).as_posix())
 		except Exception as e:
