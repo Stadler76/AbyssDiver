@@ -4,6 +4,7 @@
 # chmod +x one-click-install.sh
 
 echo Installing minimum requirements for one-click comfyui installer.
+call install_python.sh
 py -m ensurepip
 pip install --upgrade pip
 pip install -r requirements.txt
