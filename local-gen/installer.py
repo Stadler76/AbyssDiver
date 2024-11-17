@@ -73,7 +73,7 @@ def download_file(url : str, destination : str) -> None:
 			size = file.write(data)
 			counter += size
 			if counter > split_amount:
-				print(counter)
+				print(counter / 1_000_000, '/', total_size / 1_000_000, "MB")
 				split_amount += total_size / 10
 
 def run_command(command: str) -> tuple[int, str]:
