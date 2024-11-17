@@ -73,7 +73,7 @@ def download_file(url : str, destination : str) -> None:
 def run_command(command: str) -> tuple[int, str]:
 	"""Run a command in the command prompt and return the status code and output message."""
 	try:
-		result : subprocess.CompletedProcess = subprocess.run(command, shell=True, capture_output=True,text=True)
+		result : subprocess.CompletedProcess = subprocess.run(command, shell=True, capture_output=True, text=True)
 		status_code : int = result.returncode
 		output_message : str = result.stdout.strip()
 		error_message : str = result.stderr.strip()
@@ -99,7 +99,7 @@ def get_python_version() -> tuple[Union[str, None], Union[str, None]]:
 	status, output = run_command("py --version")
 	if status == 0:
 		return "py", re.match(pattern, output).group(1)
-	# check 'py' command
+	# check 'python3' command
 	status, output = run_command("python3 --version")
 	if status == 0:
 		return "python3", re.match(pattern, output).group(1)
