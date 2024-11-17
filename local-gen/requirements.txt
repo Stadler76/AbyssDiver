@@ -1,9 +1,10 @@
 # packages required by the proxy (auto-installed)
 aiohttp
 fastapi
+patool
 pillow
 pydantic
 requests_toolbelt
+tqdm
 uvicorn[standard]
 websocket-client
-patool

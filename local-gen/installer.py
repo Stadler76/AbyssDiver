@@ -25,6 +25,7 @@ import signal
 import subprocess
 import tarfile
 import time
+import patoolib
 
 COMFYUI_REPOSITORY_URL : str = "https://github.com/comfyanonymous/ComfyUI"
 COMFYUI_API_REPOSITORY_URL : str = "https://api.github.com/repos/comfyanonymous/ComfyUI"
@@ -98,6 +99,10 @@ def get_python_version() -> tuple[Union[str, None], Union[str, None]]:
 	status, output = run_command("py --version")
 	if status == 0:
 		return "py", re.match(pattern, output).group(1)
+	# check 'py' command
+	status, output = run_command("python3 --version")
+	if status == 0:
+		return "python3", re.match(pattern, output).group(1)
 	# no python available
 	return None, None
 
@@ -319,10 +324,12 @@ def comfyui_windows_installer() -> None:
 		print("Extracting the 7zip file using patool.")
 		before_cwd = os.getcwd()
 		os.chdir(Path(os.path.abspath(directory)).as_posix())
-		result : int = os.system(f"""patool extract ComfyUI_windows_portable_nvidia.7z --outdir .""")
-		if result != 0:
+		try:
+			patoolib.extract_archive("ComfyUI_windows_portable_nvidia.7z", outdir=".")
+		except Exception as e:
 			print("Failed to extract ComfyUI_windows_portable_nvidia.7z - please do it manually.")
-			input()
+			print(e)
+			exit()
 		os.chdir(before_cwd)
 	else:
 		print("ComfyUI is already downloaded - skipping unpacking and release download.")
