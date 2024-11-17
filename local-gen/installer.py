@@ -65,11 +65,11 @@ def download_file(url : str, destination : str) -> None:
 	response.raise_for_status()
 	total_size = int(response.headers.get('content-length', 0))
 	print(total_size / 1_000_000, "MB")
-	with tqdm(desc=destination, total=total_size, unit='iB', unit_scale=True, unit_divisor=1024) as bar:
-		with open(destination, 'wb') as file:
-			for data in response.iter_content(chunk_size=1024):
-				size = file.write(data)
-				bar.update(size)
+	## with tqdm(desc=destination, total=total_size, unit='iB', unit_scale=True, unit_divisor=1024) as bar:
+	with open(destination, 'wb') as file:
+		for data in response.iter_content(chunk_size=1024):
+			size = file.write(data)
+			# bar.update(size)
 
 def run_command(command: str) -> tuple[int, str]:
 	"""Run a command in the command prompt and return the status code and output message."""
