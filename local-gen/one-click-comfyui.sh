@@ -4,9 +4,18 @@
 # chmod +x one-click-install.sh
 
 echo Installing minimum requirements for one-click comfyui installer.
-call install_python.sh
+
+if command -v python3 &>/dev/null; then
+	# installed already
+else
+	echo "Restarting the script..."
+	call install_python.sh
+	exec "$0" "$@"
+fi
+
+
 py -m ensurepip
-pip install --upgrade pip
-pip install -r requirements.txt
-py installer.py
+py -m pip install --upgrade pip
+py -m pip install -r requirements.txt
+py -m py installer.py
 read -p "Press enter to continue..." -n1 -s
