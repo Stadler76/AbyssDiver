@@ -1,0 +1,32 @@
+
+Steps to running the one-click installer:
+1. Enter the local-gen folder in the Abyss Diver Folder
+    a. For Windows, run the "one-click-comfyui.bat"
+    b. For Linux, run the "one-click-comfyui.sh"
+    c. For Mac, run the "one-click-comfyui.sh"
+2. Run the related file and wait for the disk drive prompt.
+    a. It will be installing git, python, pip, and python packages.
+3. You'll be prompted telling you the amount of space the one-click installer requires. Hit enter after confirming you have enough space.
+4. The downloading process may take a while depending on your internet connection - every downloaded 10th of the file size will alert you.
+5. Once ComfyUI installs with its nodes and models, it will start "uvicorn running on http://127.0.0.1:8000". This means COMFYUI is running!
+6. You'll be prompted about where you will be running your image generation.
+    a. For Windows, only NVIDIA graphic cards are supported, otherwise you'll manually have setup ComfyUI to support AMD GPUs / Intel GPUs.
+    b. For Linux, all GPUs are supported.
+    c. For Mac, all GPUs are supported.
+7. Once you see the "[ComfyUI-Manager] default cache updated" message, you can now use the generator in Abyss Diver!
+8. Head to your Abyss Diver Settings and enable ComfyUI generation.
+9. Head to the AI Portrait Passage and there will be text saying comfyui is available in green.
+10. If you see this, you can now generate as you please!
+
+
+Troubleshoot:
+- "git" is not a valid command:
+    a. You'll need to install git manually at https://git-scm.com/downloads
+- "py" / "python" / "python3" is not a valid command:
+    a. You'll need to manually install python at https://www.python.org/downloads/release/python-3109/
+- Models don't download (check task manager for network activity):
+    a. manually download each model (links are available in the top of the "installer.py" file at "HUGGINGFACE_CHECKPOINTS_TO_DOWNLOAD" and "HUGGINGFACE_LORAS_TO_DOWNLOAD"
+    b. { "filename" : "download_url" } is the layout, so download each file and rename them to the "filename" in the checkpoints/lora folder in ComfyUI -> models
+- patool failed to extract:
+    a. Check patool is installed with "py -m pip install patool" and replace "py" with "python" or "python3" if it says python is not a valid command.
+    b. If this does not fix it still, manually unzip it using 7zip or any other tools that support 7zip archives.
