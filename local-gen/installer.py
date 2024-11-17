@@ -99,6 +99,10 @@ def get_python_version() -> tuple[Union[str, None], Union[str, None]]:
 	status, output = run_command("py --version")
 	if status == 0:
 		return "py", re.match(pattern, output).group(1)
+	# check 'py' command
+	status, output = run_command("python3 --version")
+	if status == 0:
+		return "python3", re.match(pattern, output).group(1)
 	# no python available
 	return None, None
 
