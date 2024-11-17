@@ -66,10 +66,15 @@ def download_file(url : str, destination : str) -> None:
 	total_size = int(response.headers.get('content-length', 0))
 	print(total_size / 1_000_000, "MB")
 	## with tqdm(desc=destination, total=total_size, unit='iB', unit_scale=True, unit_divisor=1024) as bar:
+	split_amount = (total_size / 10)
+	counter = 0
 	with open(destination, 'wb') as file:
 		for data in response.iter_content(chunk_size=1024):
 			size = file.write(data)
-			# bar.update(size)
+			counter += size
+			if counter > split_amount:
+				print(counter)
+				split_amount += total_size / 10
 
 def run_command(command: str) -> tuple[int, str]:
 	"""Run a command in the command prompt and return the status code and output message."""
