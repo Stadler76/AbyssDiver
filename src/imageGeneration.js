@@ -618,7 +618,7 @@ setup.ComfyUI_GenerateAdvancedHTMLPage = function() {
 }
 
 setup.updateComfyUIStatus = async function() {
-	const url = "http://127.0.0.1:8000/echo";
+	const url = "http://127.0.0.1:12500/echo";
 
 	var is_running = false;
 
@@ -880,7 +880,7 @@ setup.comfyUI_GeneratePortraitWorkflow = async function() {
 	return workflow;
 }
 
-// http://127.0.0.1:8000/generate_image
+// http://127.0.0.1:12500/generate_image
 var is_generation_busy = false;
 var last_workflow = null;
 setup.comfyUI_GeneratePortrait = async function() {
@@ -897,7 +897,7 @@ setup.comfyUI_GeneratePortrait = async function() {
 	notificationElement.style.display = "none";
 
 	// data to be sent to comfyui
-	const url = "http://127.0.0.1:8000/generate_workflow"
+	const url = "http://127.0.0.1:12500/generate_workflow"
 
 	// log outputted workflow
 	// console.log(workflow);
@@ -955,7 +955,7 @@ setup.comfyUI_GeneratePortrait = async function() {
 		return {'scene_id' : scene_id, 'scene_params' : scene_params}
 	}
 
-	// http://127.0.0.1:8000/generate_scene
+	// http://127.0.0.1:12500/generate_scene
 	setup.comfyUI_GenerateCharacterScene = async function(scene_id, scene_params) {
 		if (is_generation_busy) {
 			return;
@@ -966,7 +966,7 @@ setup.comfyUI_GeneratePortrait = async function() {
 		const notificationElement = document.getElementById('notification');
 
 		// data to be sent to comfyui
-		const url = "http://127.0.0.1:8000/generate_scene";
+		const url = "http://127.0.0.1:12500/generate_scene";
 
 		// prepare Payload
 		const payload = {'character' : setup.comfyUI_PrepareCharacterData(), 'scene' : setup.comfyUI_PrepareSceneData(scene_id, scene_params)}
