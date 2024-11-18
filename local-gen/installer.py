@@ -486,8 +486,12 @@ def comfyui_linux_runner() -> None:
 	elif device == 3:
 		# directml
 		args.append("--directml")
+	elif device == 1:
+		print("")
+		if request_prompt("Are any of your plugged in GPUs older than the 1060 series (but not including)? (y/n): ") == "y":
+			args.append("--disable-cuda-malloc")
 
-	print("Running the comfyui process.")
+	print("Running the ComfyUI process.")
 	process = subprocess.Popen(args, cwd=COMFYUI_INSTALLATION_FOLDER, shell=True)
 	return process
 
