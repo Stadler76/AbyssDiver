@@ -368,8 +368,24 @@ def ask_windows_gpu_cpu() -> int:
 	is_nvidia_gpu : str = request_prompt("Is your graphics card a NVIDIA one? (y/n)", ["y", "n"])
 	if is_nvidia_gpu == "y": return 1
 
-	print("Unfortunately only NVIDIA cards are supported on Windows.")
-	print("Image generation will be running on the CPU.")
+	is_amd_gpu : str = request_prompt("Is your graphics card a AMD one? (y/n)", ["y", "n"])
+	if is_amd_gpu == "y":
+		print("Warning: AMD cards can only run with DirectML which is slower on Windows.")
+		return 2
+
+	is_intel_gpu : str = request_prompt("Is your graphics card a AMD one? (y/n)", ["y", "n"])
+	if is_intel_gpu == "y":
+		print("WARNING: Please follow the steps on 'https://github.com/comfyanonymous/ComfyUI' to install Intel GPU support before continuing.")
+		print("Press enter to continue...")
+		input()
+		return 3
+
+	is_directml_mode : str = request_prompt("Do you want to run in DirectML (for unsupported GPUs you can try use this)? (y/n)", ["y", "n"])
+	if is_directml_mode == "y":
+		return 4
+
+	print("Unfortunately the card you provided is not supported on Windows.")
+	print("Image generation will be running on the CPU, unless you restart this file and utilize DirectML.")
 	return 0
 
 def ask_linux_gpu_cpu() -> int:
@@ -384,6 +400,10 @@ def ask_linux_gpu_cpu() -> int:
 	is_amd_linux : str = request_prompt("Is your graphics card a AMD one? (y/n)", ["y", "n"])
 	if is_amd_linux == "y":
 		return 2
+
+	is_directml_mode : str = request_prompt("Do you want to run in DirectML (for unsupported ones you can try use this)? (y/n)", ["y", "n"])
+	if is_directml_mode == "y":
+		return 3
 
 	print("You have a unsupported graphics card - will default to CPU mode.")
 	return 0
@@ -407,13 +427,17 @@ def comfyui_windows_runner() -> subprocess.Popen:
 
 	print("Running ComfyUI.")
 
-	device : int = ask_windows_gpu_cpu() # 0:cpu, 1:cuda
+	device : int = ask_windows_gpu_cpu() # 0:cpu, 1:cuda, 2:amd, 3:intel
 
 	process : subprocess.Popen = None
 	args = [".\python_embeded\python.exe", "-s", "ComfyUI\main.py", "--windows-standalone-build", '--lowvram', '--disable-auto-launch']
+
 	if device == 0:
 		# cpu
 		args.append("--cpu")
+	elif device == 2 or device == 4:
+		# amd/DirectML
+		args.append("--directml")
 
 	process = subprocess.Popen(args, cwd=COMFYUI_INSTALLATION_FOLDER, shell=True)
 	return process
@@ -443,7 +467,19 @@ def comfyui_linux_runner() -> None:
 	write_last_device(device)
 
 	run_command(f"pip install -r {COMFYUI_INSTALLATION_FOLDER}/requirements.txt")
-	run_command(f"{PYTHON_COMMAND} {COMFYUI_INSTALLATION_FOLDER}/main.py --lowvram --disable-auto-launch")
+
+	process : subprocess.Popen = None
+	args = [PYTHON_COMMAND, "-s", "ComfyUI\main.py", '--lowvram', '--disable-auto-launch']
+
+	if device == 0:
+		# cpu
+		args.append("--cpu")
+	elif device == 3:
+		# directml
+		args.append("--directml")
+
+	process = subprocess.Popen(args, cwd=COMFYUI_INSTALLATION_FOLDER, shell=True)
+	return process
 
 def proxy_runner() -> subprocess.Popen:
 	return subprocess.Popen([PYTHON_COMMAND, 'python/main.py'], shell=True)
