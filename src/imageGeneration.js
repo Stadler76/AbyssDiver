@@ -493,7 +493,7 @@ setup.openAI_GenerateDallePortrait = async function() {
 	===============================================
 */
 
-setup.DEFAULT_CHECKPOINT = "PonyV6HassakuXLHentai";
+setup.DEFAULT_CHECKPOINT = "hassakuXLPony_v13BetterEyesVersion";
 setup.DEFAULT_LORAS = ["Dalle3_AnimeStyle_PONY_Lora"]
 setup.DEFAULT_POSITIVE_TAGGING = ["score_9_up", "score_8_up", "score_7_up", "cowboy shot", "1girl", "solo", "source_anime", "front view"]
 setup.DEFAULT_NEGATIVE_TAGGING = ["score_5_up", "score_4_up", "pony", "ugly", "ugly face", "poorly drawn face", "blurry", "blurry face", "(3d)", "realistic", "muscular", "long torso", "blurry eyes", "poorly drawn eyes", "patreon", "artist name", "sd", "super deformed"]
@@ -504,7 +504,7 @@ setup.DEFAULT_NEGATIVE_TAGGING = ["score_5_up", "score_4_up", "pony", "ugly", "u
 // https://civitai.com/articles/6888/320-pony-diffusion-xl-character-hairstyles-ears-wings-and-tails-booru-tags-sfw
 // https://civitai.com/articles/7579/480-pony-diffusion-xl-hats-masks-and-more-props-list-booru-tags-sfw
 
-setup.AVAILABLE_MODELS = ["PonyV6HassakuXLHentai"];
+setup.AVAILABLE_MODELS = ["hassakuXLPony_v13BetterEyesVersion"];
 setup.AVAILABLE_LORAS = ["Dalle3_AnimeStyle_PONY_Lora"];
 
 setup.POSITIVE_CATEGORICAL_TAGGING = {
@@ -848,7 +848,7 @@ setup.comfyUI_GeneratePositiveNegative = function() {
 }
 
 setup.comfyUI_GeneratePortraitWorkflow = async function() {
-	var checkpoint = "PonyV6HassakuXLHentai.safetensors";
+	var checkpoint = "hassakuXLPony_v13BetterEyesVersion.safetensors";
 	var steps = 20;
 	var cfg = 7.0;
 	var seed = (SugarCube.State.prng.seed | Math.round(Math.random() * 10_000));
