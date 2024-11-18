@@ -509,7 +509,7 @@ def main() -> None:
 	print(f'Running one-click-comfyui on operating system {os_platform}.')
 
 	py_cmd, version = get_python_version()
-	assert py_cmd and version, "You must install python before continuing. Recommended version is 3.10.9 which is available at: https://www.python.org/downloads/release/python-3109/ and it must be below version 3.10.0"
+	assert py_cmd and version, "You must install python before continuing. Recommended version is 3.10.9 which is available at: https://www.python.org/downloads/release/python-3109/ and it must be below or equal to version 3.10"
 
 	print(py_cmd, version)
 
