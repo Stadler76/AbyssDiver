@@ -39,7 +39,7 @@ CIVITAI_LORAS_TO_DOWNLOAD : dict[str, str] = {"DallE3-magik.safetensors" : "http
 HUGGINGFACE_CHECKPOINTS_TO_DOWNLOAD : dict[str, str] = {"hassakuXLPony_v13BetterEyesVersion.safetensors" : "https://huggingface.co/FloricSpacer/AbyssDiverModels/resolve/main/hassakuXLPony_v13BetterEyesVersion.safetensors?download=true"}
 HUGGINGFACE_LORAS_TO_DOWNLOAD : dict[str, str] = {"DallE3-magik.safetensors" : "https://huggingface.co/FloricSpacer/AbyssDiverModels/resolve/main/DallE3-magik.safetensors?download=true"}
 
-WHITELISTED_OPERATION_SYSTEMS : list[str] = ["Linux", "Windows"]
+WHITELISTED_OPERATION_SYSTEMS : list[str] = ["Linux", "Windows", "Darwin"]
 WINDOWS_ZIP_FILENAME : str = "ComfyUI_windows_portable_nvidia.7z"
 LINUX_ZIP_FILENAME : str = "source.tar.gz"
 
@@ -501,7 +501,7 @@ def proxy_runner() -> subprocess.Popen:
 	return subprocess.Popen([PYTHON_COMMAND, 'python/main.py'], shell=True)
 
 def main() -> None:
-	os_platform : str = platform.system() # Windows, Linux
+	os_platform : str = platform.system() # Windows, Linux, MacOS
 
 	available_ops : str = ", ".join(WHITELISTED_OPERATION_SYSTEMS)
 	assert os_platform in WHITELISTED_OPERATION_SYSTEMS, f"Operating System {os_platform} is unsupported! Available platforms are: {available_ops}"
