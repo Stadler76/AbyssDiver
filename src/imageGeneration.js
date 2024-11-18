@@ -493,6 +493,130 @@ setup.openAI_GenerateDallePortrait = async function() {
 	===============================================
 */
 
+setup.DEFAULT_CHECKPOINT = "PonyV6HassakuXLHentai";
+setup.DEFAULT_LORAS = ["Dalle3_AnimeStyle_PONY_Lora"]
+setup.DEFAULT_POSITIVE_TAGGING = ["score_9_up", "score_8_up", "score_7_up", "cowboy shot", "1girl", "solo", "source_anime", "front view"]
+setup.DEFAULT_NEGATIVE_TAGGING = ["score_5_up", "score_4_up", "pony", "ugly", "ugly face", "poorly drawn face", "blurry", "blurry face", "(3d)", "realistic", "muscular", "long torso", "blurry eyes", "poorly drawn eyes", "patreon", "artist name", "sd", "super deformed"]
+
+// https://civitai.com/articles/5473/pony-cheatsheet-v2
+
+// https://civitai.com/articles/6349/280-pony-diffusion-xl-recognized-clothing-list-booru-tags-sfw
+// https://civitai.com/articles/6888/320-pony-diffusion-xl-character-hairstyles-ears-wings-and-tails-booru-tags-sfw
+// https://civitai.com/articles/7579/480-pony-diffusion-xl-hats-masks-and-more-props-list-booru-tags-sfw
+
+setup.AVAILABLE_MODELS = ["PonyV6HassakuXLHentai"];
+setup.AVAILABLE_LORAS = ["Dalle3_AnimeStyle_PONY_Lora"];
+
+setup.POSITIVE_CATEGORICAL_TAGGING = {
+	"Pony Scores" : ["score_9_up", "score_8_up", "score_7_up", "score_6_up", "score_5_up", "score_4_up"],
+
+	"Image Quality" : ["best_quality", "masterpiece", "best quality"],
+
+	"Image Source" : ["source_anime", "source_cartoon", "source_pony", "source_furry"],
+
+	"Ratings" : ["rating_explicit", "rating_questionable", "rating_safe"],
+
+	"Camera Angles" : ["top down", "birds eye view", "high angleshot", "above shot", "slightly above", "straight on", "hero view", "low view", "worms eye view"],
+
+	"Camera Location" : ["extreme long shot", "long shot", "medium long shot", "medium shot", "medium close up", "close up", "extreme close up"],
+
+	"Camera Special" : ["cowboy shot", "front view"],
+
+	"Quantity" : ["solo", "1girl", "2girls", "3girls", "4girls", "1 girl", "2 girls", "3 girls", "4 girls", "multiple_girls", "1boy", "2boys", "3boys", "4boys", "1 boy", "2 boys", "3 boys", "4 boys", "multiple_boys"],
+
+	"Styles" : ["4kakzg", "110ezcoz"],
+
+	"Hairs" : [],
+
+	"Outfits" : [],
+
+	"Accessories" : [],
+}
+
+setup.NEGATIVE_CATEGORICAL_TAGGING = {
+	"Pony Scores" : ["score_3_up", "score_4_up", "score_5_up"],
+}
+
+// TODO: get the resetting to work, for some reason it isn't working
+
+setup.comfyUI_ClearAdvanced = function() {
+	SugarCube.State.variables.advancedMenuCheckpoint = setup.DEFAULT_CHECKPOINT;
+	SugarCube.State.variables.advancedMenuLORAs = new Set();
+	SugarCube.State.variables.advancedMenuPositive = new Set();
+	SugarCube.State.variables.advancedMenuNegative = new Set();
+}
+
+setup.comfyUI_ResetAdvanced = function() {
+	// set default model
+	SugarCube.State.variables.advancedMenuCheckpoint = setup.DEFAULT_CHECKPOINT;
+
+	// set default loras
+	SugarCube.State.variables.advancedMenuLORAs = new Set();
+	for (tag in setup.DEFAULT_LORAS.values()) {
+		SugarCube.State.variables.advancedMenuLORAs[tag] = true;
+	}
+
+	SugarCube.State.variables.advancedMenuPositive = new Set();
+	for (tag in setup.DEFAULT_POSITIVE_TAGGING.values()) {
+		SugarCube.State.variables.advancedMenuPositive[tag] = true;
+	}
+
+	SugarCube.State.variables.advancedMenuNegative = new Set();
+	for (tag in setup.DEFAULT_NEGATIVE_TAGGING.values()) {
+		SugarCube.State.variables.advancedMenuNegative[tag] = true;
+	}
+}
+
+setup.ComfyUI_GenerateAdvancedHTMLPage = function() {
+	var html_text = "";
+
+	// if it hasn't been set yet, set them all to the defaults
+	if (SugarCube.State.variables.advancedMenuCheckpoint == "" || SugarCube.State.variables.advancedMenuCheckpoint == null) {
+		setup.comfyUI_ResetAdvanced();
+	}
+
+	// checkpoints
+	html_text += "<h2>Checkpoints</h2>";
+	for (let tag of Object.values(setup.AVAILABLE_MODELS)) {
+		let current_value = (SugarCube.State.variables.advancedMenuCheckpoint == tag);
+		html_text += tag + ": <<checkbox \"$advancedMenuCheckpoint\" false true " + (current_value ? "checked" : "autocheck") + ">> ";
+	}
+	html_text += "\n";
+
+	// loras
+	html_text += "<h2>LORAs</h2>";
+	for (let tag of Object.values(setup.AVAILABLE_LORAS)) {
+		let current_value = SugarCube.State.variables.advancedMenuLORAs.has(tag);
+		html_text += tag + ": <<checkbox \"$advancedMenuLORAs[\'" + tag + "\']\" false true " + (current_value ? "checked" : "autocheck") + ">> ";
+	}
+	html_text += "\n";
+
+	// positive prompt
+	html_text += "<h2>Positive Prompt</h2>";
+	for (let [category, array_of_tags] of Object.entries(setup.POSITIVE_CATEGORICAL_TAGGING)) {
+		html_text += "<h4>" + category + "</h4>";
+		for (let tag of Object.values(array_of_tags)) {
+			let current_value = SugarCube.State.variables.advancedMenuPositive.has(tag);
+			html_text += tag + ": <<checkbox \"$advancedMenuPositive[\'" + tag + "\']\" false true " + (current_value ? "checked" : "autocheck") + ">> ";
+		}
+		html_text += "\n";
+	}
+	html_text += "\n"
+
+	// negative prompt
+	html_text += "<h2>Negative Prompt</h2>";
+	for (let [category, array_of_tags] of Object.entries(setup.NEGATIVE_CATEGORICAL_TAGGING)) {
+		html_text += "<h4>" + category + "</h4>";
+		for (let tag of Object.values(array_of_tags)) {
+			let current_value = SugarCube.State.variables.advancedMenuNegative.has(tag);
+			html_text += tag + ": <<checkbox \"$advancedMenuNegative[\'" + tag + "\']\" false true " + (current_value ? "checked" : "autocheck") + ">> ";
+		}
+		html_text += "\n";
+	}
+
+	return html_text;
+}
+
 setup.updateComfyUIStatus = async function() {
 	const url = "http://127.0.0.1:8000/echo";
 
