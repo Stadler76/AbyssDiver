@@ -64,16 +64,22 @@ def download_file(url : str, destination : str) -> None:
 	response = requests.get(url, stream=True)
 	response.raise_for_status()
 	total_size = int(response.headers.get('content-length', 0))
-	with tqdm(desc=destination, total=total_size, unit='iB', unit_scale=True, unit_divisor=1024,) as bar:
-		with open(destination, 'wb') as file:
-			for data in response.iter_content(chunk_size=1024):
-				size = file.write(data)
-				bar.update(size)
+	print(total_size / 1_000_000, "MB")
+	## with tqdm(desc=destination, total=total_size, unit='iB', unit_scale=True, unit_divisor=1024) as bar:
+	split_amount = (total_size / 10)
+	counter = 0
+	with open(destination, 'wb') as file:
+		for data in response.iter_content(chunk_size=1024):
+			size = file.write(data)
+			counter += size
+			if counter > split_amount:
+				print(counter / 1_000_000, '/', total_size / 1_000_000, "MB")
+				split_amount += total_size / 10
 
 def run_command(command: str) -> tuple[int, str]:
 	"""Run a command in the command prompt and return the status code and output message."""
 	try:
-		result : subprocess.CompletedProcess = subprocess.run(command, shell=True, capture_output=True,text=True)
+		result : subprocess.CompletedProcess = subprocess.run(command, shell=True, capture_output=True, text=True)
 		status_code : int = result.returncode
 		output_message : str = result.stdout.strip()
 		error_message : str = result.stderr.strip()
@@ -99,7 +105,7 @@ def get_python_version() -> tuple[Union[str, None], Union[str, None]]:
 	status, output = run_command("py --version")
 	if status == 0:
 		return "py", re.match(pattern, output).group(1)
-	# check 'py' command
+	# check 'python3' command
 	status, output = run_command("python3 --version")
 	if status == 0:
 		return "python3", re.match(pattern, output).group(1)
@@ -112,10 +118,16 @@ def download_git_portal_windows() -> None:
 		return
 
 	print("You are required to install git to download ComfyUI nodes on Windows.")
-	print("Please install by visiting https://git-scm.com/downloads and installing the Windows 64-bit version.")
-	print("Note: for most options, you can press next, if you aren't sure, press next.")
-	print("Press enter to continue once git is installed... ")
-	input()
+	# print("Please install by visiting https://git-scm.com/downloads and installing the Windows 64-bit version.")
+	# print("Note: for most options, you can press next, if you aren't sure, press next.")
+	# print("Press enter to continue once git is installed... ")
+
+	print("You will be prompted to install git.")
+	print("You can skip through the installation by pressing next.")
+	print("This is using winget so if you don't have that you will need to manually install git.")
+	print("To manually install, visit 'https://git-scm.com/downloads' and run this script again.")
+
+	run_command("winget install --id Git.Git -e --source winget")
 
 	status, _ = run_command("git --version")
 	assert status == 0, "Could not locate the 'git' package which is required for Linux."
@@ -126,9 +138,8 @@ def download_git_portal_linux() -> None:
 		return
 
 	print("You are required to install git to download ComfyUI on Linux.")
-	print("Please install with `sudo apt update && sudo apt install -y git`.")
-	print("Press enter to continue once git is installed... ")
-	input()
+	print("You will be prompted now to install it.")
+	run_command("sudo apt update && sudo apt install -y git")
 
 	status, _ = run_command("git --version")
 	assert status == 0, "Could not locate the 'git' package which is required for Linux."
@@ -160,7 +171,7 @@ def install_comfyui_nodes(custom_nodes_folder : str) -> None:
 	before_cwd : str = os.getcwd()
 	os.chdir(custom_nodes_folder)
 	for url in COMFYUI_CUSTOM_NODES:
-		os.system(f"git clone {url}")
+		run_command(f"git clone {url}")
 	os.chdir(before_cwd)
 	print("Installed ComfyUI Custom Nodes")
 
@@ -187,8 +198,8 @@ def install_comfyui_checkpoints(checkpoints_folder : str) -> None:
 		print(f"Download the following model: {download_url}")
 		print(f"Place the model in the folder: {checkpoints_folder}")
 		print(f"Rename the file to {filename}.")
-		os.system(f"start '{download_url}'")
-		os.system(f"explorer {checkpoints_folder}")
+		run_command(f"start '{download_url}'")
+		run_command(f"explorer {checkpoints_folder}")
 		prompt_safetensor_file_install(checkpoints_folder, filename, download_url)
 		index += 1
 
@@ -203,8 +214,8 @@ def install_comfyui_loras(loras_folder : str) -> None:
 		print(f"Download the following lora: {download_url}")
 		print(f"Place the lora in the folder: {loras_folder}")
 		print(f"Rename the file to {filename}.")
-		os.system(f"start '{download_url}'")
-		os.system(f"explorer {loras_folder}")
+		run_command(f"start '{download_url}'")
+		run_command(f"explorer {loras_folder}")
 		prompt_safetensor_file_install(loras_folder, filename, download_url)
 		index += 1
 
@@ -238,7 +249,7 @@ def has_all_required_comfyui_models() -> bool:
 def install_comfyui_models_from_hugginface() -> None:
 	checkpoints_folder : str = Path(os.path.join(COMFYUI_INSTALLATION_FOLDER, "ComfyUI", "models", "checkpoints")).as_posix()
 	for name, url in HUGGINGFACE_CHECKPOINTS_TO_DOWNLOAD.items():
-		print(name)
+		print("Downloading:", name)
 		try:
 			download_file(url, Path(os.path.join(checkpoints_folder, name)).as_posix())
 		except Exception as e:
@@ -248,7 +259,7 @@ def install_comfyui_models_from_hugginface() -> None:
 
 	loras_folder : str = Path(os.path.join(COMFYUI_INSTALLATION_FOLDER, "ComfyUI", "models", "loras")).as_posix()
 	for name, url in HUGGINGFACE_LORAS_TO_DOWNLOAD.items():
-		print(name)
+		print("Downloading:", name)
 		try:
 			download_file(url, Path(os.path.join(loras_folder, name)).as_posix())
 		except Exception as e:
@@ -417,22 +428,22 @@ def comfyui_linux_runner() -> None:
 
 	# remove torch for it to be reinstalled for GPU
 	if device != 0 and (last_device is None or last_device != device):
-		os.system("pip uninstall torch")
+		run_command("pip uninstall torch")
 
 	if device == 0:
 		# CPU
-		os.system("pip install torch torchvision torchaudio")
+		run_command("pip install torch torchvision torchaudio")
 	elif device == 1:
 		# NVIDIA (CUDA)
-		os.system("pip install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu124")
+		run_command("pip install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu124")
 	elif device == 2:
 		# AMD (ROCM)
-		os.system("pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/rocm6.1")
+		run_command("pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/rocm6.1")
 
 	write_last_device(device)
 
-	os.system(f"pip install -r {COMFYUI_INSTALLATION_FOLDER}/requirements.txt")
-	os.system(f"{PYTHON_COMMAND} {COMFYUI_INSTALLATION_FOLDER}/main.py --lowvram --disable-auto-launch")
+	run_command(f"pip install -r {COMFYUI_INSTALLATION_FOLDER}/requirements.txt")
+	run_command(f"{PYTHON_COMMAND} {COMFYUI_INSTALLATION_FOLDER}/main.py --lowvram --disable-auto-launch")
 
 def proxy_runner() -> subprocess.Popen:
 	return subprocess.Popen([PYTHON_COMMAND, 'python/main.py'], shell=True)
