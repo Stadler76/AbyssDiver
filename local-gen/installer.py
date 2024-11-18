@@ -61,22 +61,40 @@ def request_prompt(prompt : str, allowed_responses : list[str]) -> str:
 		value = input("")
 	return value
 
-def download_file(url : str, destination : str) -> None:
-	"""Download a file from a URL and save it to a specified destination with a progress bar."""
-	response = requests.get(url, stream=True)
+import os
+import requests
+
+def download_file(url: str, destination: str) -> None:
+	"""Download a file from a URL and save it to a specified destination with support for resuming."""
+	headers = {}
+	if os.path.exists(destination):
+		# Get the size of the partially downloaded file
+		existing_size = os.path.getsize(destination)
+		headers['Range'] = f'bytes={existing_size}-'
+	else:
+		existing_size = 0
+
+	response = requests.get(url, headers=headers, stream=True)
 	response.raise_for_status()
-	total_size = int(response.headers.get('content-length', 0))
-	print(total_size / 1_000_000, "MB")
-	## with tqdm(desc=destination, total=total_size, unit='iB', unit_scale=True, unit_divisor=1024) as bar:
-	split_amount = (total_size / 10)
-	counter = 0
-	with open(destination, 'wb') as file:
+
+	# Get the total file size from headers
+	total_size = int(response.headers.get('content-length', 0)) + existing_size
+	print(f"File size: {total_size / 1_000_000:.2f} MB")
+
+	split_amount = total_size / 10
+	counter = existing_size
+
+	# Open the file in append mode if resuming
+	with open(destination, 'ab') as file:
 		for data in response.iter_content(chunk_size=1024):
 			size = file.write(data)
 			counter += size
-			if counter > split_amount:
-				print(counter / 1_000_000, '/', total_size / 1_000_000, "MB")
+			if counter >= split_amount:
+				print(f"{counter / 1_000_000:.2f} / {total_size / 1_000_000:.2f} MB")
 				split_amount += total_size / 10
+
+	print("Download complete.")
+
 
 def run_command(command: str) -> tuple[int, str]:
 	"""Run a command in the command prompt and return the status code and output message."""
