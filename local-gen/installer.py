@@ -27,6 +27,8 @@ import tarfile
 import time
 import patoolib
 
+CUSTOM_COMMAND_LINE_ARGS_FOR_COMFYUI = []
+
 COMFYUI_REPOSITORY_URL : str = "https://github.com/comfyanonymous/ComfyUI"
 COMFYUI_API_REPOSITORY_URL : str = "https://api.github.com/repos/comfyanonymous/ComfyUI"
 COMFYUI_CUSTOM_NODES : list[str] = ["https://github.com/ltdrdata/ComfyUI-Manager", "https://github.com/Fannovel16/comfyui_controlnet_aux", "https://github.com/jags111/efficiency-nodes-comfyui", "https://github.com/WASasquatch/was-node-suite-comfyui"]
@@ -430,7 +432,7 @@ def comfyui_windows_runner() -> subprocess.Popen:
 	device : int = ask_windows_gpu_cpu() # 0:cpu, 1:cuda, 2:amd, 3:intel
 
 	process : subprocess.Popen = None
-	args = ["python_embeded\python.exe", "-s", "ComfyUI\main.py", "--windows-standalone-build", '--lowvram', '--disable-auto-launch']
+	args = CUSTOM_COMMAND_LINE_ARGS_FOR_COMFYUI + ["python_embeded\python.exe", "-s", "ComfyUI\main.py", "--windows-standalone-build", '--lowvram', '--disable-auto-launch']
 
 	if device == 0:
 		# cpu
@@ -478,7 +480,7 @@ def comfyui_linux_runner() -> None:
 	run_command(f"pip install -r {COMFYUI_INSTALLATION_FOLDER}/requirements.txt")
 
 	process : subprocess.Popen = None
-	args = [PYTHON_COMMAND, "-s", "ComfyUI\main.py", '--lowvram', '--disable-auto-launch']
+	args = CUSTOM_COMMAND_LINE_ARGS_FOR_COMFYUI + [PYTHON_COMMAND, "-s", "ComfyUI\main.py", '--lowvram', '--disable-auto-launch']
 
 	if device == 0:
 		# cpu
