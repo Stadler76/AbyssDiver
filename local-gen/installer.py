@@ -437,6 +437,7 @@ def comfyui_windows_runner() -> subprocess.Popen:
 		args.append("--cpu")
 	elif device == 2 or device == 4:
 		# amd/DirectML
+		run_command(f'{PYTHON_COMMAND} -m pip install torch_directml')
 		args.append("--directml")
 
 	process = subprocess.Popen(args, cwd=COMFYUI_INSTALLATION_FOLDER, shell=True)
@@ -463,6 +464,9 @@ def comfyui_linux_runner() -> None:
 	elif device == 2:
 		# AMD (ROCM)
 		run_command("pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/rocm6.1")
+	elif device == 3:
+		# DirectML
+		run_command("pip install torch_directml")
 
 	write_last_device(device)
 
