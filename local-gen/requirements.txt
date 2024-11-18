@@ -8,3 +8,4 @@ requests_toolbelt
 tqdm
 uvicorn[standard]
 websocket-client
+torch-directml

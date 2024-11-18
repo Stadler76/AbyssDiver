@@ -399,7 +399,7 @@ def ask_linux_gpu_cpu() -> int:
 	if is_nvidia_gpu == "y":
 		return 1
 
-	is_amd_linux : str = request_prompt("Is your graphics card a AMD one? (y/n)", ["y", "n"])
+	is_amd_linux : str =  request_prompt("Is your graphics card a AMD one? (y/n)", ["y", "n"])
 	if is_amd_linux == "y":
 		return 2
 
