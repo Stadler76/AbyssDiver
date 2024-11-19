@@ -529,13 +529,13 @@ setup.POSITIVE_CATEGORICAL_TAGGING = {
 	"Outfits" : [],
 
 	"Accessories" : [],
+
+	"Curses" : [], // TODO: hook to game curses -> in the prompt code it will output the curse prompt -> append that to the custom tagging
 }
 
 setup.NEGATIVE_CATEGORICAL_TAGGING = {
 	"Pony Scores" : ["score_3_up", "score_4_up", "score_5_up"],
 }
-
-// TODO: get the resetting to work, for some reason it isn't working
 
 setup.comfyUI_ClearAdvanced = function() {
 	SugarCube.State.variables.advancedMenuCheckpoint = setup.DEFAULT_CHECKPOINT;
@@ -557,12 +557,10 @@ setup.comfyUI_GenerateAdvancedParameters = function() {
 
 	for (let [tag, value] of Object.entries(SugarCube.State.variables.advancedMenuLORAs)) {
 		if (value) {
-			let lora_tag = "<lora:" + tag + ":1>";
+			let lora_tag = "<lora:" + tag + ":1> ";
 			positive += lora_tag;
 		}
 	}
-
-	positive += "";
 
 	for (let [tag, value] of Object.entries(SugarCube.State.variables.advancedMenuPositive)) {
 		if (value) {
@@ -576,6 +574,13 @@ setup.comfyUI_GenerateAdvancedParameters = function() {
 		if (value) {
 			negative += tag + ",";
 		}
+	}
+
+	// if curses is enabled, append that
+	if (SugarCube.State.variables.UseMixedGameComfyUIPrompt == true) {
+		const [curses_positive, curses_negative] = setup.comfyUI_GenerateCurseParameters();
+		positive += "," + curses_positive
+		negative += "," + curses_negative
 	}
 
 	return [positive, negative, checkpoint, steps, cfg, seed, width, height]
@@ -648,6 +653,8 @@ setup.ComfyUI_GenerateAdvancedHTMLPage = function() {
 		}
 		html_text += "\n";
 	}
+
+	// curses
 
 	return html_text;
 }
@@ -767,14 +774,11 @@ function heightToRangedValue(height) {
 	return HEIGHT_RANGES[HEIGHT_RANGES.length-1][0];
 }
 
-// TODO: ItsTheTwin is doing this (temporary code)
-setup.comfyUI_GenerateStandardParameters = function() {
+setup.comfyUI_GenerateCurseParameters = function() {
 	const characterData = setup.comfyUI_PrepareCharacterData();
 
-	var positive = PREFIX_POSITIVE_PROMPT;
-	positive += ",solo,portrait,upper_body,plain dark background,";
-
-	var negative = PREFIX_NEGATIVE_PROMPT;
+	let positive = "";
+	let negative = "";
 
 	positive += `${characterData.state.sex},`;
 	positive += `${Math.max(characterData.state.apparent_age, 21)} years old,`;
@@ -878,6 +882,16 @@ setup.comfyUI_GenerateStandardParameters = function() {
 	}
 
 	positive += `${characterData.state.breastsLabel} breasts,`; // TODO: change to relative sizes (flat, small, large, huge, enormous)
+
+	return [positive, negative];
+}
+
+// TODO: ItsTheTwin is doing this (temporary code)
+setup.comfyUI_GenerateStandardParameters = function() {
+	let [positive, negative] = setup.comfyUI_GenerateCurseParameters();
+
+	positive += PREFIX_POSITIVE_PROMPT + " ,solo,portrait,upper_body,plain dark background," + positive;
+	negative = PREFIX_NEGATIVE_PROMPT + negative;
 
 	let checkpoint = "hassakuXLPony_v13BetterEyesVersion.safetensors";
 	let steps = 20;
