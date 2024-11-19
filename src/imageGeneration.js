@@ -494,9 +494,9 @@ setup.openAI_GenerateDallePortrait = async function() {
 */
 
 setup.DEFAULT_CHECKPOINT = "hassakuXLPony_v13BetterEyesVersion";
-setup.DEFAULT_LORAS = ["Dalle3_AnimeStyle_PONY_Lora"]
+setup.DEFAULT_LORAS = ["DallE3-magik"]
 setup.DEFAULT_POSITIVE_TAGGING = ["score_9_up", "score_8_up", "score_7_up", "cowboy shot", "1girl", "solo", "source_anime", "front view"]
-setup.DEFAULT_NEGATIVE_TAGGING = ["score_5_up", "score_4_up", "pony", "ugly", "ugly face", "poorly drawn face", "blurry", "blurry face", "(3d)", "realistic", "muscular", "long torso", "blurry eyes", "poorly drawn eyes", "patreon", "artist name", "sd", "super deformed"]
+setup.DEFAULT_NEGATIVE_TAGGING = ["score_5_up", "score_4_up", "score_3_up", "pony", "ugly", "ugly face", "poorly drawn face", "blurry", "blurry face", "(3d)", "realistic", "muscular", "long torso", "blurry eyes", "poorly drawn eyes", "patreon", "artist name", "sd", "super deformed"]
 
 // https://civitai.com/articles/5473/pony-cheatsheet-v2
 
@@ -505,22 +505,20 @@ setup.DEFAULT_NEGATIVE_TAGGING = ["score_5_up", "score_4_up", "pony", "ugly", "u
 // https://civitai.com/articles/7579/480-pony-diffusion-xl-hats-masks-and-more-props-list-booru-tags-sfw
 
 setup.AVAILABLE_MODELS = ["hassakuXLPony_v13BetterEyesVersion"];
-setup.AVAILABLE_LORAS = ["Dalle3_AnimeStyle_PONY_Lora"];
+setup.AVAILABLE_LORAS = ["DallE3-magik"];
 
 setup.POSITIVE_CATEGORICAL_TAGGING = {
 	"Pony Scores" : ["score_9_up", "score_8_up", "score_7_up", "score_6_up", "score_5_up", "score_4_up"],
 
-	"Image Quality" : ["best_quality", "masterpiece", "best quality"],
+	"Image Quality" : ["best_quality", "masterpiece", "hd", "hdr"],
 
-	"Image Source" : ["source_anime", "source_cartoon", "source_pony", "source_furry"],
+	"Pony Source" : ["source_anime", "source_cartoon", "source_pony", "source_furry"],
 
 	"Ratings" : ["rating_explicit", "rating_questionable", "rating_safe"],
 
-	"Camera Angles" : ["top down", "birds eye view", "high angleshot", "above shot", "slightly above", "straight on", "hero view", "low view", "worms eye view"],
+	"Camera Angles" : ["top down", "birds eye view", "high angleshot", "above shot", "slightly above", "straight on", "front view", "hero view", "cowboy shot", "low view", "worms eye view"],
 
 	"Camera Location" : ["extreme long shot", "long shot", "medium long shot", "medium shot", "medium close up", "close up", "extreme close up"],
-
-	"Camera Special" : ["cowboy shot", "front view"],
 
 	"Quantity" : ["solo", "1girl", "2girls", "3girls", "4girls", "1 girl", "2 girls", "3 girls", "4 girls", "multiple_girls", "1boy", "2boys", "3boys", "4boys", "1 boy", "2 boys", "3 boys", "4 boys", "multiple_boys"],
 
@@ -546,24 +544,61 @@ setup.comfyUI_ClearAdvanced = function() {
 	SugarCube.State.variables.advancedMenuNegative = new Set();
 }
 
+setup.comfyUI_GenerateAdvancedParameters = function() {
+	var checkpoint = SugarCube.State.variables.advancedMenuCheckpoint;
+	var steps = 20; // TODO textbox for this
+	var cfg = 7.0; // TODO textbox for this
+	var width = 1024; // TODO textbox for this
+	var height = 1024; // TODO textbox for this
+	var seed = (SugarCube.State.prng.seed | Math.round(Math.random() * 10_000)); // TODO textbox for this (-1 for random)
+
+	// positive
+	let positive = "";
+
+	for (let [tag, value] of Object.entries(SugarCube.State.variables.advancedMenuLORAs)) {
+		if (value) {
+			let lora_tag = "<lora:" + tag + ":1>";
+			positive += lora_tag;
+		}
+	}
+
+	positive += "";
+
+	for (let [tag, value] of Object.entries(SugarCube.State.variables.advancedMenuPositive)) {
+		if (value) {
+			positive += tag + ",";
+		}
+	}
+
+	// negative
+	let negative = "";
+	for (let [tag, value] of Object.entries(SugarCube.State.variables.advancedMenuNegative)) {
+		if (value) {
+			negative += tag + ",";
+		}
+	}
+
+	return [positive, negative, checkpoint, steps, cfg, seed, width, height]
+}
+
 setup.comfyUI_ResetAdvanced = function() {
 	// set default model
 	SugarCube.State.variables.advancedMenuCheckpoint = setup.DEFAULT_CHECKPOINT;
 
 	// set default loras
 	SugarCube.State.variables.advancedMenuLORAs = new Set();
-	for (tag in setup.DEFAULT_LORAS.values()) {
-		SugarCube.State.variables.advancedMenuLORAs[tag] = true;
+	for (let tag of Object.values(setup.DEFAULT_LORAS)) {
+		SugarCube.State.variables.advancedMenuLORAs.add(tag);
 	}
 
 	SugarCube.State.variables.advancedMenuPositive = new Set();
-	for (tag in setup.DEFAULT_POSITIVE_TAGGING.values()) {
-		SugarCube.State.variables.advancedMenuPositive[tag] = true;
+	for (let tag of Object.values(setup.DEFAULT_POSITIVE_TAGGING)) {
+		SugarCube.State.variables.advancedMenuPositive.add(tag);
 	}
 
 	SugarCube.State.variables.advancedMenuNegative = new Set();
-	for (tag in setup.DEFAULT_NEGATIVE_TAGGING.values()) {
-		SugarCube.State.variables.advancedMenuNegative[tag] = true;
+	for (let tag of Object.values(setup.DEFAULT_NEGATIVE_TAGGING)) {
+		SugarCube.State.variables.advancedMenuNegative.add(tag);
 	}
 }
 
@@ -579,14 +614,14 @@ setup.ComfyUI_GenerateAdvancedHTMLPage = function() {
 	html_text += "<h2>Checkpoints</h2>";
 	for (let tag of Object.values(setup.AVAILABLE_MODELS)) {
 		let current_value = (SugarCube.State.variables.advancedMenuCheckpoint == tag);
-		html_text += tag + ": <<checkbox \"$advancedMenuCheckpoint\" false true " + (current_value ? "checked" : "autocheck") + ">> ";
+		html_text += tag + ": <<checkbox \"$advancedMenuCheckpoint\" null " + tag + " " + (current_value ? "checked" : "autocheck") + ">> ";
 	}
 	html_text += "\n";
 
 	// loras
 	html_text += "<h2>LORAs</h2>";
 	for (let tag of Object.values(setup.AVAILABLE_LORAS)) {
-		let current_value = SugarCube.State.variables.advancedMenuLORAs.has(tag);
+		let current_value = SugarCube.State.variables.advancedMenuLORAs.has(tag) == true;
 		html_text += tag + ": <<checkbox \"$advancedMenuLORAs[\'" + tag + "\']\" false true " + (current_value ? "checked" : "autocheck") + ">> ";
 	}
 	html_text += "\n";
@@ -596,7 +631,7 @@ setup.ComfyUI_GenerateAdvancedHTMLPage = function() {
 	for (let [category, array_of_tags] of Object.entries(setup.POSITIVE_CATEGORICAL_TAGGING)) {
 		html_text += "<h4>" + category + "</h4>";
 		for (let tag of Object.values(array_of_tags)) {
-			let current_value = SugarCube.State.variables.advancedMenuPositive.has(tag);
+			let current_value = SugarCube.State.variables.advancedMenuPositive.has(tag) == true;
 			html_text += tag + ": <<checkbox \"$advancedMenuPositive[\'" + tag + "\']\" false true " + (current_value ? "checked" : "autocheck") + ">> ";
 		}
 		html_text += "\n";
@@ -608,7 +643,7 @@ setup.ComfyUI_GenerateAdvancedHTMLPage = function() {
 	for (let [category, array_of_tags] of Object.entries(setup.NEGATIVE_CATEGORICAL_TAGGING)) {
 		html_text += "<h4>" + category + "</h4>";
 		for (let tag of Object.values(array_of_tags)) {
-			let current_value = SugarCube.State.variables.advancedMenuNegative.has(tag);
+			let current_value = SugarCube.State.variables.advancedMenuNegative.has(tag) == true;
 			html_text += tag + ": <<checkbox \"$advancedMenuNegative[\'" + tag + "\']\" false true " + (current_value ? "checked" : "autocheck") + ">> ";
 		}
 		html_text += "\n";
@@ -733,7 +768,7 @@ function heightToRangedValue(height) {
 }
 
 // TODO: ItsTheTwin is doing this (temporary code)
-setup.comfyUI_GeneratePositiveNegative = function() {
+setup.comfyUI_GenerateStandardParameters = function() {
 	const characterData = setup.comfyUI_PrepareCharacterData();
 
 	var positive = PREFIX_POSITIVE_PROMPT;
@@ -842,20 +877,25 @@ setup.comfyUI_GeneratePositiveNegative = function() {
 		}
 	}
 
-	positive += `${characterData.state.breastsLabel} breasts,`;
+	positive += `${characterData.state.breastsLabel} breasts,`; // TODO: change to relative sizes (flat, small, large, huge, enormous)
 
-	return [positive, negative];
+	let checkpoint = "hassakuXLPony_v13BetterEyesVersion.safetensors";
+	let steps = 20;
+	let cfg = 7.0;
+	let seed = (SugarCube.State.prng.seed | Math.round(Math.random() * 10_000));
+	let width = 1024;
+	let height = 1024;
+	return [positive, negative, checkpoint, steps, cfg, seed, width, height];
 }
 
 setup.comfyUI_GeneratePortraitWorkflow = async function() {
-	var checkpoint = "hassakuXLPony_v13BetterEyesVersion.safetensors";
-	var steps = 20;
-	var cfg = 7.0;
-	var seed = (SugarCube.State.prng.seed | Math.round(Math.random() * 10_000));
-	var width = 1024;
-	var height = 1024;
 
-	var [positive, negative] = setup.comfyUI_GeneratePositiveNegative();
+	if (SugarCube.State.variables.UseAdvancedComfyUIPrompt == true) {
+		var [positive, negative] = setup.comfyUI_GenerateAdvancedParameters();
+	} else {
+		var [positive, negative] = setup.comfyUI_GenerateStandardParameters();
+	}
+
 
 	// clone workflow so it can be edited
 	var workflow = JSON.parse(JSON.stringify(SIMPLE_T2I_PORTRAIT_WORKFLOW));
