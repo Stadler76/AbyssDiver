@@ -121,7 +121,7 @@ const SIMPLE_T2I_PORTRAIT_WORKFLOW = {
 		"inputs": {"filename_prefix": "ComfyUI","images": ["15",0]},
 		"class_type": "SaveImage",
 		"_meta": {"title": "Save Image"}
-	}
+	} // TODO add rembg node here (use bypass with a checkbox to enable/disable it)
 }
 
 const SCENE_GENERATION_WITH_MIDAS_WORKFLOW = {
@@ -493,8 +493,174 @@ setup.openAI_GenerateDallePortrait = async function() {
 	===============================================
 */
 
+setup.DEFAULT_CHECKPOINT = "hassakuXLPony_v13BetterEyesVersion";
+setup.DEFAULT_LORAS = ["DallE3-magik"]
+setup.DEFAULT_POSITIVE_TAGGING = ["score_9_up", "score_8_up", "score_7_up", "cowboy shot", "1girl", "solo", "source_anime", "front view"]
+setup.DEFAULT_NEGATIVE_TAGGING = ["score_5_up", "score_4_up", "score_3_up", "pony", "ugly", "ugly face", "poorly drawn face", "blurry", "blurry face", "(3d)", "realistic", "muscular", "long torso", "blurry eyes", "poorly drawn eyes", "patreon", "artist name", "sd", "super deformed"]
+
+// https://civitai.com/articles/5473/pony-cheatsheet-v2
+
+// https://civitai.com/articles/6349/280-pony-diffusion-xl-recognized-clothing-list-booru-tags-sfw
+// https://civitai.com/articles/6888/320-pony-diffusion-xl-character-hairstyles-ears-wings-and-tails-booru-tags-sfw
+// https://civitai.com/articles/7579/480-pony-diffusion-xl-hats-masks-and-more-props-list-booru-tags-sfw
+
+setup.AVAILABLE_MODELS = ["hassakuXLPony_v13BetterEyesVersion"];
+setup.AVAILABLE_LORAS = ["DallE3-magik"];
+
+setup.POSITIVE_CATEGORICAL_TAGGING = {
+	"Pony Scores" : ["score_9_up", "score_8_up", "score_7_up", "score_6_up", "score_5_up", "score_4_up"],
+
+	"Image Quality" : ["best_quality", "masterpiece", "hd", "hdr"],
+
+	"Pony Source" : ["source_anime", "source_cartoon", "source_pony", "source_furry"],
+
+	"Ratings" : ["rating_explicit", "rating_questionable", "rating_safe"],
+
+	"Camera Angles" : ["top down", "birds eye view", "high angleshot", "above shot", "slightly above", "straight on", "front view", "hero view", "cowboy shot", "low view", "worms eye view"],
+
+	"Camera Location" : ["extreme long shot", "long shot", "medium long shot", "medium shot", "medium close up", "close up", "extreme close up"],
+
+	"Quantity" : ["solo", "1girl", "2girls", "3girls", "4girls", "1 girl", "2 girls", "3 girls", "4 girls", "multiple_girls", "1boy", "2boys", "3boys", "4boys", "1 boy", "2 boys", "3 boys", "4 boys", "multiple_boys"],
+
+	"Styles" : ["4kakzg", "110ezcoz"],
+
+	"Hairs" : [],
+
+	"Outfits" : [],
+
+	"Accessories" : [],
+
+	"Curses" : [], // TODO: hook to game curses -> in the prompt code it will output the curse prompt -> append that to the custom tagging
+}
+
+setup.NEGATIVE_CATEGORICAL_TAGGING = {
+	"Pony Scores" : ["score_3_up", "score_4_up", "score_5_up"],
+}
+
+setup.comfyUI_ClearAdvanced = function() {
+	SugarCube.State.variables.advancedMenuCheckpoint = setup.DEFAULT_CHECKPOINT;
+	SugarCube.State.variables.advancedMenuLORAs = new Set();
+	SugarCube.State.variables.advancedMenuPositive = new Set();
+	SugarCube.State.variables.advancedMenuNegative = new Set();
+}
+
+setup.comfyUI_GenerateAdvancedParameters = function() {
+	var checkpoint = SugarCube.State.variables.advancedMenuCheckpoint;
+	var steps = 20; // TODO textbox for this
+	var cfg = 7.0; // TODO textbox for this
+	var width = 1024; // TODO textbox for this
+	var height = 1024; // TODO textbox for this
+	var seed = (SugarCube.State.prng.seed | Math.round(Math.random() * 10_000)); // TODO textbox for this (-1 for random)
+
+	// positive
+	let positive = "";
+
+	for (let [tag, value] of Object.entries(SugarCube.State.variables.advancedMenuLORAs)) {
+		if (value) {
+			let lora_tag = "<lora:" + tag + ":1> ";
+			positive += lora_tag;
+		}
+	}
+
+	for (let [tag, value] of Object.entries(SugarCube.State.variables.advancedMenuPositive)) {
+		if (value) {
+			positive += tag + ",";
+		}
+	}
+
+	// negative
+	let negative = "";
+	for (let [tag, value] of Object.entries(SugarCube.State.variables.advancedMenuNegative)) {
+		if (value) {
+			negative += tag + ",";
+		}
+	}
+
+	// if curses is enabled, append that
+	if (SugarCube.State.variables.UseMixedGameComfyUIPrompt == true) {
+		const [curses_positive, curses_negative] = setup.comfyUI_GenerateCurseParameters();
+		positive += "," + curses_positive
+		negative += "," + curses_negative
+	}
+
+	return [positive, negative, checkpoint, steps, cfg, seed, width, height]
+}
+
+setup.comfyUI_ResetAdvanced = function() {
+	// set default model
+	SugarCube.State.variables.advancedMenuCheckpoint = setup.DEFAULT_CHECKPOINT;
+
+	// set default loras
+	SugarCube.State.variables.advancedMenuLORAs = new Set();
+	for (let tag of Object.values(setup.DEFAULT_LORAS)) {
+		SugarCube.State.variables.advancedMenuLORAs.add(tag);
+	}
+
+	SugarCube.State.variables.advancedMenuPositive = new Set();
+	for (let tag of Object.values(setup.DEFAULT_POSITIVE_TAGGING)) {
+		SugarCube.State.variables.advancedMenuPositive.add(tag);
+	}
+
+	SugarCube.State.variables.advancedMenuNegative = new Set();
+	for (let tag of Object.values(setup.DEFAULT_NEGATIVE_TAGGING)) {
+		SugarCube.State.variables.advancedMenuNegative.add(tag);
+	}
+}
+
+setup.ComfyUI_GenerateAdvancedHTMLPage = function() {
+	var html_text = "";
+
+	// if it hasn't been set yet, set them all to the defaults
+	if (SugarCube.State.variables.advancedMenuCheckpoint == "" || SugarCube.State.variables.advancedMenuCheckpoint == null) {
+		setup.comfyUI_ResetAdvanced();
+	}
+
+	// checkpoints
+	html_text += "<h2>Checkpoints</h2>";
+	for (let tag of Object.values(setup.AVAILABLE_MODELS)) {
+		let current_value = (SugarCube.State.variables.advancedMenuCheckpoint == tag);
+		html_text += tag + ": <<checkbox \"$advancedMenuCheckpoint\" null " + tag + " " + (current_value ? "checked" : "autocheck") + ">> ";
+	}
+	html_text += "\n";
+
+	// loras
+	html_text += "<h2>LORAs</h2>";
+	for (let tag of Object.values(setup.AVAILABLE_LORAS)) {
+		let current_value = SugarCube.State.variables.advancedMenuLORAs.has(tag) == true;
+		html_text += tag + ": <<checkbox \"$advancedMenuLORAs[\'" + tag + "\']\" false true " + (current_value ? "checked" : "autocheck") + ">> ";
+	}
+	html_text += "\n";
+
+	// positive prompt
+	html_text += "<h2>Positive Prompt</h2>";
+	for (let [category, array_of_tags] of Object.entries(setup.POSITIVE_CATEGORICAL_TAGGING)) {
+		html_text += "<h4>" + category + "</h4>";
+		for (let tag of Object.values(array_of_tags)) {
+			let current_value = SugarCube.State.variables.advancedMenuPositive.has(tag) == true;
+			html_text += tag + ": <<checkbox \"$advancedMenuPositive[\'" + tag + "\']\" false true " + (current_value ? "checked" : "autocheck") + ">> ";
+		}
+		html_text += "\n";
+	}
+	html_text += "\n"
+
+	// negative prompt
+	html_text += "<h2>Negative Prompt</h2>";
+	for (let [category, array_of_tags] of Object.entries(setup.NEGATIVE_CATEGORICAL_TAGGING)) {
+		html_text += "<h4>" + category + "</h4>";
+		for (let tag of Object.values(array_of_tags)) {
+			let current_value = SugarCube.State.variables.advancedMenuNegative.has(tag) == true;
+			html_text += tag + ": <<checkbox \"$advancedMenuNegative[\'" + tag + "\']\" false true " + (current_value ? "checked" : "autocheck") + ">> ";
+		}
+		html_text += "\n";
+	}
+
+	// curses
+
+	return html_text;
+}
+
 setup.updateComfyUIStatus = async function() {
-	const url = "http://127.0.0.1:8000/echo";
+	const url = "http://127.0.0.1:12500/echo";
 
 	var is_running = false;
 
@@ -608,14 +774,11 @@ function heightToRangedValue(height) {
 	return HEIGHT_RANGES[HEIGHT_RANGES.length-1][0];
 }
 
-// TODO: ItsTheTwin is doing this (temporary code)
-setup.comfyUI_GeneratePositiveNegative = function() {
+setup.comfyUI_GenerateCurseParameters = function() {
 	const characterData = setup.comfyUI_PrepareCharacterData();
 
-	var positive = PREFIX_POSITIVE_PROMPT;
-	positive += ",solo,portrait,upper_body,plain dark background,";
-
-	var negative = PREFIX_NEGATIVE_PROMPT;
+	let positive = "";
+	let negative = "";
 
 	positive += `${characterData.state.sex},`;
 	positive += `${Math.max(characterData.state.apparent_age, 21)} years old,`;
@@ -718,20 +881,35 @@ setup.comfyUI_GeneratePositiveNegative = function() {
 		}
 	}
 
-	positive += `${characterData.state.breastsLabel} breasts,`;
+	positive += `${characterData.state.breastsLabel} breasts,`; // TODO: change to relative sizes (flat, small, large, huge, enormous)
 
 	return [positive, negative];
 }
 
-setup.comfyUI_GeneratePortraitWorkflow = async function() {
-	var checkpoint = "PonyV6HassakuXLHentai.safetensors";
-	var steps = 20;
-	var cfg = 7.0;
-	var seed = (SugarCube.State.prng.seed | Math.round(Math.random() * 10_000));
-	var width = 1024;
-	var height = 1024;
+// TODO: ItsTheTwin is doing this (temporary code)
+setup.comfyUI_GenerateStandardParameters = function() {
+	let [positive, negative] = setup.comfyUI_GenerateCurseParameters();
 
-	var [positive, negative] = setup.comfyUI_GeneratePositiveNegative();
+	positive += PREFIX_POSITIVE_PROMPT + " ,solo,portrait,upper_body,plain dark background," + positive;
+	negative = PREFIX_NEGATIVE_PROMPT + negative;
+
+	let checkpoint = "hassakuXLPony_v13BetterEyesVersion.safetensors";
+	let steps = 20;
+	let cfg = 7.0;
+	let seed = (SugarCube.State.prng.seed | Math.round(Math.random() * 10_000));
+	let width = 1024;
+	let height = 1024;
+	return [positive, negative, checkpoint, steps, cfg, seed, width, height];
+}
+
+setup.comfyUI_GeneratePortraitWorkflow = async function() {
+
+	if (SugarCube.State.variables.UseAdvancedComfyUIPrompt == true) {
+		var [positive, negative] = setup.comfyUI_GenerateAdvancedParameters();
+	} else {
+		var [positive, negative] = setup.comfyUI_GenerateStandardParameters();
+	}
+
 
 	// clone workflow so it can be edited
 	var workflow = JSON.parse(JSON.stringify(SIMPLE_T2I_PORTRAIT_WORKFLOW));
@@ -756,7 +934,7 @@ setup.comfyUI_GeneratePortraitWorkflow = async function() {
 	return workflow;
 }
 
-// http://127.0.0.1:8000/generate_image
+// http://127.0.0.1:12500/generate_image
 var is_generation_busy = false;
 var last_workflow = null;
 setup.comfyUI_GeneratePortrait = async function() {
@@ -773,7 +951,7 @@ setup.comfyUI_GeneratePortrait = async function() {
 	notificationElement.style.display = "none";
 
 	// data to be sent to comfyui
-	const url = "http://127.0.0.1:8000/generate_workflow"
+	const url = "http://127.0.0.1:12500/generate_workflow"
 
 	// log outputted workflow
 	// console.log(workflow);
@@ -831,7 +1009,7 @@ setup.comfyUI_GeneratePortrait = async function() {
 		return {'scene_id' : scene_id, 'scene_params' : scene_params}
 	}
 
-	// http://127.0.0.1:8000/generate_scene
+	// http://127.0.0.1:12500/generate_scene
 	setup.comfyUI_GenerateCharacterScene = async function(scene_id, scene_params) {
 		if (is_generation_busy) {
 			return;
@@ -842,7 +1020,7 @@ setup.comfyUI_GeneratePortrait = async function() {
 		const notificationElement = document.getElementById('notification');
 
 		// data to be sent to comfyui
-		const url = "http://127.0.0.1:8000/generate_scene";
+		const url = "http://127.0.0.1:12500/generate_scene";
 
 		// prepare Payload
 		const payload = {'character' : setup.comfyUI_PrepareCharacterData(), 'scene' : setup.comfyUI_PrepareSceneData(scene_id, scene_params)}

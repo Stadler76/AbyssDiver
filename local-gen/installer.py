@@ -6,14 +6,13 @@ One-click ComfyUI installer and runner for Abyss Diver to install the ComfyUI Lo
 Installs the following:
 1. ComfyUI
 2. ComfyUI Manager
-3. PonyV6HassakuXLHentai checkpoint and Dalle3_AnimeStyle_PONY Lora
+3. hassakuXLPony_v13BetterEyesVersion checkpoint and Dalle3_AnimeStyle_PONY Lora
 4. Additional python packages in a virtual environment (x2)
 
 To uninstall, delete the "tools" folder under this folder and optionally uninstall git as needed.
 '''
 
 from pydantic import BaseModel
-from tqdm import tqdm
 from typing import Optional, Union
 from pathlib import Path
 
@@ -27,17 +26,19 @@ import tarfile
 import time
 import patoolib
 
+CUSTOM_COMMAND_LINE_ARGS_FOR_COMFYUI = []
+
 COMFYUI_REPOSITORY_URL : str = "https://github.com/comfyanonymous/ComfyUI"
 COMFYUI_API_REPOSITORY_URL : str = "https://api.github.com/repos/comfyanonymous/ComfyUI"
 COMFYUI_CUSTOM_NODES : list[str] = ["https://github.com/ltdrdata/ComfyUI-Manager", "https://github.com/Fannovel16/comfyui_controlnet_aux", "https://github.com/jags111/efficiency-nodes-comfyui", "https://github.com/WASasquatch/was-node-suite-comfyui"]
 
-CIVITAI_MODELS_TO_DOWNLOAD : dict[str, str] = {"PonyV6HassakuXLHentai.safetensors" : "https://civitai.com/api/download/models/575495?type=Model&format=SafeTensor&size=pruned&fp=bf16"}
-CIVITAI_LORAS_TO_DOWNLOAD : dict[str, str] = {"Dalle3_AnimeStyle_PONY_Lora.safetensors" : "https://civitai.com/api/download/models/695621?type=Model&format=SafeTensor"}
+CIVITAI_MODELS_TO_DOWNLOAD : dict[str, str] = {"hassakuXLPony_v13BetterEyesVersion.safetensors" : "https://civitai.com/api/download/models/575495?type=Model&format=SafeTensor&size=pruned&fp=bf16"}
+CIVITAI_LORAS_TO_DOWNLOAD : dict[str, str] = {"DallE3-magik.safetensors" : "https://civitai.com/api/download/models/695621?type=Model&format=SafeTensor"}
 
-HUGGINGFACE_CHECKPOINTS_TO_DOWNLOAD : dict[str, str] = {"PonyV6HassakuXLHentai.safetensors" : "https://huggingface.co/FloricSpacer/AbyssDiverModels/resolve/main/hassakuXLPony_v13BetterEyesVersion.safetensors?download=true"}
-HUGGINGFACE_LORAS_TO_DOWNLOAD : dict[str, str] = {"Dalle3_AnimeStyle_PONY_Lora.safetensors" : "https://huggingface.co/FloricSpacer/AbyssDiverModels/resolve/main/DallE3-magik.safetensors?download=true"}
+HUGGINGFACE_CHECKPOINTS_TO_DOWNLOAD : dict[str, str] = {"hassakuXLPony_v13BetterEyesVersion.safetensors" : "https://huggingface.co/FloricSpacer/AbyssDiverModels/resolve/main/hassakuXLPony_v13BetterEyesVersion.safetensors?download=true"}
+HUGGINGFACE_LORAS_TO_DOWNLOAD : dict[str, str] = {"DallE3-magik.safetensors" : "https://huggingface.co/FloricSpacer/AbyssDiverModels/resolve/main/DallE3-magik.safetensors?download=true"}
 
-WHITELISTED_OPERATION_SYSTEMS : list[str] = ["Linux", "Windows"]
+WHITELISTED_OPERATION_SYSTEMS : list[str] = ["Linux", "Windows", "Darwin"]
 WINDOWS_ZIP_FILENAME : str = "ComfyUI_windows_portable_nvidia.7z"
 LINUX_ZIP_FILENAME : str = "source.tar.gz"
 
@@ -59,22 +60,40 @@ def request_prompt(prompt : str, allowed_responses : list[str]) -> str:
 		value = input("")
 	return value
 
-def download_file(url : str, destination : str) -> None:
-	"""Download a file from a URL and save it to a specified destination with a progress bar."""
-	response = requests.get(url, stream=True)
+import os
+import requests
+
+def download_file(url: str, destination: str) -> None:
+	"""Download a file from a URL and save it to a specified destination with support for resuming."""
+	headers = {}
+	if os.path.exists(destination):
+		# Get the size of the partially downloaded file
+		existing_size = os.path.getsize(destination)
+		headers['Range'] = f'bytes={existing_size}-'
+	else:
+		existing_size = 0
+
+	response = requests.get(url, headers=headers, stream=True)
 	response.raise_for_status()
-	total_size = int(response.headers.get('content-length', 0))
-	print(total_size / 1_000_000, "MB")
-	## with tqdm(desc=destination, total=total_size, unit='iB', unit_scale=True, unit_divisor=1024) as bar:
-	split_amount = (total_size / 10)
-	counter = 0
-	with open(destination, 'wb') as file:
+
+	# Get the total file size from headers
+	total_size = int(response.headers.get('content-length', 0)) + existing_size
+	print(f"File size: {total_size / 1_000_000:.2f} MB")
+
+	split_amount = total_size / 10
+	counter = existing_size
+
+	# Open the file in append mode if resuming
+	with open(destination, 'ab') as file:
 		for data in response.iter_content(chunk_size=1024):
 			size = file.write(data)
 			counter += size
-			if counter > split_amount:
-				print(counter / 1_000_000, '/', total_size / 1_000_000, "MB")
+			if counter >= split_amount:
+				print(f"{counter / 1_000_000:.2f} / {total_size / 1_000_000:.2f} MB")
 				split_amount += total_size / 10
+
+	print("Download complete.")
+
 
 def run_command(command: str) -> tuple[int, str]:
 	"""Run a command in the command prompt and return the status code and output message."""
@@ -368,8 +387,24 @@ def ask_windows_gpu_cpu() -> int:
 	is_nvidia_gpu : str = request_prompt("Is your graphics card a NVIDIA one? (y/n)", ["y", "n"])
 	if is_nvidia_gpu == "y": return 1
 
-	print("Unfortunately only NVIDIA cards are supported on Windows.")
-	print("Image generation will be running on the CPU.")
+	is_amd_gpu : str = request_prompt("Is your graphics card a AMD one? (y/n)", ["y", "n"])
+	if is_amd_gpu == "y":
+		print("Warning: AMD cards can only run with DirectML which is slower on Windows.")
+		return 2
+
+	is_intel_gpu : str = request_prompt("Is your graphics card a AMD one? (y/n)", ["y", "n"])
+	if is_intel_gpu == "y":
+		print("WARNING: Please follow the steps on 'https://github.com/comfyanonymous/ComfyUI' to install Intel GPU support before continuing.")
+		print("Press enter to continue...")
+		input()
+		return 3
+
+	is_directml_mode : str = request_prompt("Do you want to run in DirectML (for unsupported GPUs you can try use this)? (y/n)", ["y", "n"])
+	if is_directml_mode == "y":
+		return 4
+
+	print("Unfortunately the card you provided is not supported on Windows.")
+	print("Image generation will be running on the CPU, unless you restart this file and utilize DirectML.")
 	return 0
 
 def ask_linux_gpu_cpu() -> int:
@@ -381,9 +416,13 @@ def ask_linux_gpu_cpu() -> int:
 	if is_nvidia_gpu == "y":
 		return 1
 
-	is_amd_linux : str = request_prompt("Is your graphics card a AMD one? (y/n)", ["y", "n"])
+	is_amd_linux : str =  request_prompt("Is your graphics card a AMD one? (y/n)", ["y", "n"])
 	if is_amd_linux == "y":
 		return 2
+
+	is_directml_mode : str = request_prompt("Do you want to run in DirectML (for unsupported ones you can try use this)? (y/n)", ["y", "n"])
+	if is_directml_mode == "y":
+		return 3
 
 	print("You have a unsupported graphics card - will default to CPU mode.")
 	return 0
@@ -407,14 +446,21 @@ def comfyui_windows_runner() -> subprocess.Popen:
 
 	print("Running ComfyUI.")
 
-	device : int = ask_windows_gpu_cpu() # 0:cpu, 1:cuda
+	device : int = ask_windows_gpu_cpu() # 0:cpu, 1:cuda, 2:amd, 3:intel
 
 	process : subprocess.Popen = None
-	args = [".\python_embeded\python.exe", "-s", "ComfyUI\main.py", "--windows-standalone-build", '--lowvram', '--disable-auto-launch']
+	args = CUSTOM_COMMAND_LINE_ARGS_FOR_COMFYUI + ["python_embeded\python.exe", "-s", "ComfyUI\main.py", "--windows-standalone-build", '--lowvram', '--disable-auto-launch']
+
 	if device == 0:
 		# cpu
 		args.append("--cpu")
+	elif device == 2 or device == 4:
+		# amd/DirectML
+		print('Installing Torch DirectML. Please wait a moment.')
+		run_command(f'{COMFYUI_INSTALLATION_FOLDER}\python_embeded\pip.exe install torch_directml')
+		args.append("--directml")
 
+	print("Running the comfyui process.")
 	process = subprocess.Popen(args, cwd=COMFYUI_INSTALLATION_FOLDER, shell=True)
 	return process
 
@@ -435,21 +481,44 @@ def comfyui_linux_runner() -> None:
 		run_command("pip install torch torchvision torchaudio")
 	elif device == 1:
 		# NVIDIA (CUDA)
+		print('Installing Torch CUDA, please wait a moment.')
 		run_command("pip install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu124")
 	elif device == 2:
 		# AMD (ROCM)
+		print('Installing Torch AMD ROCM, please wait a moment.')
 		run_command("pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/rocm6.1")
+	elif device == 3:
+		# DirectML
+		print('Installing Torch DirectML, please wait a moment.')
+		run_command(f"pip install torch_directml")
 
 	write_last_device(device)
 
 	run_command(f"pip install -r {COMFYUI_INSTALLATION_FOLDER}/requirements.txt")
-	run_command(f"{PYTHON_COMMAND} {COMFYUI_INSTALLATION_FOLDER}/main.py --lowvram --disable-auto-launch")
+
+	process : subprocess.Popen = None
+	args = CUSTOM_COMMAND_LINE_ARGS_FOR_COMFYUI + [PYTHON_COMMAND, "-s", "ComfyUI\main.py", '--lowvram', '--disable-auto-launch']
+
+	if device == 0:
+		# cpu
+		args.append("--cpu")
+	elif device == 3:
+		# directml
+		args.append("--directml")
+	elif device == 1:
+		print("")
+		if request_prompt("Are any of your plugged in GPUs older than the 1060 series (but not including)? (y/n): ") == "y":
+			args.append("--disable-cuda-malloc")
+
+	print("Running the ComfyUI process.")
+	process = subprocess.Popen(args, cwd=COMFYUI_INSTALLATION_FOLDER, shell=True)
+	return process
 
 def proxy_runner() -> subprocess.Popen:
 	return subprocess.Popen([PYTHON_COMMAND, 'python/main.py'], shell=True)
 
 def main() -> None:
-	os_platform : str = platform.system() # Windows, Linux
+	os_platform : str = platform.system() # Windows, Linux, MacOS
 
 	available_ops : str = ", ".join(WHITELISTED_OPERATION_SYSTEMS)
 	assert os_platform in WHITELISTED_OPERATION_SYSTEMS, f"Operating System {os_platform} is unsupported! Available platforms are: {available_ops}"
@@ -457,7 +526,13 @@ def main() -> None:
 	print(f'Running one-click-comfyui on operating system {os_platform}.')
 
 	py_cmd, version = get_python_version()
-	assert py_cmd and version, "You must install python before continuing. Recommended version is 3.10.9 which is available at: https://www.python.org/downloads/release/python-3109/"
+	assert py_cmd and version, "You must install python before continuing. Recommended version is 3.10.9 which is available at: https://www.python.org/downloads/release/python-3109/ and it must be below or equal to version 3.10"
+
+	print(py_cmd, version)
+
+	print("You will require to have python versions 3.8.0 -> 3.10.0. If you have version above that, you cannot proceed or it will not install.")
+	print('Press space to continue...')
+	input()
 
 	global PYTHON_COMMAND
 	PYTHON_COMMAND = py_cmd
