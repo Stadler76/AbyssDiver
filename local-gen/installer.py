@@ -13,7 +13,6 @@ To uninstall, delete the "tools" folder under this folder and optionally uninsta
 '''
 
 from pydantic import BaseModel
-from tqdm import tqdm
 from typing import Optional, Union
 from pathlib import Path
 
