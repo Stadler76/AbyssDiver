@@ -121,7 +121,7 @@ const SIMPLE_T2I_PORTRAIT_WORKFLOW = {
 		"inputs": {"filename_prefix": "ComfyUI","images": ["15",0]},
 		"class_type": "SaveImage",
 		"_meta": {"title": "Save Image"}
-	}
+	} // TODO add rembg node here (use bypass with a checkbox to enable/disable it)
 }
 
 const SCENE_GENERATION_WITH_MIDAS_WORKFLOW = {
