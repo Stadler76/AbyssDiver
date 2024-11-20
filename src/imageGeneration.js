@@ -672,7 +672,7 @@ setup.POSITIVE_CATEGORICAL_TAGGING = {
 	"Censor" : [
 		"censored", "mosiac censorship", "out-of-frame censoring", "bar censor",
 		"heart censor", "glitch censor", "shadow censor", "tape censor", "blue censor", "tail censor", "ribbon censor",
-		"smoke censor", "feather censor", "soap censor"
+		"smoke censor", "feather censor", "soap censor", "one finger selfie challenge", "light censor"
 	],
 
 	"Curses" : [
