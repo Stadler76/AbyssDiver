@@ -121,7 +121,129 @@ const SIMPLE_T2I_PORTRAIT_WORKFLOW = {
 		"inputs": {"filename_prefix": "ComfyUI","images": ["15",0]},
 		"class_type": "SaveImage",
 		"_meta": {"title": "Save Image"}
-	} // TODO add rembg node here (use bypass with a checkbox to enable/disable it)
+	}
+}
+
+const SIMPLE_T2I_PORTRAIT_WORKFLOW_REMOVE_BACKGROUND = {
+	"5": {
+		"inputs": {
+			"ckpt_name": "hassakuXLPony_v13BetterEyesVersion.safetensors"
+		},
+		"class_type": "CheckpointLoaderSimple",
+		"_meta": {
+			"title": "Load Checkpoint"
+		}
+	},
+	"9": {
+		"inputs": {
+			"text": "",
+			"clip": [
+				"5",
+				1
+			]
+		},
+		"class_type": "CLIPTextEncode",
+		"_meta": {
+			"title": "Positive Prompt"
+		}
+	},
+	"10": {
+		"inputs": {
+			"text": "",
+			"clip": [
+				"5",
+				1
+			]
+		},
+		"class_type": "CLIPTextEncode",
+		"_meta": {
+			"title": "Negative Prompt"
+		}
+	},
+	"11": {
+		"inputs": {
+			"seed": -1,
+			"steps": 35,
+			"cfg": 7,
+			"sampler_name": "euler",
+			"scheduler": "normal",
+			"denoise": 1,
+			"model": [
+				"5",
+				0
+			],
+			"positive": [
+				"9",
+				0
+			],
+			"negative": [
+				"10",
+				0
+			],
+			"latent_image": [
+				"12",
+				0
+			]
+		},
+		"class_type": "KSampler",
+		"_meta": {
+			"title": "KSampler"
+		}
+	},
+	"12": {
+		"inputs": {
+			"width": 1024,
+			"height": 1024,
+			"batch_size": 1
+		},
+		"class_type": "EmptyLatentImage",
+		"_meta": {
+			"title": "Empty Latent Image"
+		}
+	},
+	"15": {
+		"inputs": {
+			"samples": [
+				"11",
+				0
+			],
+			"vae": [
+				"5",
+				2
+			]
+		},
+		"class_type": "VAEDecode",
+		"_meta": {
+			"title": "VAE Decode"
+		}
+	},
+	"17": {
+		"inputs": {
+			"threshold": 0.5,
+			"torchscript_jit": "default",
+			"image": [
+				"15",
+				0
+			]
+		},
+		"class_type": "InspyrenetRembgAdvanced",
+		"_meta": {
+			"title": "Inspyrenet Rembg Advanced"
+		}
+	},
+	"18": {
+		"inputs": {
+			"filename_prefix": "TRANSPARENT_",
+			"images": [
+				"17",
+				0
+			]
+		},
+		"class_type": "SaveImage",
+		"_meta": {
+			"title": "Save Image"
+		}
+	}
 }
 
 const SCENE_GENERATION_WITH_MIDAS_WORKFLOW = {
@@ -912,7 +1034,12 @@ setup.comfyUI_GeneratePortraitWorkflow = async function() {
 
 
 	// clone workflow so it can be edited
-	var workflow = JSON.parse(JSON.stringify(SIMPLE_T2I_PORTRAIT_WORKFLOW));
+	var workflow = null;
+	if (SugarCube.State.variables.DisableTransparentPortraitBackground == true) {
+		workflow = JSON.parse(JSON.stringify(SIMPLE_T2I_PORTRAIT_WORKFLOW));
+	} else {
+		workflow = JSON.parse(JSON.stringify(SIMPLE_T2I_PORTRAIT_WORKFLOW_REMOVE_BACKGROUND));
+	}
 
 	if (setup.customPromptPrefix != null) {
 		positive = setup.customPromptPrefix + "," + positive
