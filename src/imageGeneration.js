@@ -630,33 +630,69 @@ setup.AVAILABLE_MODELS = ["hassakuXLPony_v13BetterEyesVersion"];
 setup.AVAILABLE_LORAS = ["DallE3-magik"];
 
 setup.POSITIVE_CATEGORICAL_TAGGING = {
-	"Pony Scores" : ["score_9_up", "score_8_up", "score_7_up", "score_6_up", "score_5_up", "score_4_up"],
+	"Pony Scores" : [
+		"score_9_up", "score_8_up", "score_7_up", "score_6_up", "score_5_up", "score_4_up"
+	],
 
-	"Image Quality" : ["best_quality", "masterpiece", "hd", "hdr"],
+	"Image Quality" : [
+		"best_quality", "masterpiece", "hd", "4k", "8k", "extremely detailed", "inctricate details", "ultra-detailed",
+		"illustration", "detailed light", "hdr", "best quality", "amazing quality", "very aesthetic", "absurdres",
+		"extremely detailed CG unity 8k wallpaper", "highres", "highly detailed", "soft shadow", "hard shadow",
+		"strong shadow", "depth of field", "an extremely delicate and beautiful"
+	],
 
-	"Pony Source" : ["source_anime", "source_cartoon", "source_pony", "source_furry"],
+	"Pony Source" : [
+		"source_anime", "source_cartoon", "source_pony", "source_furry"
+	],
 
-	"Ratings" : ["rating_explicit", "rating_questionable", "rating_safe"],
+	"Ratings" : [
+		"rating_explicit", "rating_questionable", "rating_safe"
+	],
 
-	"Camera Angles" : ["top down", "birds eye view", "high angleshot", "above shot", "slightly above", "straight on", "front view", "hero view", "cowboy shot", "low view", "worms eye view"],
+	"Camera Angles" : [
+		"top down", "birds eye view", "high angleshot", "above shot", "slightly above", "straight on", "front view",
+		"hero view", "cowboy shot", "low view", "worms eye view"
+	],
 
-	"Camera Location" : ["extreme long shot", "long shot", "medium long shot", "medium shot", "medium close up", "close up", "extreme close up"],
+	"Camera Location" : [
+		"extreme long shot", "long shot", "medium long shot", "medium shot", "medium close up", "close up",
+		"extreme close up", "facing towards viewer", "facing away from viewer"
+	],
 
-	"Quantity" : ["solo", "1girl", "2girls", "3girls", "4girls", "1 girl", "2 girls", "3 girls", "4 girls", "multiple_girls", "1boy", "2boys", "3boys", "4boys", "1 boy", "2 boys", "3 boys", "4 boys", "multiple_boys"],
+	"Quantity" : [
+		"solo", "1girl", "2girls", "3girls", "4girls", "1 girl", "2 girls", "3 girls", "4 girls",
+		"multiple_girls", "1boy", "2boys", "3boys", "4boys", "1 boy", "2 boys", "3 boys", "4 boys",
+		"multiple_boys"
+	],
 
-	"Styles" : ["4kakzg", "110ezcoz"],
+	"NSFW" : [
+		"bra", "panties", "nude", "naked"
+	],
 
-	"Hairs" : [],
+	"Censor" : [
+		"censored", "mosiac censorship", "out-of-frame censoring", "bar censor",
+		"heart censor", "glitch censor", "shadow censor", "tape censor", "blue censor", "tail censor", "ribbon censor",
+		"smoke censor", "feather censor", "soap censor"
+	],
 
-	"Outfits" : [],
-
-	"Accessories" : [],
-
-	"Curses" : [], // TODO: hook to game curses -> in the prompt code it will output the curse prompt -> append that to the custom tagging
+	"Curses" : [
+		// TODO: hook to game curses -> in the prompt code it will output the curse prompt -> append that to the custom tagging
+	],
 }
 
 setup.NEGATIVE_CATEGORICAL_TAGGING = {
 	"Pony Scores" : ["score_3_up", "score_4_up", "score_5_up"],
+
+	"Image Quality" : [
+		"flat color", "lowres", "bad hands", "bad fingers", "missing fingers", "extra digit", "fewer digits",
+		"worst quality", "normal quality", "jpeg artifacts", "signature", "watermark", "username", "bad feet",
+		"three legs", "wrong hand", "wrong feet", "wrong fingers", "deformed leg", "abnormal", "malformed",
+		"bad art", "deformed", "disfigured", "mutation", "mutated", "extra limbs", "inaccurate limb",
+		"missing limb", "floating limbs", "disconnected limbs", "long neck", "long body", "mutated skeleton",
+		"long skeleton", "bad proportions", "mutated hands and fingers", "poorly drawn hands", "malformed hands",
+		"poorly drawn face", "poorly drawn asymmetrical eyes", "mutated face", "low quality", "distorted light",
+		"low quality illustration", "blurry", "bad anatomy"
+	]
 }
 
 setup.comfyUI_ClearAdvanced = function() {
@@ -668,11 +704,11 @@ setup.comfyUI_ClearAdvanced = function() {
 
 setup.comfyUI_GenerateAdvancedParameters = function() {
 	var checkpoint = SugarCube.State.variables.advancedMenuCheckpoint;
-	var steps = 20; // TODO textbox for this
-	var cfg = 7.0; // TODO textbox for this
-	var width = 1024; // TODO textbox for this
-	var height = 1024; // TODO textbox for this
-	var seed = (SugarCube.State.prng.seed | Math.round(Math.random() * 10_000)); // TODO textbox for this (-1 for random)
+	var steps = 20;
+	var cfg = 7.0;
+	var width = 1024;
+	var height = 1024;
+	var seed = (SugarCube.State.prng.seed | Math.round(Math.random() * 10_000));
 
 	// positive
 	let positive = "";
