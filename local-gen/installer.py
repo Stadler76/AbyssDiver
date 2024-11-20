@@ -30,7 +30,7 @@ CUSTOM_COMMAND_LINE_ARGS_FOR_COMFYUI = []
 
 COMFYUI_REPOSITORY_URL : str = "https://github.com/comfyanonymous/ComfyUI"
 COMFYUI_API_REPOSITORY_URL : str = "https://api.github.com/repos/comfyanonymous/ComfyUI"
-COMFYUI_CUSTOM_NODES : list[str] = ["https://github.com/ltdrdata/ComfyUI-Manager", "https://github.com/Fannovel16/comfyui_controlnet_aux", "https://github.com/jags111/efficiency-nodes-comfyui", "https://github.com/WASasquatch/was-node-suite-comfyui"]
+COMFYUI_CUSTOM_NODES : list[str] = ["https://github.com/ltdrdata/ComfyUI-Manager", "https://github.com/john-mnz/ComfyUI-Inspyrenet-Rembg"]
 
 CIVITAI_MODELS_TO_DOWNLOAD : dict[str, str] = {"hassakuXLPony_v13BetterEyesVersion.safetensors" : "https://civitai.com/api/download/models/575495?type=Model&format=SafeTensor&size=pruned&fp=bf16"}
 CIVITAI_LORAS_TO_DOWNLOAD : dict[str, str] = {"DallE3-magik.safetensors" : "https://civitai.com/api/download/models/695621?type=Model&format=SafeTensor"}
