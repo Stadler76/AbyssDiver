@@ -25,6 +25,7 @@ import subprocess
 import tarfile
 import time
 import patoolib
+import logging
 
 CUSTOM_COMMAND_LINE_ARGS_FOR_COMFYUI = []
 
@@ -46,6 +47,17 @@ FILEPATH_FOR_7z : Optional[str] = None
 COMFYUI_INSTALLATION_FOLDER : Optional[str] = None
 PYTHON_COMMAND : Optional[str] = None
 
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+
+stream_handler = logging.StreamHandler()
+stream_handler.setLevel(logging.DEBUG)
+
+formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+stream_handler.setFormatter(formatter)
+
+logger.addHandler(stream_handler)
+
 class GithubFile(BaseModel):
 	name : str
 	browser_download_url : str
@@ -59,9 +71,6 @@ def request_prompt(prompt : str, allowed_responses : list[str]) -> str:
 		print("Invalid response.") # github @spookexe was here
 		value = input("")
 	return value
-
-import os
-import requests
 
 def download_file(url: str, destination: str) -> None:
 	"""Download a file from a URL and save it to a specified destination with support for resuming."""
@@ -94,19 +103,24 @@ def download_file(url: str, destination: str) -> None:
 
 	print("Download complete.")
 
-
 def run_command(command: str) -> tuple[int, str]:
-	"""Run a command in the command prompt and return the status code and output message."""
 	try:
-		result : subprocess.CompletedProcess = subprocess.run(command, shell=True, capture_output=True, text=True)
-		status_code : int = result.returncode
-		output_message : str = result.stdout.strip()
-		error_message : str = result.stderr.strip()
+		result: subprocess.CompletedProcess = subprocess.run(command, shell=True, capture_output=True, text=True)
+		status_code: int = result.returncode
+		output_message: str = result.stdout.strip()
+		error_message: str = result.stderr.strip()
 		if status_code == 0:
+			logger.info(f"Command succeeded: {command}")
+			logger.debug(f"Output: {output_message}")
 			return 0, output_message # SUCCESS
-		return 1, error_message # ERROR
+		else:
+			logger.warning(f"Command failed: {command}")
+			logger.debug(f"Error: {error_message}")
+			return 1, error_message # ERROR
 	except Exception as e:
-		return -1, str(e) # FAILEDS
+		logger.error(f"Command execution exception: {command}")
+		logger.exception(f"Exception details: {str(e)}")
+		return -1, str(e) # FAILED
 
 def unzip_targz(filepath : str, directory : str) -> None:
 	os.makedirs(directory, exist_ok=True)
