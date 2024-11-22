@@ -532,7 +532,7 @@ def comfyui_linux_runner() -> None:
 		args.append("--directml")
 	elif device == 1:
 		print("")
-		if request_prompt("Are any of your plugged in GPUs older than the 1060 series (but not including)? (y/n): ") == "y":
+		if request_prompt("Are any of your currently plugged-in GPUs older than the 1060 series (but not including the 1060)? (y/n): ") == "y":
 			args.append("--disable-cuda-malloc")
 
 	print("Running the ComfyUI process.")
