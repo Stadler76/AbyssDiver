@@ -206,27 +206,27 @@ def install_comfyui_nodes(custom_nodes_folder : str) -> None:
 	for url in COMFYUI_CUSTOM_NODES:
 		run_command(f"git clone {url}")
 	os.chdir(before_cwd)
-	py_exe = Path(os.path.join(COMFYUI_INSTALLATION_FOLDER, "python_embeded", "python.exe")).as_posix()
+	py_exe = Path(os.path.join(COMFYUI_INSTALLATION_FOLDER, "python_embeded", "python.exe")).as_posix().replace('/', '\\')
 	for folder_name in os.listdir(custom_nodes_folder):
-		if os.path.isdir(os.path.join(custom_nodes_folder, folder_name)) is False:
+		if os.path.isdir(Path(os.path.join(custom_nodes_folder, folder_name)).as_posix().replace('/', '\\')) is False:
 			continue
-		req_txtfile = Path(os.path.join(custom_nodes_folder, folder_name, "requirements.txt")).as_posix()
+		req_txtfile = Path(os.path.join(custom_nodes_folder, folder_name, "requirements.txt")).as_posix().replace('/', '\\')
 		if os.path.exists(req_txtfile):
 			print(f'Installing requirements for: {folder_name} {req_txtfile}')
 			if os.path.exists(py_exe):
-				run_command(f"{py_exe} -m pip install -r {Path(req_txtfile).as_posix()}")
+				run_command(f"{py_exe} -m pip install -r {Path(req_txtfile).as_posix().replace('/', '\\')}")
 			else:
-				run_command(f"{PYTHON_COMMAND} -m pip install -r {Path(req_txtfile).as_posix()}")
+				run_command(f"{PYTHON_COMMAND} -m pip install -r {Path(req_txtfile).as_posix().replace('/', '\\')}")
 	print("Installed ComfyUI Custom Nodes")
 
 def prompt_safetensor_file_install(folder : str, filename : str, download_url : str) -> None:
-	if os.path.exists(Path(os.path.join(folder, filename)).as_posix()) is True:
+	if os.path.exists(Path(os.path.join(folder, filename)).as_posix().replace('/', '\\')) is True:
 		print(filename, "already exists.")
 		return
 	while True:
 		print("Press enter to continue once downloaded... ")
 		input()
-		if os.path.exists(Path(os.path.join(folder, filename)).as_posix()) is True:
+		if os.path.exists(Path(os.path.join(folder, filename)).as_posix().replace('/', '\\')) is True:
 			break
 		print(f"You have not renamed the safetensors file or placed it in the directory {folder}!")
 		print(f"Make sure to rename the downloaded file {download_url} to {filename} and place it in the directory specified above.")
@@ -234,7 +234,7 @@ def prompt_safetensor_file_install(folder : str, filename : str, download_url : 
 def install_comfyui_checkpoints(checkpoints_folder : str) -> None:
 	index = 0
 	for filename, download_url in CIVITAI_MODELS_TO_DOWNLOAD.items():
-		if os.path.exists(Path(os.path.join(checkpoints_folder, filename)).as_posix()) is True:
+		if os.path.exists(Path(os.path.join(checkpoints_folder, filename)).as_posix().replace('/', '\\')) is True:
 			index += 1
 			continue
 		print(index, '/', len(CIVITAI_MODELS_TO_DOWNLOAD.values()))
@@ -250,7 +250,7 @@ def install_comfyui_checkpoints(checkpoints_folder : str) -> None:
 def install_comfyui_loras(loras_folder : str) -> None:
 	index = 0
 	for filename, download_url in CIVITAI_LORAS_TO_DOWNLOAD.items():
-		if os.path.exists(Path(os.path.join(loras_folder, filename)).as_posix()) is True:
+		if os.path.exists(Path(os.path.join(loras_folder, filename)).as_posix().replace('/', '\\')) is True:
 			index += 1
 			continue
 		print(index, '/', len(CIVITAI_LORAS_TO_DOWNLOAD.values()))
@@ -275,37 +275,37 @@ def is_huggingface_models_available() -> bool:
 	return True
 
 def has_all_required_comfyui_models() -> bool:
-	if COMFYUI_INSTALLATION_FOLDER is None or os.path.exists(Path(COMFYUI_INSTALLATION_FOLDER).as_posix()) is False:
+	if COMFYUI_INSTALLATION_FOLDER is None or os.path.exists(Path(COMFYUI_INSTALLATION_FOLDER).as_posix().replace('/', '\\')) is False:
 		print("Missing ComfyUI.")
 		return False
-	checkpoints_folder : str = Path(os.path.join(COMFYUI_INSTALLATION_FOLDER, "ComfyUI", "models", "checkpoints")).as_posix()
+	checkpoints_folder : str = Path(os.path.join(COMFYUI_INSTALLATION_FOLDER, "ComfyUI", "models", "checkpoints")).as_posix().replace('/', '\\')
 	for name, _ in HUGGINGFACE_CHECKPOINTS_TO_DOWNLOAD.items():
-		if os.path.exists(Path(os.path.join(checkpoints_folder, name)).as_posix()) is False:
-			print(f"Missing Checkpoint: {Path(os.path.join(checkpoints_folder, name)).as_posix()}")
+		if os.path.exists(Path(os.path.join(checkpoints_folder, name)).as_posix().replace('/', '\\')) is False:
+			print(f"Missing Checkpoint: {Path(os.path.join(checkpoints_folder, name)).as_posix().replace('/', '\\')}")
 			return False
-	loras_folder : str = Path(os.path.join(COMFYUI_INSTALLATION_FOLDER, "ComfyUI", "models", "loras")).as_posix()
+	loras_folder : str = Path(os.path.join(COMFYUI_INSTALLATION_FOLDER, "ComfyUI", "models", "loras")).as_posix().replace('/', '\\')
 	for name, _ in HUGGINGFACE_LORAS_TO_DOWNLOAD.items():
-		if os.path.exists(Path(os.path.join(loras_folder, name)).as_posix()) is False:
-			print(f"Missing LORA: {Path(os.path.join(loras_folder, name)).as_posix()}")
+		if os.path.exists(Path(os.path.join(loras_folder, name)).as_posix().replace('/', '\\')) is False:
+			print(f"Missing LORA: {Path(os.path.join(loras_folder, name)).as_posix().replace('/', '\\')}")
 			return False
 	return True
 
 def install_comfyui_models_from_hugginface() -> None:
-	checkpoints_folder : str = Path(os.path.join(COMFYUI_INSTALLATION_FOLDER, "ComfyUI", "models", "checkpoints")).as_posix()
+	checkpoints_folder : str = Path(os.path.join(COMFYUI_INSTALLATION_FOLDER, "ComfyUI", "models", "checkpoints")).as_posix().replace('/', '\\')
 	for name, url in HUGGINGFACE_CHECKPOINTS_TO_DOWNLOAD.items():
 		print("Downloading:", name)
 		try:
-			download_file(url, Path(os.path.join(checkpoints_folder, name)).as_posix())
+			download_file(url, Path(os.path.join(checkpoints_folder, name)).as_posix().replace('/', '\\'))
 		except Exception as e:
 			print("Failed to download model file:")
 			print(e)
 			exit()
 
-	loras_folder : str = Path(os.path.join(COMFYUI_INSTALLATION_FOLDER, "ComfyUI", "models", "loras")).as_posix()
+	loras_folder : str = Path(os.path.join(COMFYUI_INSTALLATION_FOLDER, "ComfyUI", "models", "loras")).as_posix().replace('/', '\\')
 	for name, url in HUGGINGFACE_LORAS_TO_DOWNLOAD.items():
 		print("Downloading:", name)
 		try:
-			download_file(url, Path(os.path.join(loras_folder, name)).as_posix())
+			download_file(url, Path(os.path.join(loras_folder, name)).as_posix().replace('/', '\\'))
 		except Exception as e:
 			print("Failed to download model file:")
 			print(e)
@@ -315,7 +315,7 @@ def download_comfyui_latest(filename : str, directory : str) -> None:
 	"""Download the latest release."""
 	os.makedirs(directory, exist_ok=True)
 
-	filepath : str = Path(os.path.join(directory, filename)).as_posix()
+	filepath : str = Path(os.path.join(directory, filename)).as_posix().replace('/', '\\')
 	if os.path.exists(filepath) is True:
 		print(f"File {filename} has already been downloaded. Delete for it to be re-downloaded.")
 		return
@@ -330,7 +330,7 @@ def download_comfyui_latest(filename : str, directory : str) -> None:
 
 def install_comfyui_and_models_process(install_directory : str) -> None:
 	global COMFYUI_INSTALLATION_FOLDER
-	COMFYUI_INSTALLATION_FOLDER = Path(os.path.abspath(install_directory)).as_posix() # install_directory
+	COMFYUI_INSTALLATION_FOLDER = Path(os.path.abspath(install_directory)).as_posix().replace('/', '\\') # install_directory
 
 	if has_all_required_comfyui_models() is False:
 		print("="*20)
@@ -340,8 +340,8 @@ def install_comfyui_and_models_process(install_directory : str) -> None:
 		print("Press enter to continue...")
 		input()
 
-	print("ComfyUI is located at: ", Path(os.path.abspath(install_directory)).as_posix()) # install_directory)
-	install_comfyui_nodes(Path(os.path.join(COMFYUI_INSTALLATION_FOLDER, "ComfyUI", "custom_nodes")).as_posix())
+	print("ComfyUI is located at: ", Path(os.path.abspath(install_directory)).as_posix().replace('/', '\\')) # install_directory)
+	install_comfyui_nodes(Path(os.path.join(COMFYUI_INSTALLATION_FOLDER, "ComfyUI", "custom_nodes")).as_posix().replace('/', '\\'))
 
 	print("="*20)
 
@@ -361,24 +361,24 @@ def install_comfyui_and_models_process(install_directory : str) -> None:
 		print("Press enter to continue...")
 		input()
 
-		install_comfyui_checkpoints(Path(os.path.join(COMFYUI_INSTALLATION_FOLDER, "ComfyUI", "models", "checkpoints")).as_posix())
-		install_comfyui_loras(Path(os.path.join(COMFYUI_INSTALLATION_FOLDER, "ComfyUI", "models", "loras")).as_posix())
+		install_comfyui_checkpoints(Path(os.path.join(COMFYUI_INSTALLATION_FOLDER, "ComfyUI", "models", "checkpoints")).as_posix().replace('/', '\\'))
+		install_comfyui_loras(Path(os.path.join(COMFYUI_INSTALLATION_FOLDER, "ComfyUI", "models", "loras")).as_posix().replace('/', '\\'))
 
 def comfyui_windows_installer() -> None:
 	"""Install the ComfyUI portable on Windows."""
 	directory : str = "tools"
 
 	# unzip the file if not already done
-	install_directory : str = Path(os.path.join(directory, "ComfyUI_windows_portable")).as_posix()
+	install_directory : str = Path(os.path.join(directory, "ComfyUI_windows_portable")).as_posix().replace('/', '\\')
 
-	if os.path.isdir(Path(install_directory).as_posix()) is False:
+	if os.path.isdir(Path(install_directory).as_posix().replace('/', '\\')) is False:
 		download_git_portal_windows()
 
 		download_comfyui_latest(WINDOWS_ZIP_FILENAME, directory)
 
 		print("Extracting the 7zip file using patool.")
 		before_cwd = os.getcwd()
-		os.chdir(Path(os.path.abspath(directory)).as_posix())
+		os.chdir(Path(os.path.abspath(directory)).as_posix().replace('/', '\\'))
 		try:
 			patoolib.extract_archive("ComfyUI_windows_portable_nvidia.7z", outdir=".")
 		except Exception as e:
@@ -396,8 +396,8 @@ def comfyui_linux_installer() -> None:
 	directory : str = "tools"
 
 	# install directory
-	install_directory = Path(os.path.abspath(os.path.join(directory, "ComfyUI"))).as_posix()
-	if os.path.exists(Path(install_directory).as_posix()) is False:
+	install_directory = Path(os.path.abspath(os.path.join(directory, "ComfyUI"))).as_posix().replace('/', '\\')
+	if os.path.exists(Path(install_directory).as_posix().replace('/', '\\')) is False:
 		download_git_portal_linux() # make sure git is installed
 
 		status, message = run_command(f"git clone {COMFYUI_REPOSITORY_URL}")
