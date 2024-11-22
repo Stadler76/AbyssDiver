@@ -210,7 +210,7 @@ def install_comfyui_nodes(custom_nodes_folder : str) -> None:
 	for folder_name in os.listdir(custom_nodes_folder):
 		if os.path.isdir(os.path.join(custom_nodes_folder, folder_name)) is False:
 			continue
-		req_txtfile = os.path.join(custom_nodes_folder, folder_name, "requirements.txt")
+		req_txtfile = Path(os.path.join(custom_nodes_folder, folder_name, "requirements.txt")).as_posix()
 		if os.path.exists(req_txtfile):
 			print(f'Installing requirements for: {folder_name} {req_txtfile}')
 			if os.path.exists(py_exe):
@@ -281,7 +281,7 @@ def has_all_required_comfyui_models() -> bool:
 	checkpoints_folder : str = Path(os.path.join(COMFYUI_INSTALLATION_FOLDER, "ComfyUI", "models", "checkpoints")).as_posix()
 	for name, _ in HUGGINGFACE_CHECKPOINTS_TO_DOWNLOAD.items():
 		if os.path.exists(Path(os.path.join(checkpoints_folder, name)).as_posix()) is False:
-			print(f"Missing Checkpoint: {os.path.join(checkpoints_folder, name)}")
+			print(f"Missing Checkpoint: {Path(os.path.join(checkpoints_folder, name)).as_posix()}")
 			return False
 	loras_folder : str = Path(os.path.join(COMFYUI_INSTALLATION_FOLDER, "ComfyUI", "models", "loras")).as_posix()
 	for name, _ in HUGGINGFACE_LORAS_TO_DOWNLOAD.items():
