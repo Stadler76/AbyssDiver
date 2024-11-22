@@ -10,7 +10,7 @@ if command -v python3 &>/dev/null; then
 	echo "Python is already installed."
 else
 	echo "Python is not installed. Installing Python..."
-	./install_python.sh
+	./install_python_linux_macos.sh
 	if [ $? -ne 0 ]; then
 		echo "Failed to install Python. Exiting."
 		exit 1

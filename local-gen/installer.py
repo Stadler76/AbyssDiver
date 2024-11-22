@@ -25,12 +25,13 @@ import subprocess
 import tarfile
 import time
 import patoolib
+import logging
 
 CUSTOM_COMMAND_LINE_ARGS_FOR_COMFYUI = []
 
 COMFYUI_REPOSITORY_URL : str = "https://github.com/comfyanonymous/ComfyUI"
 COMFYUI_API_REPOSITORY_URL : str = "https://api.github.com/repos/comfyanonymous/ComfyUI"
-COMFYUI_CUSTOM_NODES : list[str] = ["https://github.com/ltdrdata/ComfyUI-Manager", "https://github.com/Fannovel16/comfyui_controlnet_aux", "https://github.com/jags111/efficiency-nodes-comfyui", "https://github.com/WASasquatch/was-node-suite-comfyui"]
+COMFYUI_CUSTOM_NODES : list[str] = ["https://github.com/ltdrdata/ComfyUI-Manager", "https://github.com/john-mnz/ComfyUI-Inspyrenet-Rembg"]
 
 CIVITAI_MODELS_TO_DOWNLOAD : dict[str, str] = {"hassakuXLPony_v13BetterEyesVersion.safetensors" : "https://civitai.com/api/download/models/575495?type=Model&format=SafeTensor&size=pruned&fp=bf16"}
 CIVITAI_LORAS_TO_DOWNLOAD : dict[str, str] = {"DallE3-magik.safetensors" : "https://civitai.com/api/download/models/695621?type=Model&format=SafeTensor"}
@@ -46,6 +47,17 @@ FILEPATH_FOR_7z : Optional[str] = None
 COMFYUI_INSTALLATION_FOLDER : Optional[str] = None
 PYTHON_COMMAND : Optional[str] = None
 
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+
+stream_handler = logging.StreamHandler()
+stream_handler.setLevel(logging.DEBUG)
+
+formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+stream_handler.setFormatter(formatter)
+
+logger.addHandler(stream_handler)
+
 class GithubFile(BaseModel):
 	name : str
 	browser_download_url : str
@@ -59,9 +71,6 @@ def request_prompt(prompt : str, allowed_responses : list[str]) -> str:
 		print("Invalid response.") # github @spookexe was here
 		value = input("")
 	return value
-
-import os
-import requests
 
 def download_file(url: str, destination: str) -> None:
 	"""Download a file from a URL and save it to a specified destination with support for resuming."""
@@ -94,19 +103,24 @@ def download_file(url: str, destination: str) -> None:
 
 	print("Download complete.")
 
-
 def run_command(command: str) -> tuple[int, str]:
-	"""Run a command in the command prompt and return the status code and output message."""
 	try:
-		result : subprocess.CompletedProcess = subprocess.run(command, shell=True, capture_output=True, text=True)
-		status_code : int = result.returncode
-		output_message : str = result.stdout.strip()
-		error_message : str = result.stderr.strip()
+		result: subprocess.CompletedProcess = subprocess.run(command, shell=True, capture_output=True, text=True)
+		status_code: int = result.returncode
+		output_message: str = result.stdout.strip()
+		error_message: str = result.stderr.strip()
 		if status_code == 0:
+			logger.info(f"Command succeeded: {command}")
+			logger.debug(f"Output: {output_message}")
 			return 0, output_message # SUCCESS
-		return 1, error_message # ERROR
+		else:
+			logger.warning(f"Command failed: {command}")
+			logger.debug(f"Error: {error_message}")
+			return 1, error_message # ERROR
 	except Exception as e:
-		return -1, str(e) # FAILEDS
+		logger.error(f"Command execution exception: {command}")
+		logger.exception(f"Exception details: {str(e)}")
+		return -1, str(e) # FAILED
 
 def unzip_targz(filepath : str, directory : str) -> None:
 	os.makedirs(directory, exist_ok=True)
@@ -192,6 +206,17 @@ def install_comfyui_nodes(custom_nodes_folder : str) -> None:
 	for url in COMFYUI_CUSTOM_NODES:
 		run_command(f"git clone {url}")
 	os.chdir(before_cwd)
+	py_exe = Path(os.path.join(COMFYUI_INSTALLATION_FOLDER, "python_embeded", "python.exe")).as_posix()
+	for folder_name in os.listdir(custom_nodes_folder):
+		if os.path.isdir(os.path.join(custom_nodes_folder, folder_name)) is False:
+			continue
+		req_txtfile = os.path.join(custom_nodes_folder, folder_name, "requirements.txt")
+		if os.path.exists(req_txtfile):
+			print(f'Installing requirements for: {folder_name} {req_txtfile}')
+			if os.path.exists(py_exe):
+				run_command(f"{py_exe} -m pip install -r {Path(req_txtfile).as_posix()}")
+			else:
+				run_command(f"{PYTHON_COMMAND} -m pip install -r {Path(req_txtfile).as_posix()}")
 	print("Installed ComfyUI Custom Nodes")
 
 def prompt_safetensor_file_install(folder : str, filename : str, download_url : str) -> None:
