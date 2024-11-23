@@ -554,7 +554,7 @@ def get_last_device() -> Optional[int]:
 
 def write_last_device(device : int) -> None:
 	with open("device", "w") as file:
-		file.write(device)
+		file.write(str(device))
 
 def comfyui_windows_runner() -> subprocess.Popen:
 	"""Run the ComfyUI portable on Windows."""
