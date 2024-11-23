@@ -72,10 +72,10 @@ def request_prompt(prompt : str, allowed_responses : list[str]) -> str:
 		value = input("")
 	return value
 
-def download_file(url: str, destination: str) -> None:
+def download_file(url: str, destination: str, range : bool = False) -> None:
 	"""Download a file from a URL and save it to a specified destination with support for resuming."""
 	headers = {}
-	if os.path.exists(destination):
+	if os.path.exists(destination) and range is True:
 		# Get the size of the partially downloaded file
 		existing_size = os.path.getsize(destination)
 		headers['Range'] = f'bytes={existing_size}-'
@@ -379,7 +379,7 @@ def install_comfyui_models_from_hugginface() -> None:
 	for name, url in HUGGINGFACE_CHECKPOINTS_TO_DOWNLOAD.items():
 		print("Downloading:", name)
 		try:
-			download_file(url, Path(os.path.join(checkpoints_folder, name)).as_posix())
+			download_file(url, Path(os.path.join(checkpoints_folder, name)).as_posix(), range=True)
 		except Exception as e:
 			print("Failed to download model file:")
 			print(e)
@@ -389,7 +389,7 @@ def install_comfyui_models_from_hugginface() -> None:
 	for name, url in HUGGINGFACE_LORAS_TO_DOWNLOAD.items():
 		print("Downloading:", name)
 		try:
-			download_file(url, Path(os.path.join(loras_folder, name)).as_posix())
+			download_file(url, Path(os.path.join(loras_folder, name)).as_posix(), range=True)
 		except Exception as e:
 			print("Failed to download model file:")
 			print(e)
@@ -410,7 +410,7 @@ def download_comfyui_latest(filename : str, directory : str) -> None:
 	if target_file is None:
 		raise ValueError(f"Unable to find latest release file for ComfyUI: {filename}")
 
-	download_file(target_file.browser_download_url, filepath)
+	download_file(target_file.browser_download_url, filepath, range=True)
 
 def install_comfyui_and_models_process(install_directory : str) -> None:
 	global COMFYUI_INSTALLATION_FOLDER
