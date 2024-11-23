@@ -186,7 +186,7 @@ def get_conda_env_directory() -> str:
 
 def get_conda_env_path_cmd() -> str:
 	base_dir = get_conda_env_directory()
-	scripts_dir = Path(os.path.join(scripts_dir, "Scripts")).as_posix()
+	scripts_dir = Path(os.path.join(base_dir, "Scripts")).as_posix()
 	return f"set PATH={scripts_dir};{base_dir};%PATH%"
 
 def create_conda_env_var() -> None:
