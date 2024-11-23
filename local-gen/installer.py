@@ -639,7 +639,13 @@ def main() -> None:
 
 	get_windows_miniconda_envs_folder()
 
-	py_cmd = Path(os.path.join(get_conda_env_directory(), "python.exe")).as_posix()
+	if os_platform == "Windows":
+		py_cmd = Path(os.path.join(get_conda_env_directory(), "python.exe")).as_posix()
+	elif os_platform == "Darwin":
+		py_cmd = Path(os.path.join(get_conda_env_directory(), "python.app")).as_posix()
+	elif os_platform == "Linux":
+		py_cmd = Path(os.path.join(get_conda_env_directory(), "python")).as_posix()
+
 	version = "3.10.9"
 
 	assert os.path.exists(py_cmd), "Conda failed to install."
