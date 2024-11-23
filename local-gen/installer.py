@@ -108,7 +108,7 @@ def run_command(command: str) -> tuple[int, str]:
 	print(command)
 	print('='*20)
 	try:
-		result: subprocess.CompletedProcess = subprocess.run(command, shell=True, capture_output=True, text=True)
+		result: subprocess.CompletedProcess = subprocess.run(command, shell=False, capture_output=True, text=True)
 		status_code: int = result.returncode
 		output_message: str = result.stdout.strip()
 		error_message: str = result.stderr.strip()
@@ -580,7 +580,7 @@ def comfyui_windows_runner() -> subprocess.Popen:
 		args.append("--directml")
 
 	print("Running the comfyui process.")
-	process = subprocess.Popen(args, cwd=COMFYUI_INSTALLATION_FOLDER, shell=True)
+	process = subprocess.Popen(args, cwd=COMFYUI_INSTALLATION_FOLDER, shell=False)
 	return process
 
 def comfyui_linux_runner() -> None:
@@ -634,12 +634,11 @@ def comfyui_linux_runner() -> None:
 
 	print("Running the ComfyUI process.")
 	print(args, COMFYUI_INSTALLATION_FOLDER)
-	process = subprocess.Popen(args, cwd=COMFYUI_INSTALLATION_FOLDER, shell=True)
+	process = subprocess.Popen(args, cwd=COMFYUI_INSTALLATION_FOLDER, shell=False)
 	return process
 
 def proxy_runner() -> subprocess.Popen:
-	print('Running proxy.')
-	return subprocess.Popen([PYTHON_COMMAND, "-s", 'python/main.py'], shell=True)
+	return subprocess.Popen([PYTHON_COMMAND, 'python/main.py'], shell=False)
 
 def main() -> None:
 	os_platform : str = platform.system() # Windows, Linux, Darwin (MacOS)
