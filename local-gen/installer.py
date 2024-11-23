@@ -638,7 +638,7 @@ def comfyui_linux_runner() -> None:
 	return process
 
 def proxy_runner() -> subprocess.Popen:
-	return subprocess.Popen([PYTHON_COMMAND, 'python/main.py'], shell=True)
+	return subprocess.Popen([PYTHON_COMMAND, "-s", 'python/main.py'], shell=True)
 
 def main() -> None:
 	os_platform : str = platform.system() # Windows, Linux, Darwin (MacOS)
