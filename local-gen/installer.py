@@ -47,7 +47,7 @@ FILEPATH_FOR_7z : Optional[str] = None
 COMFYUI_INSTALLATION_FOLDER : Optional[str] = None
 PYTHON_COMMAND : Optional[str] = None
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 stream_handler = logging.StreamHandler()
@@ -104,6 +104,9 @@ def download_file(url: str, destination: str) -> None:
 	print("Download complete.")
 
 def run_command(command: str) -> tuple[int, str]:
+	print('RUNNING COMMAND:')
+	print(command)
+	print('='*20)
 	try:
 		result: subprocess.CompletedProcess = subprocess.run(command, shell=True, capture_output=True, text=True)
 		status_code: int = result.returncode
@@ -112,14 +115,17 @@ def run_command(command: str) -> tuple[int, str]:
 		if status_code == 0:
 			logger.info(f"Command succeeded: {command}")
 			logger.debug(f"Output: {output_message}")
+			print("SUCCESS:", output_message)
 			return 0, output_message # SUCCESS
 		else:
 			logger.warning(f"Command failed: {command}")
 			logger.debug(f"Error: {error_message}")
+			print("ERROR:", error_message)
 			return 1, error_message # ERROR
 	except Exception as e:
 		logger.error(f"Command execution exception: {command}")
 		logger.exception(f"Exception details: {str(e)}")
+		print('EXCEPTION:', e)
 		return -1, str(e) # FAILED
 
 def unzip_targz(filepath : str, directory : str) -> None:
