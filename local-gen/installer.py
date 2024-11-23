@@ -138,8 +138,6 @@ def get_miniconda_cmdline_filepath() -> str:
 	path = Path(os.path.expanduser("~/miniconda3/condabin/conda")).as_posix()
 	if os_platform == "Windows":
 		path += ".bat"
-	elif os_platform == "Linux" or os_platform == "Darwin":
-		path += ".sh"
 	return path
 
 def has_miniconda_been_installed() -> bool:
