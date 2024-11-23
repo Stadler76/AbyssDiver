@@ -614,11 +614,10 @@ def comfyui_linux_runner() -> None:
 	print('Installing ComfyUI requirements')
 	run_command(f"{PYTHON_COMMAND} -m pip install -r {COMFYUI_INSTALLATION_FOLDER}/requirements.txt")
 
-	conda_filepath = get_miniconda_cmdline_filepath()
 	main_py_filepath = Path(os.path.abspath(os.path.join(COMFYUI_INSTALLATION_FOLDER, "main.py"))).as_posix()
 
 	process : subprocess.Popen = None
-	args = [conda_filepath, "run", "-n", "py3_10_9", "&&", "python", main_py_filepath, '--lowvram', '--disable-auto-launch'] + CUSTOM_COMMAND_LINE_ARGS_FOR_COMFYUI
+	args = [PYTHON_COMMAND, main_py_filepath, '--lowvram', '--disable-auto-launch'] + CUSTOM_COMMAND_LINE_ARGS_FOR_COMFYUI
 
 	if device == 0:
 		# cpu
