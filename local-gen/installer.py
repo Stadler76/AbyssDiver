@@ -638,6 +638,7 @@ def comfyui_linux_runner() -> None:
 	return process
 
 def proxy_runner() -> subprocess.Popen:
+	print('Running proxy.')
 	return subprocess.Popen([PYTHON_COMMAND, "-s", 'python/main.py'], shell=True)
 
 def main() -> None:
@@ -685,8 +686,10 @@ def main() -> None:
 	elif os_platform == "Linux" or os_platform == "Darwin":
 		print(f'Installing for {os_platform}!')
 		comfyui_linux_installer()
+		print('Running proxy.')
 		process_proxy = proxy_runner()
 		time.sleep(3) # let proxy output its message first
+		print('Running main.')
 		process_comfyui = comfyui_linux_runner()
 	else:
 		exit()
