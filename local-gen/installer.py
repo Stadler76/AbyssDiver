@@ -536,10 +536,6 @@ def ask_linux_gpu_cpu() -> int:
 	if is_amd_linux == "y":
 		return 2
 
-	is_directml_mode : str = request_prompt("Do you want to run in DirectML (for unsupported ones you can try use this)? (y/n)", ["y", "n"])
-	if is_directml_mode == "y":
-		return 3
-
 	print("You have a unsupported graphics card - will default to CPU mode.")
 	return 0
 
@@ -591,32 +587,30 @@ def comfyui_linux_runner() -> None:
 	last_device : Optional[int] = get_last_device()
 	device : int = ask_linux_gpu_cpu()
 
+	miniconda_activate = get_miniconda_cmdline_filepath()
+
 	# remove torch for it to be reinstalled for GPU
 	if device != 0 and (last_device is None or last_device != device):
-		run_command("pip uninstall torch")
+		run_command("source {miniconda_activate} py3_10_9 && pip uninstall torch")
 
 	if device == 0:
 		# CPU
-		run_command(f"{PYTHON_COMMAND} -m pip install torch torchvision torchaudio")
+		run_command(f"source {miniconda_activate} py3_10_9 && pip install torch torchvision torchaudio")
 	elif device == 1:
 		# NVIDIA (CUDA)
 		print('Installing Torch CUDA, please wait a moment.')
-		run_command(f"{PYTHON_COMMAND} -m pip install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu124")
+		run_command(f"source {miniconda_activate} py3_10_9 && pip install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu124")
 	elif device == 2:
 		# AMD (ROCM)
 		print('Installing Torch AMD ROCM, please wait a moment.')
-		run_command(f"{PYTHON_COMMAND} -m pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/rocm6.1")
-	elif device == 3:
-		# DirectML
-		print('Installing Torch DirectML, please wait a moment.')
-		run_command(f"{PYTHON_COMMAND} -m pip install torch_directml")
+		run_command(f"source {miniconda_activate} py3_10_9 && pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/rocm6.1")
 
 	write_last_device(device)
 
-	run_command(f"{PYTHON_COMMAND} -m pip install -r {COMFYUI_INSTALLATION_FOLDER}/requirements.txt")
+	run_command(f"source {miniconda_activate} py3_10_9 && pip install -r {COMFYUI_INSTALLATION_FOLDER}/requirements.txt")
 
 	process : subprocess.Popen = None
-	args = [PYTHON_COMMAND, "-s", "main.py", '--lowvram', '--disable-auto-launch'] + CUSTOM_COMMAND_LINE_ARGS_FOR_COMFYUI
+	args = ['source', '{miniconda_activate}', 'py3_10_9', '&&', 'python', "-s", "main.py", '--lowvram', '--disable-auto-launch'] + CUSTOM_COMMAND_LINE_ARGS_FOR_COMFYUI
 
 	if device == 0:
 		# cpu
