@@ -10,12 +10,12 @@ echo Installing minimum requirements for one-click ComfyUI installer.
 python --version >nul 2>&1
 if "!errorlevel!" NEQ "0" (
 	echo Python is not installed. Installing Python...
-	call ../install_python.bat
+	call ./install_python_windows.bat
 	if "!errorlevel!" NEQ "0" (
 		echo Failed to install Python. Exiting.
 		exit /b 1
 	)
-	
+
 	echo Restarting the batch file...
 	call "%~dpnx0"
 	exit /b

@@ -25,6 +25,7 @@ import subprocess
 import tarfile
 import time
 import patoolib
+import logging
 
 CUSTOM_COMMAND_LINE_ARGS_FOR_COMFYUI = []
 
@@ -46,6 +47,17 @@ FILEPATH_FOR_7z : Optional[str] = None
 COMFYUI_INSTALLATION_FOLDER : Optional[str] = None
 PYTHON_COMMAND : Optional[str] = None
 
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
+stream_handler = logging.StreamHandler()
+stream_handler.setLevel(logging.INFO)
+
+formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+stream_handler.setFormatter(formatter)
+
+logger.addHandler(stream_handler)
+
 class GithubFile(BaseModel):
 	name : str
 	browser_download_url : str
@@ -59,9 +71,6 @@ def request_prompt(prompt : str, allowed_responses : list[str]) -> str:
 		print("Invalid response.") # github @spookexe was here
 		value = input("")
 	return value
-
-import os
-import requests
 
 def download_file(url: str, destination: str) -> None:
 	"""Download a file from a URL and save it to a specified destination with support for resuming."""
@@ -94,19 +103,30 @@ def download_file(url: str, destination: str) -> None:
 
 	print("Download complete.")
 
-
 def run_command(command: str) -> tuple[int, str]:
-	"""Run a command in the command prompt and return the status code and output message."""
+	print('RUNNING COMMAND:')
+	print(command)
+	print('='*20)
 	try:
-		result : subprocess.CompletedProcess = subprocess.run(command, shell=True, capture_output=True, text=True)
-		status_code : int = result.returncode
-		output_message : str = result.stdout.strip()
-		error_message : str = result.stderr.strip()
+		result: subprocess.CompletedProcess = subprocess.run(command, shell=True, capture_output=True, text=True)
+		status_code: int = result.returncode
+		output_message: str = result.stdout.strip()
+		error_message: str = result.stderr.strip()
 		if status_code == 0:
+			logger.info(f"Command succeeded: {command}")
+			logger.debug(f"Output: {output_message}")
+			print("SUCCESS:", output_message)
 			return 0, output_message # SUCCESS
-		return 1, error_message # ERROR
+		else:
+			logger.warning(f"Command failed: {command}")
+			logger.debug(f"Error: {error_message}")
+			print("ERROR:", error_message)
+			return 1, error_message # ERROR
 	except Exception as e:
-		return -1, str(e) # FAILEDS
+		logger.error(f"Command execution exception: {command}")
+		logger.exception(f"Exception details: {str(e)}")
+		print('EXCEPTION:', e)
+		return -1, str(e) # FAILED
 
 def unzip_targz(filepath : str, directory : str) -> None:
 	os.makedirs(directory, exist_ok=True)
@@ -192,6 +212,25 @@ def install_comfyui_nodes(custom_nodes_folder : str) -> None:
 	for url in COMFYUI_CUSTOM_NODES:
 		run_command(f"git clone {url}")
 	os.chdir(before_cwd)
+	py_exe = Path(os.path.join(COMFYUI_INSTALLATION_FOLDER, "python_embeded", "python.exe")).as_posix()
+
+	if os.path.exists(py_exe):
+		run_command(f"\"{py_exe}\" -m pip --isolated install pydantic")
+	else:
+		run_command(f"\"{PYTHON_COMMAND}\" -m pip --isolated install pydantic")
+
+	for folder_name in os.listdir(custom_nodes_folder):
+		if os.path.isdir(Path(os.path.join(custom_nodes_folder, folder_name)).as_posix()) is False:
+			continue
+		req_txtfile = Path(os.path.join(custom_nodes_folder, folder_name, "requirements.txt")).as_posix()
+		if os.path.exists(req_txtfile):
+			print(f'Installing requirements for: {folder_name} {req_txtfile}')
+			if os.path.exists(py_exe):
+				print('ComfyUI Embeded Python')
+				run_command(f"\"{py_exe}\" -m pip --isolated install -r \"{Path(req_txtfile).as_posix()}\"")
+			else:
+				print('System Python')
+				run_command(f"\"{PYTHON_COMMAND}\" -m pip --isolated install -r \"{Path(req_txtfile).as_posix()}\"")
 	print("Installed ComfyUI Custom Nodes")
 
 def prompt_safetensor_file_install(folder : str, filename : str, download_url : str) -> None:
@@ -256,7 +295,7 @@ def has_all_required_comfyui_models() -> bool:
 	checkpoints_folder : str = Path(os.path.join(COMFYUI_INSTALLATION_FOLDER, "ComfyUI", "models", "checkpoints")).as_posix()
 	for name, _ in HUGGINGFACE_CHECKPOINTS_TO_DOWNLOAD.items():
 		if os.path.exists(Path(os.path.join(checkpoints_folder, name)).as_posix()) is False:
-			print(f"Missing Checkpoint: {os.path.join(checkpoints_folder, name)}")
+			print(f"Missing Checkpoint: {Path(os.path.join(checkpoints_folder, name)).as_posix()}")
 			return False
 	loras_folder : str = Path(os.path.join(COMFYUI_INSTALLATION_FOLDER, "ComfyUI", "models", "loras")).as_posix()
 	for name, _ in HUGGINGFACE_LORAS_TO_DOWNLOAD.items():
@@ -311,7 +350,7 @@ def install_comfyui_and_models_process(install_directory : str) -> None:
 		print("="*20)
 		print("Note: The total file size required for ComfyUI will add up over 9GB.")
 		print("Note: The total file size required for the Abyss Diver content will add up to 7.1GB")
-		print("You will need a total of at least 17GBs available.")
+		print("You will need a total of at least 17GB available.")
 		print("Press enter to continue...")
 		input()
 
@@ -449,7 +488,7 @@ def comfyui_windows_runner() -> subprocess.Popen:
 	device : int = ask_windows_gpu_cpu() # 0:cpu, 1:cuda, 2:amd, 3:intel
 
 	process : subprocess.Popen = None
-	args = CUSTOM_COMMAND_LINE_ARGS_FOR_COMFYUI + ["python_embeded\python.exe", "-s", "ComfyUI\main.py", "--windows-standalone-build", '--lowvram', '--disable-auto-launch']
+	args = ["python_embeded\python.exe", "-s", "ComfyUI\main.py", "--windows-standalone-build", '--lowvram', '--disable-auto-launch'] + CUSTOM_COMMAND_LINE_ARGS_FOR_COMFYUI
 
 	if device == 0:
 		# cpu
@@ -497,7 +536,7 @@ def comfyui_linux_runner() -> None:
 	run_command(f"pip install -r {COMFYUI_INSTALLATION_FOLDER}/requirements.txt")
 
 	process : subprocess.Popen = None
-	args = CUSTOM_COMMAND_LINE_ARGS_FOR_COMFYUI + [PYTHON_COMMAND, "-s", "ComfyUI\main.py", '--lowvram', '--disable-auto-launch']
+	args = [PYTHON_COMMAND, "-s", "ComfyUI\main.py", '--lowvram', '--disable-auto-launch'] + CUSTOM_COMMAND_LINE_ARGS_FOR_COMFYUI
 
 	if device == 0:
 		# cpu
@@ -507,7 +546,7 @@ def comfyui_linux_runner() -> None:
 		args.append("--directml")
 	elif device == 1:
 		print("")
-		if request_prompt("Are any of your plugged in GPUs older than the 1060 series (but not including)? (y/n): ") == "y":
+		if request_prompt("Are any of your currently plugged-in GPUs older than the 1060 series (but not including the 1060)? (y/n): ") == "y":
 			args.append("--disable-cuda-malloc")
 
 	print("Running the ComfyUI process.")

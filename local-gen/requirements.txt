@@ -5,6 +5,5 @@ patool
 pillow
 pydantic
 requests_toolbelt
-tqdm
 uvicorn[standard]
 websocket-client

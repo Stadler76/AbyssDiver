@@ -1063,9 +1063,9 @@ setup.comfyUI_GenerateStandardParameters = function() {
 setup.comfyUI_GeneratePortraitWorkflow = async function() {
 
 	if (SugarCube.State.variables.UseAdvancedComfyUIPrompt == true) {
-		var [positive, negative] = setup.comfyUI_GenerateAdvancedParameters();
+		var [positive, negative, checkpoint, steps, cfg, seed, width, height] = setup.comfyUI_GenerateAdvancedParameters();
 	} else {
-		var [positive, negative] = setup.comfyUI_GenerateStandardParameters();
+		var [positive, negative, checkpoint, steps, cfg, seed, width, height] = setup.comfyUI_GenerateStandardParameters();
 	}
 
 
