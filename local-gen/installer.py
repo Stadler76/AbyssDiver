@@ -350,7 +350,7 @@ def install_comfyui_and_models_process(install_directory : str) -> None:
 		print("="*20)
 		print("Note: The total file size required for ComfyUI will add up over 9GB.")
 		print("Note: The total file size required for the Abyss Diver content will add up to 7.1GB")
-		print("You will need a total of at least 17GBs available.")
+		print("You will need a total of at least 17GB available.")
 		print("Press enter to continue...")
 		input()
 
