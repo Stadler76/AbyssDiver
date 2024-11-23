@@ -30,3 +30,7 @@ Troubleshoot:
 - patool failed to extract:
     a. Check patool is installed with "py -m pip install patool" and replace "py" with "python" or "python3" if it says python is not a valid command.
     b. If this does not fix it still, manually unzip it using 7zip or any other tools that support 7zip archives.
+- "defaulting to user installation because normal site-packages is not writeable":
+    a. EXTREMELY IMPORTANT ERROR!!!!!!!
+    b. This means you've installed python in Program Files, which user-mode applications CANNOT write to!
+    c. To fix, uninstall python and reinstall using your current user as the install path rather than Program Files.
