@@ -26,7 +26,7 @@ if not exist "!PYTHON_INSTALLER!" (
 
 :: Install Python silently
 echo Installing Python...
-"!PYTHON_INSTALLER!" /quiet InstallAllUsers=1 PrependPath=1 Include_test=0
+"!PYTHON_INSTALLER!" /quiet InstallAllUsers=0 PrependPath=1 Include_test=0
 if "!errorlevel!" neq "0" (
     echo Python installation failed.
     exit /b 1
