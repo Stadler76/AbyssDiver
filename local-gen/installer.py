@@ -618,7 +618,7 @@ def comfyui_linux_runner() -> None:
 	main_py_filepath = Path(os.path.abspath(os.path.join(COMFYUI_INSTALLATION_FOLDER, "main.py"))).as_posix()
 
 	process : subprocess.Popen = None
-	args = [conda_filepath, "run", "-n", "py3_10_9", "python", main_py_filepath, '--lowvram', '--disable-auto-launch'] + CUSTOM_COMMAND_LINE_ARGS_FOR_COMFYUI
+	args = [conda_filepath, "run", "-n", "py3_10_9", "&&", "python", main_py_filepath, '--lowvram', '--disable-auto-launch'] + CUSTOM_COMMAND_LINE_ARGS_FOR_COMFYUI
 
 	if device == 0:
 		# cpu
