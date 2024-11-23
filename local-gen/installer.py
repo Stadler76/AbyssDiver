@@ -485,7 +485,8 @@ def comfyui_linux_installer() -> None:
 		download_git_portal_linux() # make sure git is installed
 
 		status, message = run_command(f"git clone {COMFYUI_REPOSITORY_URL}")
-		assert status == 0, f"Failed to clone repository {COMFYUI_REPOSITORY_URL}: {message}"
+		if "already exists" not in message:
+			assert status == 0, f"Failed to clone repository {COMFYUI_REPOSITORY_URL}: {message}"
 
 	# back-pedal one directory for linux/macos as its not double-deep
 	install_comfyui_and_models_process(Path(os.path.join(install_directory, "..")).as_posix())
