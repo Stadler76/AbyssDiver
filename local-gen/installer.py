@@ -528,6 +528,10 @@ def ask_linux_gpu_cpu() -> int:
 	if is_gpu_mode == "n":
 		return 0
 
+	is_mac : str =  request_prompt("Are you on a MAC device? (y/n)", ["y", "n"])
+	if is_mac == "y":
+		return 3
+
 	is_nvidia_gpu : str = request_prompt("Is your graphics card a NVIDIA one? (y/n)", ["y", "n"])
 	if is_nvidia_gpu == "y":
 		return 1
@@ -587,43 +591,50 @@ def comfyui_linux_runner() -> None:
 	last_device : Optional[int] = get_last_device()
 	device : int = ask_linux_gpu_cpu()
 
-	miniconda_activate = get_miniconda_cmdline_filepath()
-
 	# remove torch for it to be reinstalled for GPU
 	if device != 0 and (last_device is None or last_device != device):
-		run_command(f"source {miniconda_activate} py3_10_9 && pip uninstall torch")
+		print('Uninstalling old torch.')
+		run_command(f"{PYTHON_COMMAND} -m pip uninstall torch")
 
-	if device == 0:
-		# CPU
-		run_command(f"source {miniconda_activate} py3_10_9 && pip install torch torchvision torchaudio")
+	if device == 0 or device == 3:
+		# CPU / Mac CPU
+		print('Installing CPU')
+		run_command(f"{PYTHON_COMMAND} -m pip install torch torchvision torchaudio")
 	elif device == 1:
 		# NVIDIA (CUDA)
 		print('Installing Torch CUDA, please wait a moment.')
-		run_command(f"source {miniconda_activate} py3_10_9 && pip install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu124")
+		run_command(f"{PYTHON_COMMAND} -m pip install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu124")
 	elif device == 2:
 		# AMD (ROCM)
 		print('Installing Torch AMD ROCM, please wait a moment.')
-		run_command(f"source {miniconda_activate} py3_10_9 && pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/rocm6.1")
+		run_command(f"{PYTHON_COMMAND} -m pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/rocm6.1")
 
 	write_last_device(device)
 
-	run_command(f"source {miniconda_activate} py3_10_9 && pip install -r {COMFYUI_INSTALLATION_FOLDER}/requirements.txt")
+	print('Installing ComfyUI requirements')
+	run_command(f"{PYTHON_COMMAND} -m pip install -r {COMFYUI_INSTALLATION_FOLDER}/requirements.txt")
+
+	conda_filepath = get_miniconda_cmdline_filepath()
+	main_py_filepath = Path(os.path.abspath(os.path.join(COMFYUI_INSTALLATION_FOLDER, "main.py"))).as_posix()
 
 	process : subprocess.Popen = None
-	args = ['source', miniconda_activate, 'py3_10_9', '&&', 'python', "-s", "main.py", '--lowvram', '--disable-auto-launch'] + CUSTOM_COMMAND_LINE_ARGS_FOR_COMFYUI
+	args = [conda_filepath, "run", "-n", "py3_10_9", "python", main_py_filepath, '--lowvram', '--disable-auto-launch'] + CUSTOM_COMMAND_LINE_ARGS_FOR_COMFYUI
 
 	if device == 0:
 		# cpu
+		print('Added CPU argument')
 		args.append("--cpu")
-	elif device == 3:
-		# directml
-		args.append("--directml")
 	elif device == 1:
-		print("")
+		print("Check Cuda Malloc")
 		if request_prompt("Are any of your currently plugged-in GPUs older than the 1060 series (but not including the 1060)? (y/n): ") == "y":
 			args.append("--disable-cuda-malloc")
+	elif device == 3:
+		# directml
+		print('Enabled DirectML')
+		args.append("--directml")
 
 	print("Running the ComfyUI process.")
+	print(args, COMFYUI_INSTALLATION_FOLDER)
 	process = subprocess.Popen(args, cwd=COMFYUI_INSTALLATION_FOLDER, shell=True)
 	return process
 
