@@ -213,6 +213,12 @@ def install_comfyui_nodes(custom_nodes_folder : str) -> None:
 		run_command(f"git clone {url}")
 	os.chdir(before_cwd)
 	py_exe = Path(os.path.join(COMFYUI_INSTALLATION_FOLDER, "python_embeded", "python.exe")).as_posix()
+
+	if os.path.exists(py_exe):
+		run_command(f"\"{py_exe}\" -m pip install pydantic")
+	else:
+		run_command(f"\"{PYTHON_COMMAND}\" -m pip install pydantic")
+
 	for folder_name in os.listdir(custom_nodes_folder):
 		if os.path.isdir(Path(os.path.join(custom_nodes_folder, folder_name)).as_posix()) is False:
 			continue
