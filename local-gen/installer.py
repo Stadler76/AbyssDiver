@@ -48,10 +48,10 @@ COMFYUI_INSTALLATION_FOLDER : Optional[str] = None
 PYTHON_COMMAND : Optional[str] = None
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 
 stream_handler = logging.StreamHandler()
-stream_handler.setLevel(logging.DEBUG)
+stream_handler.setLevel(logging.INFO)
 
 formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 stream_handler.setFormatter(formatter)
@@ -214,8 +214,10 @@ def install_comfyui_nodes(custom_nodes_folder : str) -> None:
 		if os.path.exists(req_txtfile):
 			print(f'Installing requirements for: {folder_name} {req_txtfile}')
 			if os.path.exists(py_exe):
+				print('ComfyUI Embeded Python')
 				run_command(f"\"{py_exe}\" -m pip install -r \"{Path(req_txtfile).as_posix()}\"")
 			else:
+				print('System Python')
 				run_command(f"\"{PYTHON_COMMAND}\" -m pip install -r \"{Path(req_txtfile).as_posix()}\"")
 	print("Installed ComfyUI Custom Nodes")
 
