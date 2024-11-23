@@ -415,10 +415,6 @@ def download_comfyui_latest(filename : str, directory : str) -> None:
 def install_comfyui_and_models_process(install_directory : str) -> None:
 	global COMFYUI_INSTALLATION_FOLDER
 
-	if platform.platform() == "Windows":
-		# corrected install directory for Windows
-		install_directory = Path(os.path.join(install_directory, "ComfyUI")).as_posix()
-
 	COMFYUI_INSTALLATION_FOLDER = Path(os.path.abspath(install_directory)).as_posix() # install_directory
 
 	if has_all_required_comfyui_models() is False:
@@ -458,7 +454,7 @@ def comfyui_windows_installer() -> None:
 	directory : str = "tools"
 
 	# unzip the file if not already done
-	install_directory : str = Path(os.path.join(directory, "ComfyUI_windows_portable")).as_posix()
+	install_directory : str = Path(os.path.join(directory, "ComfyUI_windows_portable", "ComfyUI")).as_posix()
 
 	if os.path.isdir(Path(install_directory).as_posix()) is False:
 		download_git_portal_windows()
