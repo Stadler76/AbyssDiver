@@ -362,12 +362,12 @@ def has_all_required_comfyui_models() -> bool:
 	if COMFYUI_INSTALLATION_FOLDER is None or os.path.exists(Path(COMFYUI_INSTALLATION_FOLDER).as_posix()) is False:
 		print("Missing ComfyUI.")
 		return False
-	checkpoints_folder : str = Path(os.path.join(COMFYUI_INSTALLATION_FOLDER, "ComfyUI", "models", "checkpoints")).as_posix()
+	checkpoints_folder : str = Path(os.path.join(COMFYUI_INSTALLATION_FOLDER, "models", "checkpoints")).as_posix()
 	for name, _ in HUGGINGFACE_CHECKPOINTS_TO_DOWNLOAD.items():
 		if os.path.exists(Path(os.path.join(checkpoints_folder, name)).as_posix()) is False:
 			print(f"Missing Checkpoint: {Path(os.path.join(checkpoints_folder, name)).as_posix()}")
 			return False
-	loras_folder : str = Path(os.path.join(COMFYUI_INSTALLATION_FOLDER, "ComfyUI", "models", "loras")).as_posix()
+	loras_folder : str = Path(os.path.join(COMFYUI_INSTALLATION_FOLDER, "models", "loras")).as_posix()
 	for name, _ in HUGGINGFACE_LORAS_TO_DOWNLOAD.items():
 		if os.path.exists(Path(os.path.join(loras_folder, name)).as_posix()) is False:
 			print(f"Missing LORA: {Path(os.path.join(loras_folder, name)).as_posix()}")
@@ -375,7 +375,7 @@ def has_all_required_comfyui_models() -> bool:
 	return True
 
 def install_comfyui_models_from_hugginface() -> None:
-	checkpoints_folder : str = Path(os.path.join(COMFYUI_INSTALLATION_FOLDER, "ComfyUI", "models", "checkpoints")).as_posix()
+	checkpoints_folder : str = Path(os.path.join(COMFYUI_INSTALLATION_FOLDER, "models", "checkpoints")).as_posix()
 	for name, url in HUGGINGFACE_CHECKPOINTS_TO_DOWNLOAD.items():
 		print("Downloading:", name)
 		try:
@@ -385,7 +385,7 @@ def install_comfyui_models_from_hugginface() -> None:
 			print(e)
 			exit()
 
-	loras_folder : str = Path(os.path.join(COMFYUI_INSTALLATION_FOLDER, "ComfyUI", "models", "loras")).as_posix()
+	loras_folder : str = Path(os.path.join(COMFYUI_INSTALLATION_FOLDER, "models", "loras")).as_posix()
 	for name, url in HUGGINGFACE_LORAS_TO_DOWNLOAD.items():
 		print("Downloading:", name)
 		try:
@@ -414,6 +414,11 @@ def download_comfyui_latest(filename : str, directory : str) -> None:
 
 def install_comfyui_and_models_process(install_directory : str) -> None:
 	global COMFYUI_INSTALLATION_FOLDER
+
+	if platform.platform() == "Windows":
+		# corrected install directory for Windows
+		install_directory = Path(os.path.join(install_directory, "ComfyUI")).as_posix()
+
 	COMFYUI_INSTALLATION_FOLDER = Path(os.path.abspath(install_directory)).as_posix() # install_directory
 
 	if has_all_required_comfyui_models() is False:
@@ -425,7 +430,7 @@ def install_comfyui_and_models_process(install_directory : str) -> None:
 		input()
 
 	print("ComfyUI is located at: ", Path(os.path.abspath(install_directory)).as_posix()) # install_directory)
-	install_comfyui_nodes(Path(os.path.join(COMFYUI_INSTALLATION_FOLDER, "ComfyUI", "custom_nodes")).as_posix())
+	install_comfyui_nodes(Path(os.path.join(COMFYUI_INSTALLATION_FOLDER, "custom_nodes")).as_posix())
 
 	print("="*20)
 
@@ -445,8 +450,8 @@ def install_comfyui_and_models_process(install_directory : str) -> None:
 		print("Press enter to continue...")
 		input()
 
-		install_comfyui_checkpoints(Path(os.path.join(COMFYUI_INSTALLATION_FOLDER, "ComfyUI", "models", "checkpoints")).as_posix())
-		install_comfyui_loras(Path(os.path.join(COMFYUI_INSTALLATION_FOLDER, "ComfyUI", "models", "loras")).as_posix())
+		install_comfyui_checkpoints(Path(os.path.join(COMFYUI_INSTALLATION_FOLDER, "models", "checkpoints")).as_posix())
+		install_comfyui_loras(Path(os.path.join(COMFYUI_INSTALLATION_FOLDER, "models", "loras")).as_posix())
 
 def comfyui_windows_installer() -> None:
 	"""Install the ComfyUI portable on Windows."""
@@ -488,8 +493,7 @@ def comfyui_linux_installer() -> None:
 		if "already exists" not in message:
 			assert status == 0, f"Failed to clone repository {COMFYUI_REPOSITORY_URL}: {message}"
 
-	# back-pedal one directory for linux/macos as its not double-deep
-	install_comfyui_and_models_process(Path(os.path.join(install_directory, "..")).as_posix())
+	install_comfyui_and_models_process(install_directory)
 
 def ask_windows_gpu_cpu() -> int:
 	is_gpu_mode : str = request_prompt("Will you be running image generation on your graphics card? (y/n)", ["y", "n"])
@@ -560,7 +564,7 @@ def comfyui_windows_runner() -> subprocess.Popen:
 	device : int = ask_windows_gpu_cpu() # 0:cpu, 1:cuda, 2:amd, 3:intel
 
 	process : subprocess.Popen = None
-	args = ["python_embeded/python.exe", "-s", "ComfyUI/main.py", "--windows-standalone-build", '--lowvram', '--disable-auto-launch'] + CUSTOM_COMMAND_LINE_ARGS_FOR_COMFYUI
+	args = ["python_embeded/python.exe", "-s", "main.py", "--windows-standalone-build", '--lowvram', '--disable-auto-launch'] + CUSTOM_COMMAND_LINE_ARGS_FOR_COMFYUI
 
 	if device == 0:
 		# cpu
@@ -572,7 +576,7 @@ def comfyui_windows_runner() -> subprocess.Popen:
 		args.append("--directml")
 
 	print("Running the comfyui process.")
-	process = subprocess.Popen(args, cwd=COMFYUI_INSTALLATION_FOLDER, shell=True)
+	process = subprocess.Popen(args, cwd=Path(os.path.join(COMFYUI_INSTALLATION_FOLDER, "..")).as_posix(), shell=True)
 	return process
 
 def comfyui_linux_runner() -> None:
@@ -608,7 +612,7 @@ def comfyui_linux_runner() -> None:
 	run_command(f"pip install -r {COMFYUI_INSTALLATION_FOLDER}/requirements.txt")
 
 	process : subprocess.Popen = None
-	args = [PYTHON_COMMAND, "-s", "ComfyUI/main.py", '--lowvram', '--disable-auto-launch'] + CUSTOM_COMMAND_LINE_ARGS_FOR_COMFYUI
+	args = [PYTHON_COMMAND, "-s", "main.py", '--lowvram', '--disable-auto-launch'] + CUSTOM_COMMAND_LINE_ARGS_FOR_COMFYUI
 
 	if device == 0:
 		# cpu
