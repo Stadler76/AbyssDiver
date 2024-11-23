@@ -487,7 +487,8 @@ def comfyui_linux_installer() -> None:
 		status, message = run_command(f"git clone {COMFYUI_REPOSITORY_URL}")
 		assert status == 0, f"Failed to clone repository {COMFYUI_REPOSITORY_URL}: {message}"
 
-	install_comfyui_and_models_process(install_directory)
+	# back-pedal one directory for linux/macos as its not double-deep
+	install_comfyui_and_models_process(Path(os.path.join(install_directory, "..")).as_posix())
 
 def ask_windows_gpu_cpu() -> int:
 	is_gpu_mode : str = request_prompt("Will you be running image generation on your graphics card? (y/n)", ["y", "n"])
