@@ -133,6 +133,76 @@ def unzip_targz(filepath : str, directory : str) -> None:
 	with tarfile.open(filepath, 'r:gz') as tar_ref:
 			tar_ref.extractall(directory)
 
+def get_miniconda_cmdline_filepath() -> str:
+	os_platform : str = platform.system() # Windows, Linux, Darwin (MacOS)
+	path = Path(os.path.expanduser("~/miniconda3/condabin/conda")).as_posix()
+	if os_platform == "Windows":
+		path += ".bat"
+	return path
+
+def has_miniconda_been_installed() -> bool:
+	return os.path.exists(get_miniconda_cmdline_filepath())
+
+def get_windows_miniconda_envs_folder() -> str:
+	return Path(os.path.expanduser("~/miniconda3/envs")).as_posix()
+
+def install_miniconda_for_os() -> None:
+	os_platform : str = platform.system() # Windows, Linux, Darwin (MacOS)
+	logger.info(f"Installing miniconda for OS: {os_platform}")
+	cwd : str = os.getcwd()
+	directory = Path("tools/miniconda3").as_posix()
+	os.makedirs(directory, exist_ok=True)
+	os.chdir(directory)
+	if os_platform == "Windows":
+		logger.info("Downloading miniconda.exe")
+		download_file("https://repo.anaconda.com/miniconda/Miniconda3-latest-Windows-x86_64.exe", "miniconda.exe")
+		logger.info("Installing miniconda.sh")
+		s, e = run_command(f"miniconda.exe /S")
+		assert s==0, e
+	elif os_platform == "Linux":
+		logger.info("Downloading miniconda.sh")
+		download_file("https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh", "miniconda.sh")
+		logger.info("Installing miniconda.sh")
+		s, e = run_command(f"bash miniconda.sh -b -u -p")
+		assert s==0, e
+	elif os_platform == "Darwin":
+		logger.info("Downloading miniconda.sh")
+		download_file("https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-arm64.sh", "miniconda.sh")
+		logger.info("Installing miniconda.sh")
+		s, e = run_command(f"bash miniconda.sh -b -u -p")
+		assert s==0, e
+	else:
+		print(f"Unknown OS {os_platform} - cannot get conda version.")
+		exit()
+
+	logger.info("Finished installing miniconda")
+	os.chdir(cwd)
+
+def does_conda_env_exist() -> bool:
+	return os.path.exists(os.path.join(get_windows_miniconda_envs_folder(), "py3_10_9"))
+
+def get_conda_env_directory() -> str:
+	return Path(os.path.join(get_windows_miniconda_envs_folder(), "py3_10_9")).as_posix()
+
+def get_conda_env_path_cmd() -> str:
+	base_dir = get_conda_env_directory()
+	scripts_dir = Path(os.path.join(scripts_dir, "Scripts")).as_posix()
+	return f"set PATH={scripts_dir};{base_dir};%PATH%"
+
+def create_conda_env_var() -> None:
+	# create a new virtual environment for python 3.10.9 called "py3_10_9"
+	logger.info("Creating new environment.")
+	run_command(f"start {get_miniconda_cmdline_filepath()} create -n py3_10_9 python=3.10.9 anaconda")
+
+	logger.info("Listing current environments.")
+	run_command(f"{get_miniconda_cmdline_filepath()} env list")
+
+	logger.info("Activating python 3.10.9 environment.")
+	run_command(f"{get_miniconda_cmdline_filepath()} activate -n py3_10_9")
+
+	logger.info("Adding py3_10_9 environment to PATH.")
+	run_command(get_conda_env_path_cmd())
+
 def get_python_version() -> tuple[Union[str, None], Union[str, None]]:
 	"""Find the python version that is installed."""
 	pattern = r"Python (.+)"
@@ -489,7 +559,7 @@ def comfyui_windows_runner() -> subprocess.Popen:
 	device : int = ask_windows_gpu_cpu() # 0:cpu, 1:cuda, 2:amd, 3:intel
 
 	process : subprocess.Popen = None
-	args = ["python_embeded\python.exe", "-s", "ComfyUI\main.py", "--windows-standalone-build", '--lowvram', '--disable-auto-launch'] + CUSTOM_COMMAND_LINE_ARGS_FOR_COMFYUI
+	args = ["python_embeded/python.exe", "-s", "ComfyUI/main.py", "--windows-standalone-build", '--lowvram', '--disable-auto-launch'] + CUSTOM_COMMAND_LINE_ARGS_FOR_COMFYUI
 
 	if device == 0:
 		# cpu
@@ -497,7 +567,7 @@ def comfyui_windows_runner() -> subprocess.Popen:
 	elif device == 2 or device == 4:
 		# amd/DirectML
 		print('Installing Torch DirectML. Please wait a moment.')
-		run_command(f'{COMFYUI_INSTALLATION_FOLDER}\python_embeded\pip.exe install torch_directml')
+		run_command(f'{COMFYUI_INSTALLATION_FOLDER}/python_embeded/pip.exe install torch_directml')
 		args.append("--directml")
 
 	print("Running the comfyui process.")
@@ -537,7 +607,7 @@ def comfyui_linux_runner() -> None:
 	run_command(f"pip install -r {COMFYUI_INSTALLATION_FOLDER}/requirements.txt")
 
 	process : subprocess.Popen = None
-	args = [PYTHON_COMMAND, "-s", "ComfyUI\main.py", '--lowvram', '--disable-auto-launch'] + CUSTOM_COMMAND_LINE_ARGS_FOR_COMFYUI
+	args = [PYTHON_COMMAND, "-s", "ComfyUI/main.py", '--lowvram', '--disable-auto-launch'] + CUSTOM_COMMAND_LINE_ARGS_FOR_COMFYUI
 
 	if device == 0:
 		# cpu
@@ -558,26 +628,31 @@ def proxy_runner() -> subprocess.Popen:
 	return subprocess.Popen([PYTHON_COMMAND, 'python/main.py'], shell=True)
 
 def main() -> None:
-	os_platform : str = platform.system() # Windows, Linux, MacOS
+	os_platform : str = platform.system() # Windows, Linux, Darwin (MacOS)
 
 	available_ops : str = ", ".join(WHITELISTED_OPERATION_SYSTEMS)
 	assert os_platform in WHITELISTED_OPERATION_SYSTEMS, f"Operating System {os_platform} is unsupported! Available platforms are: {available_ops}"
 
 	print(f'Running one-click-comfyui on operating system {os_platform}.')
 
-	py_cmd, version = get_python_version()
-	assert py_cmd and version, "You must install python before continuing. Recommended version is 3.10.9 which is available at: https://www.python.org/downloads/release/python-3109/ and it must be below or equal to version 3.10"
+	print("Checking conda.")
+	install_conda_for_python()
+
+	get_windows_miniconda_envs_folder()
+
+	py_cmd = Path(os.path.join(get_conda_env_directory(), "python.exe")).as_posix()
+	version = "3.10.9"
+
+	assert os.path.exists(py_cmd), "Conda failed to install."
 
 	print(py_cmd, version)
-
-	print("You will require to have python versions 3.8.0 -> 3.10.0. If you have version above that, you cannot proceed or it will not install.")
-	print('Press space to continue...')
-	input()
 
 	global PYTHON_COMMAND
 	PYTHON_COMMAND = py_cmd
 
 	print(f"Found python ({py_cmd}) of version {version}.")
+
+	run_command(f"\"{PYTHON_COMMAND}\" -m pip install -r requirements.txt")
 
 	process_proxy : subprocess.Popen
 	process_comfyui : subprocess.Popen
@@ -588,8 +663,8 @@ def main() -> None:
 		process_proxy = proxy_runner()
 		time.sleep(3) # let proxy output its message first
 		process_comfyui = comfyui_windows_runner()
-	elif os_platform == "Linux":
-		print('Installing for Linux!')
+	elif os_platform == "Linux" or os_platform == "Darwin":
+		print(f'Installing for {os_platform}!')
 		comfyui_linux_installer()
 		process_proxy = proxy_runner()
 		time.sleep(3) # let proxy output its message first
@@ -603,6 +678,18 @@ def main() -> None:
 	except KeyboardInterrupt: # CTRL+C
 		os.kill(process_proxy.pid, signal.SIGTERM)
 		os.kill(process_comfyui.pid, signal.SIGTERM)
+
+def install_conda_for_python() -> None:
+	if has_miniconda_been_installed() is False:
+		print('Installing miniconda.')
+		install_miniconda_for_os()
+	assert has_miniconda_been_installed(), "Miniconda is not installed."
+	print("Miniconda is installed.")
+	if os.path.exists(get_conda_env_directory()) is False:
+		print("Creating Conda Environment.")
+		create_conda_env_var()
+	assert os.path.exists(get_conda_env_directory()), "Conda Environment does not exist."
+	print("Conda Environment exists.")
 
 if __name__ == '__main__':
 	main()
