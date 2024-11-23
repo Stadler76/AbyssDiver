@@ -481,13 +481,18 @@ def comfyui_linux_installer() -> None:
 	directory : str = "tools"
 
 	# install directory
+
 	install_directory = Path(os.path.abspath(os.path.join(directory, "ComfyUI"))).as_posix()
 	if os.path.exists(Path(install_directory).as_posix()) is False:
 		download_git_portal_linux() # make sure git is installed
 
+		os.chdir(directory)
+
 		status, message = run_command(f"git clone {COMFYUI_REPOSITORY_URL}")
 		if "already exists" not in message:
 			assert status == 0, f"Failed to clone repository {COMFYUI_REPOSITORY_URL}: {message}"
+
+		os.chdir('..')
 
 	install_comfyui_and_models_process(install_directory)
 
@@ -560,7 +565,7 @@ def comfyui_windows_runner() -> subprocess.Popen:
 	device : int = ask_windows_gpu_cpu() # 0:cpu, 1:cuda, 2:amd, 3:intel
 
 	process : subprocess.Popen = None
-	args = ["python_embeded/python.exe", "-s", "main.py", "--windows-standalone-build", '--lowvram', '--disable-auto-launch'] + CUSTOM_COMMAND_LINE_ARGS_FOR_COMFYUI
+	args = ["../python_embeded/python.exe", "-s", "main.py", "--windows-standalone-build", '--lowvram', '--disable-auto-launch'] + CUSTOM_COMMAND_LINE_ARGS_FOR_COMFYUI
 
 	if device == 0:
 		# cpu
@@ -568,11 +573,12 @@ def comfyui_windows_runner() -> subprocess.Popen:
 	elif device == 2 or device == 4:
 		# amd/DirectML
 		print('Installing Torch DirectML. Please wait a moment.')
-		run_command(f'{COMFYUI_INSTALLATION_FOLDER}/python_embeded/pip.exe install torch_directml')
+		run_command(f'../python_embeded/pip.exe install torch_directml')
 		args.append("--directml")
 
 	print("Running the comfyui process.")
-	process = subprocess.Popen(args, cwd=Path(os.path.join(COMFYUI_INSTALLATION_FOLDER, "..")).as_posix(), shell=True)
+	print(os.path.abspath(COMFYUI_INSTALLATION_FOLDER))
+	process = subprocess.Popen(args, cwd=COMFYUI_INSTALLATION_FOLDER, shell=True)
 	return process
 
 def comfyui_linux_runner() -> None:
