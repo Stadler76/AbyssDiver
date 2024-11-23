@@ -192,6 +192,7 @@ def get_conda_env_path_cmd() -> str:
 def create_conda_env_var() -> None:
 	# create a new virtual environment for python 3.10.9 called "py3_10_9"
 	logger.info("Creating new environment.")
+	print('Press enter to install the python 3.10.9 conda environment. The command displayed below will not run until you do so.')
 	command = f"{get_miniconda_cmdline_filepath()} create -n py3_10_9 python=3.10.9 anaconda"
 	if platform.platform() == "Windows":
 		command = "start " + command
