@@ -72,10 +72,10 @@ def request_prompt(prompt : str, allowed_responses : list[str]) -> str:
 		value = input("")
 	return value
 
-def download_file(url: str, destination: str) -> None:
+def download_file(url: str, destination: str, range : bool = False) -> None:
 	"""Download a file from a URL and save it to a specified destination with support for resuming."""
 	headers = {}
-	if os.path.exists(destination):
+	if os.path.exists(destination) and range is True:
 		# Get the size of the partially downloaded file
 		existing_size = os.path.getsize(destination)
 		headers['Range'] = f'bytes={existing_size}-'
@@ -143,7 +143,8 @@ def get_miniconda_cmdline_filepath() -> str:
 	return path
 
 def has_miniconda_been_installed() -> bool:
-	return os.path.exists(get_miniconda_cmdline_filepath())
+	#return os.path.exists(get_miniconda_cmdline_filepath())
+	return False
 
 def get_windows_miniconda_envs_folder() -> str:
 	return Path(os.path.expanduser("~/miniconda3/envs")).as_posix()
@@ -160,18 +161,19 @@ def install_miniconda_for_os() -> None:
 		download_file("https://repo.anaconda.com/miniconda/Miniconda3-latest-Windows-x86_64.exe", "miniconda.exe")
 		logger.info("Installing miniconda.sh")
 		s, e = run_command(f"miniconda.exe /S")
+		print(s, e)
 		assert s==0, e
 	elif os_platform == "Linux":
 		logger.info("Downloading miniconda.sh")
 		download_file("https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh", "miniconda.sh")
 		logger.info("Installing miniconda.sh")
-		s, e = run_command(f"bash miniconda.sh -b -u -p")
+		s, e = run_command(f"bash miniconda.sh -b -u -p {Path(os.path.expanduser("~/miniconda3")).as_posix()}")
 		assert s==0, e
 	elif os_platform == "Darwin":
 		logger.info("Downloading miniconda.sh")
 		download_file("https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-arm64.sh", "miniconda.sh")
 		logger.info("Installing miniconda.sh")
-		s, e = run_command(f"bash miniconda.sh -b -u -p")
+		s, e = run_command(f"bash miniconda.sh -b -u -p {Path(os.path.expanduser("~/miniconda3")).as_posix()}")
 		assert s==0, e
 	else:
 		print(f"Unknown OS {os_platform} - cannot get conda version.")
@@ -379,7 +381,7 @@ def install_comfyui_models_from_hugginface() -> None:
 	for name, url in HUGGINGFACE_CHECKPOINTS_TO_DOWNLOAD.items():
 		print("Downloading:", name)
 		try:
-			download_file(url, Path(os.path.join(checkpoints_folder, name)).as_posix())
+			download_file(url, Path(os.path.join(checkpoints_folder, name)).as_posix(), range=True)
 		except Exception as e:
 			print("Failed to download model file:")
 			print(e)
@@ -389,7 +391,7 @@ def install_comfyui_models_from_hugginface() -> None:
 	for name, url in HUGGINGFACE_LORAS_TO_DOWNLOAD.items():
 		print("Downloading:", name)
 		try:
-			download_file(url, Path(os.path.join(loras_folder, name)).as_posix())
+			download_file(url, Path(os.path.join(loras_folder, name)).as_posix(), range=True)
 		except Exception as e:
 			print("Failed to download model file:")
 			print(e)
@@ -410,7 +412,7 @@ def download_comfyui_latest(filename : str, directory : str) -> None:
 	if target_file is None:
 		raise ValueError(f"Unable to find latest release file for ComfyUI: {filename}")
 
-	download_file(target_file.browser_download_url, filepath)
+	download_file(target_file.browser_download_url, filepath, range=True)
 
 def install_comfyui_and_models_process(install_directory : str) -> None:
 	global COMFYUI_INSTALLATION_FOLDER
