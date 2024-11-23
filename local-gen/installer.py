@@ -48,7 +48,7 @@ COMFYUI_INSTALLATION_FOLDER : Optional[str] = None
 PYTHON_COMMAND : Optional[str] = None
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 
 stream_handler = logging.StreamHandler()
 stream_handler.setLevel(logging.INFO)
