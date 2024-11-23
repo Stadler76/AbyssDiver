@@ -610,7 +610,7 @@ def comfyui_linux_runner() -> None:
 	run_command(f"source {miniconda_activate} py3_10_9 && pip install -r {COMFYUI_INSTALLATION_FOLDER}/requirements.txt")
 
 	process : subprocess.Popen = None
-	args = ['source', '{miniconda_activate}', 'py3_10_9', '&&', 'python', "-s", "main.py", '--lowvram', '--disable-auto-launch'] + CUSTOM_COMMAND_LINE_ARGS_FOR_COMFYUI
+	args = ['source', miniconda_activate, 'py3_10_9', '&&', 'python', "-s", "main.py", '--lowvram', '--disable-auto-launch'] + CUSTOM_COMMAND_LINE_ARGS_FOR_COMFYUI
 
 	if device == 0:
 		# cpu
