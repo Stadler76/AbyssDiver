@@ -565,7 +565,7 @@ def comfyui_windows_runner() -> subprocess.Popen:
 	device : int = ask_windows_gpu_cpu() # 0:cpu, 1:cuda, 2:amd, 3:intel
 
 	embeded_py_filepath = os.path.abspath(f"{COMFYUI_INSTALLATION_FOLDER}/../python_embeded/python.exe")
-	embeded_pip_filepath = os.path.abspath(f"{COMFYUI_INSTALLATION_FOLDER}/../python_embeded/python.exe")
+	embeded_pip_filepath = os.path.abspath(f"{COMFYUI_INSTALLATION_FOLDER}/../python_embeded/Scripts/pip.exe")
 
 	process : subprocess.Popen = None
 	args = [embeded_py_filepath, "-s", "main.py", "--windows-standalone-build", '--lowvram', '--disable-auto-launch'] + CUSTOM_COMMAND_LINE_ARGS_FOR_COMFYUI
@@ -597,23 +597,23 @@ def comfyui_linux_runner() -> None:
 
 	if device == 0:
 		# CPU
-		run_command("pip install torch torchvision torchaudio")
+		run_command(f"{PYTHON_COMMAND} -m pip install torch torchvision torchaudio")
 	elif device == 1:
 		# NVIDIA (CUDA)
 		print('Installing Torch CUDA, please wait a moment.')
-		run_command("pip install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu124")
+		run_command(f"{PYTHON_COMMAND} -m pip install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu124")
 	elif device == 2:
 		# AMD (ROCM)
 		print('Installing Torch AMD ROCM, please wait a moment.')
-		run_command("pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/rocm6.1")
+		run_command(f"{PYTHON_COMMAND} -m pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/rocm6.1")
 	elif device == 3:
 		# DirectML
 		print('Installing Torch DirectML, please wait a moment.')
-		run_command(f"pip install torch_directml")
+		run_command(f"{PYTHON_COMMAND} -m pip install torch_directml")
 
 	write_last_device(device)
 
-	run_command(f"pip install -r {COMFYUI_INSTALLATION_FOLDER}/requirements.txt")
+	run_command(f"{PYTHON_COMMAND} -m pip install -r {COMFYUI_INSTALLATION_FOLDER}/requirements.txt")
 
 	process : subprocess.Popen = None
 	args = [PYTHON_COMMAND, "-s", "main.py", '--lowvram', '--disable-auto-launch'] + CUSTOM_COMMAND_LINE_ARGS_FOR_COMFYUI
