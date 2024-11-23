@@ -138,6 +138,8 @@ def get_miniconda_cmdline_filepath() -> str:
 	path = Path(os.path.expanduser("~/miniconda3/condabin/conda")).as_posix()
 	if os_platform == "Windows":
 		path += ".bat"
+	elif os_platform == "Linux" or os_platform == "Darwin":
+		path += ".sh"
 	return path
 
 def has_miniconda_been_installed() -> bool:
@@ -184,15 +186,11 @@ def does_conda_env_exist() -> bool:
 def get_conda_env_directory() -> str:
 	return Path(os.path.join(get_windows_miniconda_envs_folder(), "py3_10_9")).as_posix()
 
-def get_conda_env_path_cmd() -> str:
-	base_dir = get_conda_env_directory()
-	scripts_dir = Path(os.path.join(base_dir, "Scripts")).as_posix()
-	return f"set PATH={scripts_dir};{base_dir};%PATH%"
-
 def create_conda_env_var() -> None:
 	# create a new virtual environment for python 3.10.9 called "py3_10_9"
 	logger.info("Creating new environment.")
-	print('Press enter to install the python 3.10.9 conda environment. The command displayed below will not run until you do so.')
+	print('The python conda environment will take about 2.8GB in total on disk.')
+	print('Press enter to install the python 3.10.9 conda environment. The command displayed below will not run until you do so, and will wait until finished.')
 	command = f"{get_miniconda_cmdline_filepath()} create -n py3_10_9 python=3.10.9 anaconda"
 	if platform.platform() == "Windows":
 		command = "start " + command
@@ -203,9 +201,6 @@ def create_conda_env_var() -> None:
 
 	logger.info("Activating python 3.10.9 environment.")
 	run_command(f"{get_miniconda_cmdline_filepath()} activate -n py3_10_9")
-
-	logger.info("Adding py3_10_9 environment to PATH.")
-	run_command(get_conda_env_path_cmd())
 
 def get_python_version() -> tuple[Union[str, None], Union[str, None]]:
 	"""Find the python version that is installed."""
