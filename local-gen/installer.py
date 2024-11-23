@@ -591,7 +591,7 @@ def comfyui_linux_runner() -> None:
 
 	# remove torch for it to be reinstalled for GPU
 	if device != 0 and (last_device is None or last_device != device):
-		run_command("source {miniconda_activate} py3_10_9 && pip uninstall torch")
+		run_command(f"source {miniconda_activate} py3_10_9 && pip uninstall torch")
 
 	if device == 0:
 		# CPU
