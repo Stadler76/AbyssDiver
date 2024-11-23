@@ -656,7 +656,7 @@ def main() -> None:
 	if os_platform == "Windows":
 		py_cmd = Path(os.path.join(get_conda_env_directory(), "python.exe")).as_posix()
 	elif os_platform == "Darwin":
-		py_cmd = Path(os.path.join(get_conda_env_directory(), "python.app")).as_posix()
+		py_cmd = Path(os.path.join(get_conda_env_directory(), "python.app", "Contents", "MacOS", "python")).as_posix()
 	elif os_platform == "Linux":
 		py_cmd = Path(os.path.join(get_conda_env_directory(), "python")).as_posix()
 
