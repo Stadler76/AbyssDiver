@@ -568,7 +568,10 @@ def comfyui_windows_runner() -> subprocess.Popen:
 	embeded_pip_filepath = os.path.abspath(f"{COMFYUI_INSTALLATION_FOLDER}/../python_embeded/Scripts/pip.exe")
 
 	process : subprocess.Popen = None
-	args = [embeded_py_filepath, "-s", "main.py", "--windows-standalone-build", '--lowvram', '--disable-auto-launch'] + CUSTOM_COMMAND_LINE_ARGS_FOR_COMFYUI
+	args = [embeded_py_filepath, "-s", "main.py", "--windows-standalone-build", '--disable-auto-launch'] + CUSTOM_COMMAND_LINE_ARGS_FOR_COMFYUI
+
+	if device != 0:
+		args.append('--lowvram')
 
 	if device == 0:
 		# cpu
