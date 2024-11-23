@@ -159,19 +159,19 @@ def install_miniconda_for_os() -> None:
 		logger.info("Downloading miniconda.exe")
 		download_file("https://repo.anaconda.com/miniconda/Miniconda3-latest-Windows-x86_64.exe", "miniconda.exe")
 		logger.info("Installing miniconda.sh")
-		s, e = run_command(f"miniconda.exe /S")
+		s, e = run_command(f"miniconda.exe /S /D=~/")
 		assert s==0, e
 	elif os_platform == "Linux":
 		logger.info("Downloading miniconda.sh")
 		download_file("https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh", "miniconda.sh")
 		logger.info("Installing miniconda.sh")
-		s, e = run_command(f"bash miniconda.sh -b -u -p")
+		s, e = run_command(f"bash miniconda.sh -b -u -p ~/")
 		assert s==0, e
 	elif os_platform == "Darwin":
 		logger.info("Downloading miniconda.sh")
 		download_file("https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-arm64.sh", "miniconda.sh")
 		logger.info("Installing miniconda.sh")
-		s, e = run_command(f"bash miniconda.sh -b -u -p")
+		s, e = run_command(f"bash miniconda.sh -b -u -p ~/")
 		assert s==0, e
 	else:
 		print(f"Unknown OS {os_platform} - cannot get conda version.")
