@@ -143,8 +143,7 @@ def get_miniconda_cmdline_filepath() -> str:
 	return path
 
 def has_miniconda_been_installed() -> bool:
-	#return os.path.exists(get_miniconda_cmdline_filepath())
-	return False
+	return os.path.exists(get_miniconda_cmdline_filepath())
 
 def get_windows_miniconda_envs_folder() -> str:
 	return Path(os.path.expanduser("~/miniconda3/envs")).as_posix()
@@ -161,19 +160,20 @@ def install_miniconda_for_os() -> None:
 		download_file("https://repo.anaconda.com/miniconda/Miniconda3-latest-Windows-x86_64.exe", "miniconda.exe")
 		logger.info("Installing miniconda.sh")
 		s, e = run_command(f"miniconda.exe /S")
-		print(s, e)
 		assert s==0, e
 	elif os_platform == "Linux":
 		logger.info("Downloading miniconda.sh")
 		download_file("https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh", "miniconda.sh")
 		logger.info("Installing miniconda.sh")
-		s, e = run_command(f"bash miniconda.sh -b -u -p {Path(os.path.expanduser("~/miniconda3")).as_posix()}")
+		t1 = Path(os.path.expanduser("~/miniconda3")).as_posix()
+		s, e = run_command(f"bash miniconda.sh -b -u -p {t1}")
 		assert s==0, e
 	elif os_platform == "Darwin":
 		logger.info("Downloading miniconda.sh")
 		download_file("https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-arm64.sh", "miniconda.sh")
 		logger.info("Installing miniconda.sh")
-		s, e = run_command(f"bash miniconda.sh -b -u -p {Path(os.path.expanduser("~/miniconda3")).as_posix()}")
+		t1 = Path(os.path.expanduser("~/miniconda3")).as_posix()
+		s, e = run_command(f"bash miniconda.sh -b -u -p {t1}")
 		assert s==0, e
 	else:
 		print(f"Unknown OS {os_platform} - cannot get conda version.")
