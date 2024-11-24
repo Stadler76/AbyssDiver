@@ -661,7 +661,7 @@ def comfyui_linux_runner() -> None:
 		args.append("--cpu")
 	elif device == 1:
 		print("Check Cuda Malloc")
-		if request_prompt("Are any of your currently plugged-in GPUs older than the 1060 series (but not including the 1060)? (y/n): ") == "y":
+		if request_prompt("Are any of your currently plugged-in GPUs older than the 1060 series (but not including the 1060)? (y/n): ", ["y", "n"]) == "y":
 			args.append("--disable-cuda-malloc")
 	elif device == 3:
 		# directml
