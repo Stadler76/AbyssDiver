@@ -193,13 +193,13 @@ def create_conda_env_var() -> None:
 	command = f"{get_miniconda_cmdline_filepath()} create -n py3_10_9 python=3.10.9 anaconda"
 	if platform.platform() == "Windows":
 		command = "start " + command
-	run_command(command)
+	run_command(command, shell=True)
 
 	logger.info("Listing current environments.")
-	run_command(f"{get_miniconda_cmdline_filepath()} env list")
+	run_command(f"{get_miniconda_cmdline_filepath()} env list", shell=True)
 
 	logger.info("Activating python 3.10.9 environment.")
-	run_command(f"{get_miniconda_cmdline_filepath()} activate -n py3_10_9")
+	run_command(f"{get_miniconda_cmdline_filepath()} activate -n py3_10_9", shell=True)
 
 def get_python_version() -> tuple[Union[str, None], Union[str, None]]:
 	"""Find the python version that is installed."""
