@@ -238,19 +238,24 @@ def download_git_portal_windows() -> None:
 	run_command("winget install --id Git.Git -e --source winget")
 
 	status, _ = run_command("git --version")
-	assert status == 0, "Could not locate the 'git' package which is required for Linux."
+	assert status == 0, "Could not locate the 'git' package which is required."
 
 def download_git_portal_linux() -> None:
 	status, _ = run_command("git --version")
 	if status == 0:
 		return
 
-	print("You are required to install git to download ComfyUI on Linux.")
-	print("You will be prompted now to install it.")
-	run_command("sudo apt update && sudo apt install -y git")
+	if platform.platform() == "Darwin":
+		print('You must install Linux manually on Mac devices.')
+		print('Please head to https://github.com/git-guides/install-git and install following the "Install Git on Mac" section.')
+		print('Press enter when you have installed git.')
+	else:
+		print("You are required to install git to download ComfyUI on Linux.")
+		print("You will be prompted now to install it.")
+		run_command("sudo apt update && sudo apt install -y git")
 
 	status, _ = run_command("git --version")
-	assert status == 0, "Could not locate the 'git' package which is required for Linux."
+	assert status == 0, "Could not locate the 'git' package which is required."
 
 def get_github_repository_latest_release_files(api_url : str) -> list[GithubFile]:
 	"""Get the latest release files of the target github repository"""
@@ -619,7 +624,8 @@ def comfyui_linux_runner() -> None:
 	write_last_device(device)
 
 	print('Installing ComfyUI requirements')
-	run_command(f"{PYTHON_COMMAND} -m pip install -r {COMFYUI_INSTALLATION_FOLDER}/requirements.txt")
+	requirements_abs = Path(os.path.abspath(os.path.join(COMFYUI_INSTALLATION_FOLDER), "requirements.txt")).as_posix()
+	run_command(f"{PYTHON_COMMAND} -m pip install -r {requirements_abs}")
 
 	main_py_filepath = Path(os.path.abspath(os.path.join(COMFYUI_INSTALLATION_FOLDER, "main.py"))).as_posix()
 
