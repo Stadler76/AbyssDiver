@@ -255,6 +255,7 @@ def download_git_portal_linux() -> None:
 		print('You must install Linux manually on Mac devices.')
 		print('Please head to https://github.com/git-guides/install-git and install following the "Install Git on Mac" section.')
 		print('Press enter when you have installed git.')
+		input("")
 	else:
 		print("You are required to install git to download ComfyUI on Linux.")
 		print("You will be prompted now to install it.")
