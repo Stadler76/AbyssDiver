@@ -103,12 +103,12 @@ def download_file(url: str, destination: str, range : bool = False) -> None:
 
 	print("Download complete.")
 
-def run_command(command: str) -> tuple[int, str]:
+def run_command(command: str, shell : bool = False) -> tuple[int, str]:
 	print('RUNNING COMMAND:')
 	print(command)
 	print('='*20)
 	try:
-		result: subprocess.CompletedProcess = subprocess.run(command, shell=False, capture_output=True, text=True)
+		result: subprocess.CompletedProcess = subprocess.run(command, shell=shell, capture_output=True, text=True)
 		status_code: int = result.returncode
 		output_message: str = result.stdout.strip()
 		error_message: str = result.stderr.strip()
@@ -206,22 +206,22 @@ def get_python_version() -> tuple[Union[str, None], Union[str, None]]:
 	"""Find the python version that is installed."""
 	pattern = r"Python (.+)"
 	# check 'python' command
-	status, output = run_command("python --version")
+	status, output = run_command("python --version", shell=True)
 	if status == 0:
 		return "python", re.match(pattern, output).group(1)
 	# check 'py' command
-	status, output = run_command("py --version")
+	status, output = run_command("py --version", shell=True)
 	if status == 0:
 		return "py", re.match(pattern, output).group(1)
 	# check 'python3' command
-	status, output = run_command("python3 --version")
+	status, output = run_command("python3 --version", shell=True)
 	if status == 0:
 		return "python3", re.match(pattern, output).group(1)
 	# no python available
 	return None, None
 
 def download_git_portal_windows() -> None:
-	status, _ = run_command("git --version")
+	status, _ = run_command("git --version", shell=True)
 	if status == 0:
 		return
 
@@ -235,13 +235,13 @@ def download_git_portal_windows() -> None:
 	print("This is using winget so if you don't have that you will need to manually install git.")
 	print("To manually install, visit 'https://git-scm.com/downloads' and run this script again.")
 
-	run_command("winget install --id Git.Git -e --source winget")
+	run_command("winget install --id Git.Git -e --source winget", shell=True)
 
-	status, _ = run_command("git --version")
+	status, _ = run_command("git --version", shell=True)
 	assert status == 0, "Could not locate the 'git' package which is required."
 
 def download_git_portal_linux() -> None:
-	status, _ = run_command("git --version")
+	status, _ = run_command("git --version", shell=True)
 	if status == 0:
 		return
 
@@ -252,9 +252,9 @@ def download_git_portal_linux() -> None:
 	else:
 		print("You are required to install git to download ComfyUI on Linux.")
 		print("You will be prompted now to install it.")
-		run_command("sudo apt update && sudo apt install -y git")
+		run_command("sudo apt update && sudo apt install -y git", shell=True)
 
-	status, _ = run_command("git --version")
+	status, _ = run_command("git --version", shell=True)
 	assert status == 0, "Could not locate the 'git' package which is required."
 
 def get_github_repository_latest_release_files(api_url : str) -> list[GithubFile]:
