@@ -187,6 +187,9 @@ def get_conda_env_directory() -> str:
 
 def create_conda_env_var() -> None:
 	# create a new virtual environment for python 3.10.9 called "py3_10_9"
+	logger.info("Initializing Conda.")
+	run_command(f"{get_miniconda_cmdline_filepath()} init", shell=True)
+
 	logger.info("Creating new environment.")
 	print('The python conda environment will take about 2.8GB in total on disk.')
 	print('Press enter to install the python 3.10.9 conda environment. The command displayed below will not run until you do so, and will wait until finished.')
