@@ -584,7 +584,7 @@ def comfyui_windows_runner() -> subprocess.Popen:
 	elif device == 2 or device == 4:
 		# amd/DirectML
 		print('Installing Torch DirectML. Please wait a moment.')
-		run_command(f'{embeded_pip_filepath} install torch_directml')
+		run_command(f'{embeded_pip_filepath} install torch_directml', shell=True)
 		args.append("--directml")
 
 	print("Running the comfyui process.")
@@ -602,24 +602,24 @@ def comfyui_linux_runner() -> None:
 	# remove torch for it to be reinstalled for GPU
 	if device != 0 and (last_device is None or last_device != device):
 		print('Uninstalling old torch.')
-		run_command(f"{PYTHON_COMMAND} -m pip uninstall torch")
+		run_command(f"{PYTHON_COMMAND} -m pip uninstall torch", shell=True)
 
 	if device == 0:
 		# CPU
 		print('Installing CPU')
-		run_command(f"{PYTHON_COMMAND} -m pip install torch torchvision torchaudio")
+		run_command(f"{PYTHON_COMMAND} -m pip install torch torchvision torchaudio", shell=True)
 	elif device == 1:
 		# NVIDIA (CUDA)
 		print('Installing Torch CUDA, please wait a moment.')
-		run_command(f"{PYTHON_COMMAND} -m pip install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu124")
+		run_command(f"{PYTHON_COMMAND} -m pip install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu124", shell=True)
 	elif device == 2:
 		# AMD (ROCM)
 		print('Installing Torch AMD ROCM, please wait a moment.')
-		run_command(f"{PYTHON_COMMAND} -m pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/rocm6.1")
+		run_command(f"{PYTHON_COMMAND} -m pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/rocm6.1", shell=True)
 	elif device ==3:
 		# Mac
 		print('Installing Metal CPU')
-		run_command(f"{PYTHON_COMMAND} -m pip install --pre torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/nightly/cpu")
+		run_command(f"{PYTHON_COMMAND} -m pip install --pre torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/nightly/cpu", shell=True)
 
 	write_last_device(device)
 
