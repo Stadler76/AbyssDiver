@@ -288,7 +288,16 @@ def install_comfyui_nodes(custom_nodes_folder : str) -> None:
 	os.chdir(before_cwd)
 	py_exe = Path(os.path.join(COMFYUI_INSTALLATION_FOLDER, "python_embeded", "python.exe")).as_posix()
 	site_pckge_folder = Path(os.path.join(COMFYUI_INSTALLATION_FOLDER, "python_embeded", "Lib", "site-packages")).as_posix()
-# --target "python_embeded/Lib/site-packages"
+
+	if platform.platform() == "Darwin":
+		print("You are required to have CMAKE installed for the transparent background node to install properly.")
+		print("You will need to accept the xcodebuild license of building apps on your device using CMAKE.")
+		print("You will first be prompted to accept the license, then you will be prompted for the CMAKE installation.")
+		s1, e1 = run_command('sudo xcodebuild -license accept', shell=True)
+		assert s1, e1
+		s2, e2 = run_command('brew install cmake', shell=True)
+		assert s2, e2
+
 	if os.path.exists(py_exe):
 		run_command(f"\"{py_exe}\" -m pip install --no-user --target \"{site_pckge_folder}\" pydantic", shell=True)
 	else:
@@ -306,6 +315,7 @@ def install_comfyui_nodes(custom_nodes_folder : str) -> None:
 			else:
 				print('System Python')
 				run_command(f"\"{PYTHON_COMMAND}\" -m pip install -r \"{Path(req_txtfile).as_posix()}\"", shell=True)
+
 	print("Installed ComfyUI Custom Nodes")
 
 def prompt_safetensor_file_install(folder : str, filename : str, download_url : str) -> None:
