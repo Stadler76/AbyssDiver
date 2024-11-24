@@ -693,7 +693,7 @@ def main() -> None:
 	elif os_platform == "Darwin":
 		py_cmd = Path(os.path.join(get_conda_env_directory(), "bin", "python3.10")).as_posix()
 	elif os_platform == "Linux":
-		py_cmd = Path(os.path.join(get_conda_env_directory(), "python")).as_posix()
+		py_cmd = Path(os.path.join(get_conda_env_directory(), "bin", "python3.10")).as_posix()
 
 	version = "3.10.9"
 
