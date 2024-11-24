@@ -600,7 +600,7 @@ def comfyui_windows_runner() -> subprocess.Popen:
 
 	if device == 0:
 		# cpu
-		args.append("--cpu --force-fp16")
+		args.append("--cpu")
 	elif device == 2 or device == 4:
 		# amd/DirectML
 		print('Installing Torch DirectML. Please wait a moment.')
