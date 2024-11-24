@@ -436,9 +436,10 @@ def install_comfyui_and_models_process(install_directory : str) -> None:
 
 	if has_all_required_comfyui_models() is False:
 		print("="*20)
+		print("Note: The total file size required for Conda will add up over 2.2GB.")
 		print("Note: The total file size required for ComfyUI will add up over 9GB.")
 		print("Note: The total file size required for the Abyss Diver content will add up to 7.1GB")
-		print("You will need a total of at least 17GBs available.")
+		print("You will need a total of at least 19.3GBs available.")
 		print("Press enter to continue...")
 		input()
 
