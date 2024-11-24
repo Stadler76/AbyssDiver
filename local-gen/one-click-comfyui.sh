@@ -20,14 +20,6 @@ else
 	exec "$0" "$@"
 fi
 
-# Ensure pip is installed and upgraded
-echo "Ensuring pip is installed and upgrading it..."
-python3 -m ensurepip --default-pip
-if [ $? -ne 0 ]; then
-	echo "Failed to ensure pip is installed. Exiting."
-	exit 1
-fi
-
 python3 -m pip install --upgrade pip
 if [ $? -ne 0 ]; then
 	echo "Failed to upgrade pip. Exiting."
