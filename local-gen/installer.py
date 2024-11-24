@@ -199,7 +199,7 @@ def create_conda_env_var() -> None:
 	run_command(f"{get_miniconda_cmdline_filepath()} env list", shell=True)
 
 	logger.info("Activating python 3.10.9 environment.")
-	run_command(f"{get_miniconda_cmdline_filepath()} activate -n py3_10_9", shell=True)
+	run_command(f"{get_miniconda_cmdline_filepath()} activate py3_10_9", shell=True)
 
 def get_python_version() -> tuple[Union[str, None], Union[str, None]]:
 	"""Find the python version that is installed."""
