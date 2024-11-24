@@ -295,6 +295,7 @@ def install_comfyui_nodes(custom_nodes_folder : str) -> None:
 		print("This build process for cmake may take a period of time with opencv-python's package when it starts building.")
 		s1, e1 = run_command('sudo xcodebuild -license accept', shell=True)
 		assert s1, e1
+		print("\n"*2)
 		print('Press enter to run the command below after it has been displayed in the terminal.')
 		s2, e2 = run_command('brew install cmake', shell=True)
 		assert s2, e2
