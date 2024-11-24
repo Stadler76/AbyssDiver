@@ -153,11 +153,13 @@ def install_miniconda_for_os() -> None:
 	os.makedirs(directory, exist_ok=True)
 	print('Working Directory: ', directory)
 	if os_platform == "Windows":
+		os.chdir("tools/miniconda3")
 		logger.info("Downloading miniconda.exe")
-		download_file("https://repo.anaconda.com/miniconda/Miniconda3-latest-Windows-x86_64.exe", "tools/miniconda3/miniconda.exe")
+		download_file("https://repo.anaconda.com/miniconda/Miniconda3-latest-Windows-x86_64.exe", "miniconda.exe")
 		logger.info("Installing miniconda.sh")
-		s, e = run_command(f"./tools/miniconda3/miniconda.exe /S", shell=True)
+		s, e = run_command("miniconda.exe /S", shell=True)
 		assert s==0, e
+		os.chdir("../..")
 	elif os_platform == "Linux":
 		logger.info("Downloading miniconda.sh")
 		download_file("https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh", "tools/miniconda3/miniconda.sh")
