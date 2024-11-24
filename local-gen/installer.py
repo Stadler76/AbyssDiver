@@ -149,7 +149,6 @@ def get_windows_miniconda_envs_folder() -> str:
 def install_miniconda_for_os() -> None:
 	os_platform : str = platform.system() # Windows, Linux, Darwin (MacOS)
 	logger.info(f"Installing miniconda for OS: {os_platform}")
-	cwd : str = os.getcwd()
 	directory = Path("tools/miniconda3").as_posix()
 	os.makedirs(directory, exist_ok=True)
 	print('Working Directory: ', directory)
@@ -157,7 +156,7 @@ def install_miniconda_for_os() -> None:
 		logger.info("Downloading miniconda.exe")
 		download_file("https://repo.anaconda.com/miniconda/Miniconda3-latest-Windows-x86_64.exe", "tools/miniconda3/miniconda.exe")
 		logger.info("Installing miniconda.sh")
-		s, e = run_command(f"tools/miniconda3/miniconda.exe /S", shell=True)
+		s, e = run_command(f"./tools/miniconda3/miniconda.exe /S", shell=True)
 		assert s==0, e
 	elif os_platform == "Linux":
 		logger.info("Downloading miniconda.sh")
