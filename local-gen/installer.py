@@ -290,9 +290,9 @@ def install_comfyui_nodes(custom_nodes_folder : str) -> None:
 	site_pckge_folder = Path(os.path.join(COMFYUI_INSTALLATION_FOLDER, "python_embeded", "Lib", "site-packages")).as_posix()
 # --target "python_embeded/Lib/site-packages"
 	if os.path.exists(py_exe):
-		run_command(f"\"{py_exe}\" -m pip install --no-user --target \"{site_pckge_folder}\" pydantic")
+		run_command(f"\"{py_exe}\" -m pip install --no-user --target \"{site_pckge_folder}\" pydantic", shell=True)
 	else:
-		run_command(f"\"{PYTHON_COMMAND}\" -m pip install pydantic")
+		run_command(f"\"{PYTHON_COMMAND}\" -m pip install pydantic", shell=True)
 
 	for folder_name in os.listdir(custom_nodes_folder):
 		if os.path.isdir(Path(os.path.join(custom_nodes_folder, folder_name)).as_posix()) is False:
@@ -302,10 +302,10 @@ def install_comfyui_nodes(custom_nodes_folder : str) -> None:
 			print(f'Installing requirements for: {folder_name} {req_txtfile}')
 			if os.path.exists(py_exe):
 				print('ComfyUI Embeded Python')
-				run_command(f"\"{py_exe}\" -m pip install --no-user --target \"{site_pckge_folder}\" -r \"{Path(req_txtfile).as_posix()}\"")
+				run_command(f"\"{py_exe}\" -m pip install --no-user --target \"{site_pckge_folder}\" -r \"{Path(req_txtfile).as_posix()}\"", shell=True)
 			else:
 				print('System Python')
-				run_command(f"\"{PYTHON_COMMAND}\" -m pip install -r \"{Path(req_txtfile).as_posix()}\"")
+				run_command(f"\"{PYTHON_COMMAND}\" -m pip install -r \"{Path(req_txtfile).as_posix()}\"", shell=True)
 	print("Installed ComfyUI Custom Nodes")
 
 def prompt_safetensor_file_install(folder : str, filename : str, download_url : str) -> None:
