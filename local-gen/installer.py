@@ -187,7 +187,7 @@ def get_conda_env_directory() -> str:
 
 def create_conda_env_var() -> None:
 	# create a new virtual environment for python 3.10.9 called "py3_10_9"
-	logger.info("Initializing Conda.")
+	logger.info("Initializing Conda before install.")
 	run_command(f"{get_miniconda_cmdline_filepath()} init", shell=True)
 
 	logger.info("Creating new environment.")
@@ -200,6 +200,9 @@ def create_conda_env_var() -> None:
 
 	logger.info("Listing current environments.")
 	run_command(f"{get_miniconda_cmdline_filepath()} env list", shell=True)
+
+	logger.info("Initializing Conda after install.")
+	run_command(f"{get_miniconda_cmdline_filepath()} init", shell=True)
 
 	logger.info("Activating python 3.10.9 environment.")
 	run_command(f"{get_miniconda_cmdline_filepath()} activate py3_10_9", shell=True)
