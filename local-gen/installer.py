@@ -625,7 +625,7 @@ def comfyui_linux_runner() -> None:
 
 	print('Installing ComfyUI requirements')
 	requirements_abs = Path(os.path.abspath(os.path.join(COMFYUI_INSTALLATION_FOLDER, "requirements.txt"))).as_posix()
-	run_command(f"{PYTHON_COMMAND} -m pip install -r {requirements_abs}")
+	run_command(f"{PYTHON_COMMAND} -m pip install -r {requirements_abs}", shell=True)
 
 	main_py_filepath = Path(os.path.abspath(os.path.join(COMFYUI_INSTALLATION_FOLDER, "main.py"))).as_posix()
 
@@ -687,7 +687,7 @@ def main() -> None:
 
 	print(f"Found python ({py_cmd}) of version {version}.")
 
-	run_command(f"\"{PYTHON_COMMAND}\" -m pip install -r requirements.txt")
+	run_command(f"\"{PYTHON_COMMAND}\" -m pip install -r requirements.txt", shell=True)
 
 	process_proxy : subprocess.Popen
 	process_comfyui : subprocess.Popen
