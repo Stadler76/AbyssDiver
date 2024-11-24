@@ -152,33 +152,32 @@ def install_miniconda_for_os() -> None:
 	cwd : str = os.getcwd()
 	directory = Path("tools/miniconda3").as_posix()
 	os.makedirs(directory, exist_ok=True)
-	os.chdir(directory)
+	print('Working Directory: ', directory)
 	if os_platform == "Windows":
 		logger.info("Downloading miniconda.exe")
-		download_file("https://repo.anaconda.com/miniconda/Miniconda3-latest-Windows-x86_64.exe", "miniconda.exe")
+		download_file("https://repo.anaconda.com/miniconda/Miniconda3-latest-Windows-x86_64.exe", "tools/miniconda3/miniconda.exe")
 		logger.info("Installing miniconda.sh")
-		s, e = run_command(f"miniconda.exe /S")
+		s, e = run_command(f"tools/miniconda3/miniconda.exe /S", shell=True)
 		assert s==0, e
 	elif os_platform == "Linux":
 		logger.info("Downloading miniconda.sh")
-		download_file("https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh", "miniconda.sh")
+		download_file("https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh", "tools/miniconda3/miniconda.sh")
 		logger.info("Installing miniconda.sh")
 		t1 = Path(os.path.expanduser("~/miniconda3")).as_posix()
-		s, e = run_command(f"bash miniconda.sh -b -u -p {t1}")
+		s, e = run_command(f"bash tools/miniconda3/miniconda.sh -b -u -p {t1}", shell=True)
 		assert s==0, e
 	elif os_platform == "Darwin":
 		logger.info("Downloading miniconda.sh")
-		download_file("https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-arm64.sh", "miniconda.sh")
+		download_file("https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-arm64.sh", "tools/miniconda3/miniconda.sh")
 		logger.info("Installing miniconda.sh")
 		t1 = Path(os.path.expanduser("~/miniconda3")).as_posix()
-		s, e = run_command(f"bash miniconda.sh -b -u -p {t1}")
+		s, e = run_command(f"bash tools/miniconda3/miniconda.sh -b -u -p {t1}", shell=True)
 		assert s==0, e
 	else:
 		print(f"Unknown OS {os_platform} - cannot get conda version.")
 		exit()
 
 	logger.info("Finished installing miniconda")
-	os.chdir(cwd)
 
 def does_conda_env_exist() -> bool:
 	return os.path.exists(os.path.join(get_windows_miniconda_envs_folder(), "py3_10_9"))
@@ -194,13 +193,13 @@ def create_conda_env_var() -> None:
 	command = f"{get_miniconda_cmdline_filepath()} create -n py3_10_9 python=3.10.9 anaconda"
 	if platform.platform() == "Windows":
 		command = "start " + command
-	run_command(command)
+	run_command(command, shell=True)
 
 	logger.info("Listing current environments.")
-	run_command(f"{get_miniconda_cmdline_filepath()} env list")
+	run_command(f"{get_miniconda_cmdline_filepath()} env list", shell=True)
 
 	logger.info("Activating python 3.10.9 environment.")
-	run_command(f"{get_miniconda_cmdline_filepath()} activate -n py3_10_9")
+	run_command(f"{get_miniconda_cmdline_filepath()} activate py3_10_9", shell=True)
 
 def get_python_version() -> tuple[Union[str, None], Union[str, None]]:
 	"""Find the python version that is installed."""
@@ -293,8 +292,10 @@ def install_comfyui_nodes(custom_nodes_folder : str) -> None:
 		print("You are required to have CMAKE installed for the transparent background node to install properly.")
 		print("You will need to accept the xcodebuild license of building apps on your device using CMAKE.")
 		print("You will first be prompted to accept the license, then you will be prompted for the CMAKE installation.")
+		print("This build process for cmake may take a period of time with opencv-python's package when it starts building.")
 		s1, e1 = run_command('sudo xcodebuild -license accept', shell=True)
 		assert s1, e1
+		print("\n"*2)
 		print('Press enter to run the command below after it has been displayed in the terminal.')
 		s2, e2 = run_command('brew install cmake', shell=True)
 		assert s2, e2
@@ -435,9 +436,10 @@ def install_comfyui_and_models_process(install_directory : str) -> None:
 
 	if has_all_required_comfyui_models() is False:
 		print("="*20)
+		print("Note: The total file size required for Conda will add up over 2.2GB.")
 		print("Note: The total file size required for ComfyUI will add up over 9GB.")
 		print("Note: The total file size required for the Abyss Diver content will add up to 7.1GB")
-		print("You will need a total of at least 17GB available.")
+		print("You will need a total of at least 19.3GBs available.")
 		print("Press enter to continue...")
 		input()
 
