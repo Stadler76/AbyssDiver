@@ -292,6 +292,7 @@ def install_comfyui_nodes(custom_nodes_folder : str) -> None:
 		print("You are required to have CMAKE installed for the transparent background node to install properly.")
 		print("You will need to accept the xcodebuild license of building apps on your device using CMAKE.")
 		print("You will first be prompted to accept the license, then you will be prompted for the CMAKE installation.")
+		print("This build process for cmake may take a period of time with opencv-python's package when it starts building.")
 		s1, e1 = run_command('sudo xcodebuild -license accept', shell=True)
 		assert s1, e1
 		print('Press enter to run the command below after it has been displayed in the terminal.')
