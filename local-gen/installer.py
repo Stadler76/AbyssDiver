@@ -624,7 +624,7 @@ def comfyui_linux_runner() -> None:
 	write_last_device(device)
 
 	print('Installing ComfyUI requirements')
-	requirements_abs = Path(os.path.abspath(os.path.join(COMFYUI_INSTALLATION_FOLDER), "requirements.txt")).as_posix()
+	requirements_abs = Path(os.path.abspath(os.path.join(COMFYUI_INSTALLATION_FOLDER, "requirements.txt"))).as_posix()
 	run_command(f"{PYTHON_COMMAND} -m pip install -r {requirements_abs}")
 
 	main_py_filepath = Path(os.path.abspath(os.path.join(COMFYUI_INSTALLATION_FOLDER, "main.py"))).as_posix()
