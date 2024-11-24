@@ -284,7 +284,7 @@ def install_comfyui_nodes(custom_nodes_folder : str) -> None:
 	before_cwd : str = os.getcwd()
 	os.chdir(custom_nodes_folder)
 	for url in COMFYUI_CUSTOM_NODES:
-		run_command(f"git clone {url}")
+		run_command(f"git clone {url}", shell=True)
 	os.chdir(before_cwd)
 	py_exe = Path(os.path.join(COMFYUI_INSTALLATION_FOLDER, "python_embeded", "python.exe")).as_posix()
 	site_pckge_folder = Path(os.path.join(COMFYUI_INSTALLATION_FOLDER, "python_embeded", "Lib", "site-packages")).as_posix()
@@ -493,7 +493,7 @@ def comfyui_linux_installer() -> None:
 
 		os.chdir(directory)
 
-		status, message = run_command(f"git clone {COMFYUI_REPOSITORY_URL}")
+		status, message = run_command(f"git clone {COMFYUI_REPOSITORY_URL}", shell=True)
 		if "already exists" not in message:
 			assert status == 0, f"Failed to clone repository {COMFYUI_REPOSITORY_URL}: {message}"
 
