@@ -292,8 +292,8 @@ def install_comfyui_nodes(custom_nodes_folder : str) -> None:
 	for url in COMFYUI_CUSTOM_NODES:
 		run_command(f"git clone {url}", shell=True)
 	os.chdir(before_cwd)
-	py_exe = Path(os.path.join(COMFYUI_INSTALLATION_FOLDER, "python_embeded", "python.exe")).as_posix()
-	site_pckge_folder = Path(os.path.join(COMFYUI_INSTALLATION_FOLDER, "python_embeded", "Lib", "site-packages")).as_posix()
+	py_exe = Path(os.path.join(COMFYUI_INSTALLATION_FOLDER, "..", "python_embeded", "python.exe")).as_posix()
+	site_pckge_folder = Path(os.path.join(COMFYUI_INSTALLATION_FOLDER, "..", "python_embeded", "Lib", "site-packages")).as_posix()
 
 	if platform.platform() == "Darwin":
 		print("You are required to have CMAKE installed for the transparent background node to install properly.")
