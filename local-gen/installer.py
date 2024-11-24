@@ -697,6 +697,7 @@ def main() -> None:
 
 	version = "3.10.9"
 
+	print(py_cmd)
 	assert os.path.exists(py_cmd), "Conda failed to install."
 
 	print(py_cmd, version)
