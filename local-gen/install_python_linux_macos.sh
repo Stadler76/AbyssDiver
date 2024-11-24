@@ -1,5 +1,12 @@
 #!/bin/bash
 
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    echo "Mac"
+    echo "Please manually install Python from https://www.python.org/downloads/macos/ under Stable Released labeled 'Download macOS 64-bit universal2 installer'"
+    read -p "Press Enter to continue..."
+    exit 0
+fi
+
 # Check if Python is installed
 if command -v python3 &>/dev/null; then
     echo "Python is already installed."
