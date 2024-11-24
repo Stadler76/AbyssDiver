@@ -494,17 +494,17 @@ setup.evaluateDalleCharacterDescription = function(mc) {
 	// Curses and conditions
 	if (mc.hasCurse("Freckle Speckle")) description += "Many freckles. ";
 	if (mc.hasCurse("20/20000000")) description += "Wearing thick glasses. ";
-	if (mc.hasCurse("Gooey")) description += "A slime person, transluscent slime-skinned. ";
+	if (mc.hasCurse("Gooey")) description += "A slime person, translucent slime-skinned. ";
 	if (mc.hasCurse("Crossdress Your Heart")) description += "Crossdressing as the opposite gender. ";
 	if (mc.hasCurse("Lingual Leviathan")) description += "A very long tongue sticking out. ";
 	if (mc.hasCurse("Massacre Manicure")) description += "Abnormally sharp and long fingernails. ";
 	if (mc.hasCurse("Flower Power")) description += "Covered in flowers. ";
 	if (mc.hasCurse("Cellulose")) description += "Made of living plant matter, like a dryad. ";
 	if (mc.hasCurse("Wriggly Antennae")) description += "Wriggly insect antennae on forehead. ";
-	if (mc.hasCurse("Carapacian")) description += "Covered in an insect-like carapac. ";
+	if (mc.hasCurse("Carapacian")) description += "Covered in an insect-like carapace. ";
 	if (mc.hasCurse("Creature of the Night")) description += "A vampire, with vampire fangs. ";
 	if (mc.hasCurse("Minish-ish")) description += `Very tiny, only a few inches tall. `;
-	if (mc.hasCurse("Colossal-able")) description += `Enormous, asbolutely giant. `;
+	if (mc.hasCurse("Colossal-able")) description += `Enormous, absolutely giant. `;
 	if (mc.hasCurse("Seafolk")) description += "A merfolk with a merfolk tail. ";
 	if (mc.hasCurse("Tickly Tentacles")) description += `${mc.tentacles} squirming tentacles growing from their body. `;
 	if (mc.hasCurse("Eye-scream")) description += `${mc.extraEyes} extra eyes on their body. `;
@@ -635,7 +635,7 @@ setup.POSITIVE_CATEGORICAL_TAGGING = {
 	],
 
 	"Image Quality" : [
-		"best_quality", "masterpiece", "hd", "4k", "8k", "extremely detailed", "inctricate details", "ultra-detailed",
+		"best_quality", "masterpiece", "hd", "4k", "8k", "extremely detailed", "intricate details", "ultra-detailed",
 		"illustration", "detailed light", "hdr", "best quality", "amazing quality", "very aesthetic", "absurdres",
 		"extremely detailed CG unity 8k wallpaper", "highres", "highly detailed", "soft shadow", "hard shadow",
 		"strong shadow", "depth of field", "an extremely delicate and beautiful"
@@ -670,7 +670,7 @@ setup.POSITIVE_CATEGORICAL_TAGGING = {
 	],
 
 	"Censor" : [
-		"censored", "mosiac censorship", "out-of-frame censoring", "bar censor",
+		"censored", "mosaic censorship", "out-of-frame censoring", "bar censor",
 		"heart censor", "glitch censor", "shadow censor", "tape censor", "blue censor", "tail censor", "ribbon censor",
 		"smoke censor", "feather censor", "soap censor", "one finger selfie challenge", "light censor"
 	],
@@ -909,7 +909,7 @@ setup.comfyUI_PrepareCharacterData = function() {
 	// get the character internal state (deep clone it)
 	const mc_internal_state_clone = Object.fromEntries(Object.entries(State.variables.mc._internalState()));
 	delete mc_internal_state_clone.image; // don't need the image to be sent
-	delete mc_internal_state_clone.events; // dont need the events to be sent
+	delete mc_internal_state_clone.events; // don't need the events to be sent
 	delete mc_internal_state_clone.imageIcon; // don't need the image icon to be sent
 
 	// payload to send to proxy/comfyui

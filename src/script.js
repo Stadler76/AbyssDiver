@@ -460,7 +460,7 @@ Setting.addToggle("SidebarPortrait", {
 
 Setting.addToggle("OpenAIGeneration", {
     label: "Allow for the creation of portraits using OpenAI's Dalle Generator.",
-    default: false,
+    default: true,
 });
 
 Setting.addToggle("ComfyUIGeneration", {
@@ -1508,7 +1508,7 @@ let _lastLayer = null;
 // Check if the layer has changed
 function layerChanged() {
     let currentLayer = State.getVar("$currentLayer");
-    if (currentLayer !== _lastLayer) {
+    if (currentLayer !== _lastLayer && currentLayer !== 0) {
         _lastLayer = currentLayer;
         return true;
     }
@@ -1548,7 +1548,7 @@ Macro.add('sidebar-widget', {
         const SemenDemonBalance = State.variables.SemenDemonBalance || 0;
         const CotNBalance = State.variables.CotNBalance || 0;
         const forageFood = State.variables.forageFood || false;
-        const forageWater = State.variables.forageWater || false;
+        const forageWater = !([3, 5, 7].includes(State.variables.currentLayer)) && State.variables.forageWater;
 
         if (tags().includes("titleScreen") || tags().includes("credits")) {
             $('.twine-sidebar').remove();
@@ -1793,10 +1793,10 @@ Macro.add('sidebar-widget', {
                         <button id="custom-forward-button" class="nav-arrow right">&rarr;</button>
                     </div>
                     ${settings.SidebarPortrait && !settings.OverridePortrait && setup.firstPortraitGen ?
-                `<img class="dalleImage portrait" src="" alt="Generated Portrait" style="--gender-color: ${getGenderColor(State.variables.mc.gender)};">` :
+                `<img class="dalleImage portrait" src="" alt="Generated Portrait" style="--gender-color: ${getGenderColor(State.variables.mc.gender)}; background-image: url('images/Layer Intros/l${SugarCube.State.variables.currentLayer}intro.png')">` :
                 (settings.OverridePortrait ?
-                    `<img src="images/GeneratedPortraits/CharacterPortraitOverride.png" alt="Override Portrait Image" class="portrait" style="--gender-color: ${getGenderColor(State.variables.mc.gender)};">` :
-                    `<img src="images/Player Icons/player${State.variables.mc.gender >= 4 ? 'F' : 'M'}${State.variables.portraitNumber || 0}.jpg" alt="Player Portrait ${(State.variables.portraitNumber || 0) + 1}" class="portrait" style="--gender-color: ${getGenderColor(State.variables.mc.gender)};">`)
+                    `<img src="images/GeneratedPortraits/CharacterPortraitOverride.png" alt="Override Portrait Image" class="portrait" style="--gender-color: ${getGenderColor(State.variables.mc.gender)}; background-image: url('images/Layer Intros/l${SugarCube.State.variables.currentLayer}intro.png')">` :
+                    `<img src="images/Player Icons/player${State.variables.mc.gender >= 4 ? 'F' : 'M'}${State.variables.portraitNumber || 0}.jpg" alt="Player Portrait ${(State.variables.portraitNumber || 0) + 1}" class="portrait" style="--gender-color: ${getGenderColor(State.variables.mc.gender)}; background-image: url('images/Layer Intros/l${SugarCube.State.variables.currentLayer}intro.png')">`)
             }
                 </div>
 
@@ -2454,22 +2454,18 @@ window.setup = {
             }
 
             renderRows(data);
+            table.appendChild(tbody);
         } else {
-            const tr = document.createElement('tr');
-            tr.classList.add('inventory-screen');
-            const td = document.createElement('td');
-            td.classList.add('inventory-screen');
-            td.textContent = `No ${dataUrl}s found.`;
+            const noDataDiv = document.createElement('div');
+            noDataDiv.classList.add('no-data');
+            noDataDiv.textContent = `You don't have any ${dataUrl}s yet.`;
 
             const headerCount = data && data[0] ?
                 Object.keys(data[0]).filter(header => !["count", "desc", "image"].includes(header)).length :
                 1;
-            td.colSpan = headerCount;
-            tr.appendChild(td);
-            tbody.appendChild(tr);
+            noDataDiv.style.gridColumn = `span ${headerCount}`;
+            table.appendChild(noDataDiv);
         }
-        table.appendChild(tbody);
-
         const targetElement = document.getElementById(targetElementId);
         if (targetElement) {
             targetElement.appendChild(table);
@@ -2524,6 +2520,8 @@ window.setup = {
         updateWaterGradient();
     },
     randomCurseApp: function () {
+        document.getElementById('appearance-portrait').style.borderColor = getGenderColor(State.variables.mc.gender);
+        document.getElementById('appearance-portrait').style.backgroundImage = `url('images/layer intros/l${State.variables.currentLayer}intro.png')`;
         const availableCurses = SugarCube.State.variables.mc.curses.filter(curse => curse._appDesc);
         if (availableCurses.length > 0) {
             const randomCurse = availableCurses[Math.floor(Math.random() * availableCurses.length)];
@@ -2541,6 +2539,16 @@ window.setup = {
         const allCurses = SugarCube.State.variables.mc.curses;
         const allCursesDiv = document.getElementById("allCurses");
         const displayableCurses = allCurses.filter(curse => curse._appDesc);
+        if (allCurses.length >= 5) {
+            const backButton = document.createElement('button');
+            backButton.className = 'bottom left';
+            backButton.id = 'onTopButton';
+            backButton.textContent = 'Back';
+            backButton.onclick = function() {
+                goBackToPassage(SugarCube.State.variables.menuReturn);
+            };
+            allCursesDiv.appendChild(backButton);
+        }
 
         displayableCurses.forEach(curse => {
             const curseIndex = allCurses.indexOf(curse);
