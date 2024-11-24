@@ -599,8 +599,8 @@ def comfyui_linux_runner() -> None:
 		print('Uninstalling old torch.')
 		run_command(f"{PYTHON_COMMAND} -m pip uninstall torch")
 
-	if device == 0 or device == 3:
-		# CPU / Mac CPU
+	if device == 0:
+		# CPU
 		print('Installing CPU')
 		run_command(f"{PYTHON_COMMAND} -m pip install torch torchvision torchaudio")
 	elif device == 1:
@@ -611,6 +611,10 @@ def comfyui_linux_runner() -> None:
 		# AMD (ROCM)
 		print('Installing Torch AMD ROCM, please wait a moment.')
 		run_command(f"{PYTHON_COMMAND} -m pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/rocm6.1")
+	elif device ==3:
+		# Mac
+		print('Installing Metal CPU')
+		run_command(f"{PYTHON_COMMAND} -m pip install --pre torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/nightly/cpu")
 
 	write_last_device(device)
 
@@ -662,7 +666,7 @@ def main() -> None:
 	if os_platform == "Windows":
 		py_cmd = Path(os.path.join(get_conda_env_directory(), "python.exe")).as_posix()
 	elif os_platform == "Darwin":
-		py_cmd = Path(os.path.join(get_conda_env_directory(), "python.app", "Contents", "MacOS", "python")).as_posix()
+		py_cmd = Path(os.path.join(get_conda_env_directory(), "bin", "python3.10")).as_posix()
 	elif os_platform == "Linux":
 		py_cmd = Path(os.path.join(get_conda_env_directory(), "python")).as_posix()
 
