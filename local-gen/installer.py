@@ -304,9 +304,9 @@ def install_comfyui_nodes(custom_nodes_folder : str) -> None:
 		assert s2, e2
 
 	if os.path.exists(py_exe):
-		run_command(f"\"{py_exe}\" -m pip install --no-user --target \"{site_pckge_folder}\" pydantic", shell=True)
+		run_command(f"\"{py_exe}\" -m pip install --no-user --target \"{site_pckge_folder}\" pydantic --verbose ", shell=True)
 	else:
-		run_command(f"\"{PYTHON_COMMAND}\" -m pip install pydantic", shell=True)
+		run_command(f"\"{PYTHON_COMMAND}\" -m pip install pydantic --verbose ", shell=True)
 
 	for folder_name in os.listdir(custom_nodes_folder):
 		if os.path.isdir(Path(os.path.join(custom_nodes_folder, folder_name)).as_posix()) is False:
@@ -319,7 +319,7 @@ def install_comfyui_nodes(custom_nodes_folder : str) -> None:
 				run_command(f"\"{py_exe}\" -m pip install --no-user --target \"{site_pckge_folder}\" -r \"{Path(req_txtfile).as_posix()}\"", shell=True)
 			else:
 				print('System Python')
-				run_command(f"\"{PYTHON_COMMAND}\" -m pip install -r \"{Path(req_txtfile).as_posix()}\"", shell=True)
+				run_command(f"\"{PYTHON_COMMAND}\" -m pip install -r \"{Path(req_txtfile).as_posix()}\" --verbose", shell=True)
 
 	print("Installed ComfyUI Custom Nodes")
 
