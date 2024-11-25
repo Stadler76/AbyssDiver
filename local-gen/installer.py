@@ -149,16 +149,17 @@ def get_windows_miniconda_envs_folder() -> str:
 def install_miniconda_for_os() -> None:
 	os_platform : str = platform.system() # Windows, Linux, Darwin (MacOS)
 	logger.info(f"Installing miniconda for OS: {os_platform}")
-	cwd : str = os.getcwd()
 	directory = Path("tools/miniconda3").as_posix()
 	os.makedirs(directory, exist_ok=True)
 	print('Working Directory: ', directory)
 	if os_platform == "Windows":
+		os.chdir("tools/miniconda3")
 		logger.info("Downloading miniconda.exe")
-		download_file("https://repo.anaconda.com/miniconda/Miniconda3-latest-Windows-x86_64.exe", "tools/miniconda3/miniconda.exe")
+		download_file("https://repo.anaconda.com/miniconda/Miniconda3-latest-Windows-x86_64.exe", "miniconda.exe")
 		logger.info("Installing miniconda.sh")
-		s, e = run_command(f"tools/miniconda3/miniconda.exe /S", shell=True)
+		s, e = run_command("miniconda.exe /S", shell=True)
 		assert s==0, e
+		os.chdir("../..")
 	elif os_platform == "Linux":
 		logger.info("Downloading miniconda.sh")
 		download_file("https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh", "tools/miniconda3/miniconda.sh")
@@ -187,7 +188,7 @@ def get_conda_env_directory() -> str:
 
 def create_conda_env_var() -> None:
 	# create a new virtual environment for python 3.10.9 called "py3_10_9"
-	logger.info("Initializing Conda.")
+	logger.info("Initializing Conda before install.")
 	run_command(f"{get_miniconda_cmdline_filepath()} init", shell=True)
 
 	logger.info("Creating new environment.")
@@ -200,6 +201,9 @@ def create_conda_env_var() -> None:
 
 	logger.info("Listing current environments.")
 	run_command(f"{get_miniconda_cmdline_filepath()} env list", shell=True)
+
+	logger.info("Initializing Conda after install.")
+	run_command(f"{get_miniconda_cmdline_filepath()} init", shell=True)
 
 	logger.info("Activating python 3.10.9 environment.")
 	run_command(f"{get_miniconda_cmdline_filepath()} activate py3_10_9", shell=True)
@@ -251,6 +255,7 @@ def download_git_portal_linux() -> None:
 		print('You must install Linux manually on Mac devices.')
 		print('Please head to https://github.com/git-guides/install-git and install following the "Install Git on Mac" section.')
 		print('Press enter when you have installed git.')
+		input("")
 	else:
 		print("You are required to install git to download ComfyUI on Linux.")
 		print("You will be prompted now to install it.")
@@ -288,8 +293,8 @@ def install_comfyui_nodes(custom_nodes_folder : str) -> None:
 	for url in COMFYUI_CUSTOM_NODES:
 		run_command(f"git clone {url}", shell=True)
 	os.chdir(before_cwd)
-	py_exe = Path(os.path.join(COMFYUI_INSTALLATION_FOLDER, "python_embeded", "python.exe")).as_posix()
-	site_pckge_folder = Path(os.path.join(COMFYUI_INSTALLATION_FOLDER, "python_embeded", "Lib", "site-packages")).as_posix()
+	py_exe = Path(os.path.join(COMFYUI_INSTALLATION_FOLDER, "..", "python_embeded", "python.exe")).as_posix()
+	site_pckge_folder = Path(os.path.join(COMFYUI_INSTALLATION_FOLDER, "..", "python_embeded", "Lib", "site-packages")).as_posix()
 
 	if platform.platform() == "Darwin":
 		print("You are required to have CMAKE installed for the transparent background node to install properly.")
@@ -657,12 +662,12 @@ def comfyui_linux_runner() -> None:
 		args.append("--cpu")
 	elif device == 1:
 		print("Check Cuda Malloc")
-		if request_prompt("Are any of your currently plugged-in GPUs older than the 1060 series (but not including the 1060)? (y/n): ") == "y":
+		if request_prompt("Are any of your currently plugged-in GPUs older than the 1060 series (but not including the 1060)? (y/n): ", ["y", "n"]) == "y":
 			args.append("--disable-cuda-malloc")
 	elif device == 3:
-		# directml
-		print('Enabled DirectML')
-		args.append("--directml")
+		# mac
+		print('Enable Mac Options')
+		args.append("--cpu --force-fp16")
 
 	print("Running the ComfyUI process.")
 	print(args, COMFYUI_INSTALLATION_FOLDER)
@@ -690,10 +695,11 @@ def main() -> None:
 	elif os_platform == "Darwin":
 		py_cmd = Path(os.path.join(get_conda_env_directory(), "bin", "python3.10")).as_posix()
 	elif os_platform == "Linux":
-		py_cmd = Path(os.path.join(get_conda_env_directory(), "python")).as_posix()
+		py_cmd = Path(os.path.join(get_conda_env_directory(), "bin", "python3.10")).as_posix()
 
 	version = "3.10.9"
 
+	print(py_cmd)
 	assert os.path.exists(py_cmd), "Conda failed to install."
 
 	print(py_cmd, version)
