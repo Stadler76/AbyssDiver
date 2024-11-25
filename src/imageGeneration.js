@@ -658,10 +658,10 @@ setup.ComfyUI_GenerateAdvancedHTMLPage = function() {
 	return html_text;
 }
 
-const COMFYUI_BASE_URL = "http://127.0.0.1:12500";
+const PROXY_BASE_URL = "http://127.0.0.1:12500";
 
 setup.updateComfyUIStatus = async function() {
-	const url = COMFYUI_BASE_URL + "/echo";
+	const url = PROXY_BASE_URL + "/echo";
 
 	var is_running = false;
 
@@ -940,7 +940,7 @@ setup.comfyUI_GeneratePortraitWorkflow = async function() {
 	return workflow;
 }
 
-// {COMFYUI_BASE_URL}/generate_image
+// PROXY_BASE_URL/generate_image
 var is_generation_busy = false;
 var last_workflow = null;
 setup.comfyUI_GeneratePortrait = async function() {
@@ -957,7 +957,7 @@ setup.comfyUI_GeneratePortrait = async function() {
 	notificationElement.style.display = "none";
 
 	// data to be sent to comfyui
-	const url = COMFYUI_BASE_URL + "/generate_workflow"
+	const url = PROXY_BASE_URL + "/generate_workflow"
 
 	// log outputted workflow
 	// console.log(workflow);
