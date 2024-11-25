@@ -294,7 +294,6 @@ def install_comfyui_nodes(custom_nodes_folder : str) -> None:
 		run_command(f"git clone {url}", shell=True)
 	os.chdir(before_cwd)
 	py_exe = Path(os.path.join(COMFYUI_INSTALLATION_FOLDER, "..", "python_embeded", "python.exe")).as_posix()
-	site_pckge_folder = Path(os.path.join(COMFYUI_INSTALLATION_FOLDER, "..", "python_embeded", "Lib", "site-packages")).as_posix()
 
 	if platform.platform() == "Darwin":
 		print("You are required to have CMAKE installed for the transparent background node to install properly.")
@@ -309,9 +308,11 @@ def install_comfyui_nodes(custom_nodes_folder : str) -> None:
 		assert s2, e2
 
 	if os.path.exists(py_exe):
+		site_pckge_folder = Path(os.path.join(COMFYUI_INSTALLATION_FOLDER, "..", "python_embeded", "Lib", "site-packages")).as_posix()
 		run_command(f"\"{py_exe}\" -m pip install --no-user --target \"{site_pckge_folder}\" pydantic --verbose ", shell=True)
 	else:
-		run_command(f"\"{PYTHON_COMMAND}\" -m pip install pydantic --verbose ", shell=True)
+		target_site_packages = Path(os.path.join(get_conda_env_directory(), "lib", "python3.10", "site-packages")).as_posix()
+		run_command(f"\"{PYTHON_COMMAND}\" -m pip install pydantic --verbose --target {target_site_packages}", shell=True)
 
 	for folder_name in os.listdir(custom_nodes_folder):
 		if os.path.isdir(Path(os.path.join(custom_nodes_folder, folder_name)).as_posix()) is False:
@@ -321,10 +322,12 @@ def install_comfyui_nodes(custom_nodes_folder : str) -> None:
 			print(f'Installing requirements for: {folder_name} {req_txtfile}')
 			if os.path.exists(py_exe):
 				print('ComfyUI Embeded Python')
+				site_pckge_folder = Path(os.path.join(COMFYUI_INSTALLATION_FOLDER, "..", "python_embeded", "Lib", "site-packages")).as_posix()
 				run_command(f"\"{py_exe}\" -m pip install --no-user --target \"{site_pckge_folder}\" -r \"{Path(req_txtfile).as_posix()}\"", shell=True)
 			else:
 				print('System Python')
-				run_command(f"\"{PYTHON_COMMAND}\" -m pip install -r \"{Path(req_txtfile).as_posix()}\" --verbose", shell=True)
+				target_site_packages = Path(os.path.join(get_conda_env_directory(), "lib", "python3.10", "site-packages")).as_posix()
+				run_command(f"\"{PYTHON_COMMAND}\" -m pip install -r \"{Path(req_txtfile).as_posix()}\" --verbose --target \"{target_site_packages}\"", shell=True)
 
 	print("Installed ComfyUI Custom Nodes")
 
@@ -620,33 +623,35 @@ def comfyui_linux_runner() -> None:
 	last_device : Optional[int] = get_last_device()
 	device : int = ask_linux_gpu_cpu()
 
+	target_site_packages = Path(os.path.join(get_conda_env_directory(), "lib", "python3.10", "site-packages")).as_posix()
+
 	# remove torch for it to be reinstalled for GPU
 	if device != 0 and (last_device is None or last_device != device):
 		print('Uninstalling old torch.')
-		run_command(f"{PYTHON_COMMAND} -m pip uninstall torch", shell=True)
+		run_command(f"{PYTHON_COMMAND} -m pip uninstall torch --target {target_site_packages}", shell=True)
 
 	if device == 0:
 		# CPU
 		print('Installing CPU')
-		run_command(f"{PYTHON_COMMAND} -m pip install torch torchvision torchaudio", shell=True)
+		run_command(f"{PYTHON_COMMAND} -m pip install torch torchvision torchaudio --target {target_site_packages}", shell=True)
 	elif device == 1:
 		# NVIDIA (CUDA)
 		print('Installing Torch CUDA, please wait a moment.')
-		run_command(f"{PYTHON_COMMAND} -m pip install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu124", shell=True)
+		run_command(f"{PYTHON_COMMAND} -m pip install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu124 --target {target_site_packages}", shell=True)
 	elif device == 2:
 		# AMD (ROCM)
 		print('Installing Torch AMD ROCM, please wait a moment.')
-		run_command(f"{PYTHON_COMMAND} -m pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/rocm6.1", shell=True)
+		run_command(f"{PYTHON_COMMAND} -m pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/rocm6.1 --target {target_site_packages}", shell=True)
 	elif device ==3:
 		# Mac
 		print('Installing Metal CPU')
-		run_command(f"{PYTHON_COMMAND} -m pip install --pre torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/nightly/cpu", shell=True)
+		run_command(f"{PYTHON_COMMAND} -m pip install --pre torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/nightly/cpu --target {target_site_packages}", shell=True)
 
 	write_last_device(device)
 
 	print('Installing ComfyUI requirements')
 	requirements_abs = Path(os.path.abspath(os.path.join(COMFYUI_INSTALLATION_FOLDER, "requirements.txt"))).as_posix()
-	run_command(f"{PYTHON_COMMAND} -m pip install -r {requirements_abs}", shell=True)
+	run_command(f"{PYTHON_COMMAND} -m pip install -r {requirements_abs} --target {target_site_packages}", shell=True)
 
 	main_py_filepath = Path(os.path.abspath(os.path.join(COMFYUI_INSTALLATION_FOLDER, "main.py"))).as_posix()
 
