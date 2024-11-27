@@ -671,7 +671,9 @@ setup.updateComfyUIStatus = async function() {
 		// try display any image if any are available
 		// setup.displaySavedImage().catch(() => null)
 		setup.displayRecentGeneratedImage().catch(() => null)
-	} catch (error) {}
+	} catch (error) {
+
+	}
 
 	const notificationElement = document.getElementById('comfyui-enabled');
 	notificationElement.textContent = is_running ? "ComfyUI is currently running." : "ComfyUI is NOT currently running."
