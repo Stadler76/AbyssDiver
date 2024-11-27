@@ -104,30 +104,34 @@ def download_file(url: str, destination: str, range : bool = False) -> None:
 
 	print("Download complete.")
 
-def run_command(command: str, shell : bool = False) -> tuple[int, str]:
-	print('RUNNING COMMAND:')
-	print(command)
-	print('='*20)
+def run_command(command: str, shell: bool = False) -> int:
+	logger.info('RUNNING COMMAND:')
+	logger.info(command)
+	logger.info('=' * 20)
 	try:
-		result: subprocess.CompletedProcess = subprocess.run(command, shell=shell, capture_output=True, text=True)
-		status_code: int = result.returncode
-		output_message: str = result.stdout.strip()
-		error_message: str = result.stderr.strip()
+		process = subprocess.Popen(
+			command,
+			shell=shell,
+			stdout=subprocess.PIPE,
+			stderr=subprocess.PIPE,
+			text=True,
+			bufsize=1,  # Line buffering
+		)
+		for line in process.stdout:
+			logger.info(line.strip())
+		for line in process.stderr:
+			logger.error(line.strip())
+		process.wait() # Ensure the process completes
+		status_code = process.returncode
 		if status_code == 0:
 			logger.info(f"Command succeeded: {command}")
-			logger.debug(f"Output: {output_message}")
-			print("SUCCESS:", output_message)
-			return 0, output_message # SUCCESS
 		else:
-			logger.warning(f"Command failed: {command}")
-			logger.debug(f"Error: {error_message}")
-			print("ERROR:", error_message)
-			return 1, error_message # ERROR
+			logger.warning(f"Command failed with code {status_code}: {command}")
+		return status_code
 	except Exception as e:
 		logger.error(f"Command execution exception: {command}")
-		logger.exception(f"Exception details: {str(e)}")
-		print('EXCEPTION:', e)
-		return -1, str(e) # FAILED
+		logger.exception(f"Exception details: {e}")
+		return -1  # FAILED
 
 def unzip_targz(filepath : str, directory : str) -> None:
 	os.makedirs(directory, exist_ok=True)
