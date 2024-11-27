@@ -653,8 +653,8 @@ def comfyui_windows_runner() -> subprocess.Popen:
 
 	device : int = ask_windows_gpu_cpu() # 0:cpu, 1:cuda, 2:amd, 3:intel
 
-	embeded_py_filepath = os.path.abspath(f"{COMFYUI_INSTALLATION_FOLDER}/../python_embeded/python.exe")
-	embeded_pip_filepath = os.path.abspath(f"{COMFYUI_INSTALLATION_FOLDER}/../python_embeded/Scripts/pip.exe")
+	embeded_py_filepath = Path(os.path.abspath(f"{COMFYUI_INSTALLATION_FOLDER}/../python_embeded/python.exe")).as_posix()
+	target_site_packages = Path(os.path.join(COMFYUI_INSTALLATION_FOLDER, "python_embeded", "Lib", "site-packages")).as_posix()
 
 	process : subprocess.Popen = None
 	args = [embeded_py_filepath, "-s", "main.py", "--windows-standalone-build", '--disable-auto-launch'] + CUSTOM_COMMAND_LINE_ARGS_FOR_COMFYUI
@@ -668,7 +668,7 @@ def comfyui_windows_runner() -> subprocess.Popen:
 	elif device == 2 or device == 4:
 		# amd/DirectML
 		print('Installing Torch DirectML. Please wait a moment.')
-		run_command(f'{embeded_pip_filepath} install torch_directml', shell=True)
+		print(run_command(f'{embeded_py_filepath} -m pip install torch_directml --target {target_site_packages}', shell=True))
 		args.append("--directml")
 
 	print("Running the comfyui process.")
