@@ -123,8 +123,7 @@ def run_command(command: str, shell: bool = False) -> int:
 			stdout=subprocess.PIPE,
 			stderr=subprocess.PIPE,
 			text=True,
-			bufsize=1,
-			capture_text=True
+			bufsize=1
 		)
 
 		# Use threads to prevent blocking
