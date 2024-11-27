@@ -766,6 +766,7 @@ def comfyui_linux_mac_runner() -> None:
 	return process
 
 def proxy_runner() -> subprocess.Popen:
+	print(f'Using {PYTHON_COMMAND} to open python/main.py')
 	return subprocess.Popen([PYTHON_COMMAND, 'python/main.py'], shell=False)
 
 def get_miniconda_python_exe_path() -> str:
@@ -805,7 +806,7 @@ def main() -> None:
 
 	print(f"Found python ({py_cmd}) of version {version}.")
 
-	run_command(f"\"{PYTHON_COMMAND}\" -m pip install -r requirements.txt", shell=True)
+	print(run_command(f"\"{PYTHON_COMMAND}\" -m pip install -r requirements.txt", shell=True))
 
 	process_proxy : subprocess.Popen
 	process_comfyui : subprocess.Popen
