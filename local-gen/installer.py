@@ -123,7 +123,8 @@ def run_command(command: str, shell: bool = False) -> int:
 			stdout=subprocess.PIPE,
 			stderr=subprocess.PIPE,
 			text=True,
-			bufsize=1
+			bufsize=1,
+			capture_text=True
 		)
 
 		# Use threads to prevent blocking
@@ -138,17 +139,17 @@ def run_command(command: str, shell: bool = False) -> int:
 		stdout_thread.join()
 		stderr_thread.join()
 
-		status_code = process.returncode
+		status_code = str(process.returncode) + "\n" + str(process.stderr)
 		if status_code == 0:
 			logger.info(f"Command succeeded: {command}")
 		else:
 			logger.warning(f"Command failed with code {status_code}: {command}")
 
-		return status_code
+		return status_code, process.stdout
 	except Exception as e:
 		logger.error(f"Command execution exception: {command}")
 		logger.exception(f"Exception details: {e}")
-		return -1
+		return -1, str(e)
 
 def unzip_targz(filepath : str, directory : str) -> None:
 	os.makedirs(directory, exist_ok=True)
