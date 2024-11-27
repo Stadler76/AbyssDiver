@@ -26,6 +26,7 @@ import tarfile
 import time
 import patoolib
 import logging
+import threading
 
 CUSTOM_COMMAND_LINE_ARGS_FOR_COMFYUI = []
 
@@ -74,6 +75,7 @@ def request_prompt(prompt : str, allowed_responses : list[str]) -> str:
 
 def download_file(url: str, destination: str, range : bool = False) -> None:
 	"""Download a file from a URL and save it to a specified destination with support for resuming."""
+	print(url)
 	headers = {}
 	if os.path.exists(destination) and range is True:
 		# Get the size of the partially downloaded file
@@ -103,30 +105,50 @@ def download_file(url: str, destination: str, range : bool = False) -> None:
 
 	print("Download complete.")
 
-def run_command(command: str, shell : bool = False) -> tuple[int, str]:
-	print('RUNNING COMMAND:')
-	print(command)
-	print('='*20)
+def stream_reader(pipe, log_level):
+	"""Reads from a pipe and logs each line at the given log level."""
+	with pipe:
+		for line in iter(pipe.readline, ''):
+			logger.log(log_level, line.strip())
+
+def run_command(command: str, shell: bool = False) -> int:
+	logger.info('RUNNING COMMAND:')
+	logger.info(command)
+	logger.info('=' * 20)
+
 	try:
-		result: subprocess.CompletedProcess = subprocess.run(command, shell=shell, capture_output=True, text=True)
-		status_code: int = result.returncode
-		output_message: str = result.stdout.strip()
-		error_message: str = result.stderr.strip()
+		process = subprocess.Popen(
+			command,
+			shell=shell,
+			stdout=subprocess.PIPE,
+			stderr=subprocess.PIPE,
+			text=True,
+			bufsize=1
+		)
+
+		# Use threads to prevent blocking
+		stdout_thread = threading.Thread(target=stream_reader, args=(process.stdout, logging.INFO))
+		stderr_thread = threading.Thread(target=stream_reader, args=(process.stderr, logging.ERROR))
+
+		stdout_thread.start()
+		stderr_thread.start()
+
+		# Wait for the process and threads to complete
+		process.wait()
+		stdout_thread.join()
+		stderr_thread.join()
+
+		status_code = process.returncode
 		if status_code == 0:
 			logger.info(f"Command succeeded: {command}")
-			logger.debug(f"Output: {output_message}")
-			print("SUCCESS:", output_message)
-			return 0, output_message # SUCCESS
 		else:
-			logger.warning(f"Command failed: {command}")
-			logger.debug(f"Error: {error_message}")
-			print("ERROR:", error_message)
-			return 1, error_message # ERROR
+			logger.warning(f"Command failed with code {status_code}: {command}")
+
+		return status_code
 	except Exception as e:
 		logger.error(f"Command execution exception: {command}")
-		logger.exception(f"Exception details: {str(e)}")
-		print('EXCEPTION:', e)
-		return -1, str(e) # FAILED
+		logger.exception(f"Exception details: {e}")
+		return -1
 
 def unzip_targz(filepath : str, directory : str) -> None:
 	os.makedirs(directory, exist_ok=True)
@@ -149,31 +171,56 @@ def get_windows_miniconda_envs_folder() -> str:
 def install_miniconda_for_os() -> None:
 	os_platform : str = platform.system() # Windows, Linux, Darwin (MacOS)
 	logger.info(f"Installing miniconda for OS: {os_platform}")
-	directory = Path("tools/miniconda3").as_posix()
-	os.makedirs(directory, exist_ok=True)
-	print('Working Directory: ', directory)
+	logger.info(f"If the install process fails to install, install it manually from the link printed below:")
 	if os_platform == "Windows":
-		os.chdir("tools/miniconda3")
 		logger.info("Downloading miniconda.exe")
-		download_file("https://repo.anaconda.com/miniconda/Miniconda3-latest-Windows-x86_64.exe", "miniconda.exe")
+		windows_download_url = "https://repo.anaconda.com/miniconda/Miniconda3-latest-Windows-x86_64.exe"
+		try:
+			download_file(windows_download_url, "miniconda.exe")
+		except Exception as e:
+			print('Failed to download Miniconda!')
+			print(e)
+			print('Please download manually and place in the local-gen folder and rename it to "miniconda.exe".')
+			print(windows_download_url)
+			print('Press any key to continue...')
+			input()
 		logger.info("Installing miniconda.sh")
-		s, e = run_command("miniconda.exe /S", shell=True)
-		assert s==0, e
-		os.chdir("../..")
+		print(run_command("miniconda.exe /S", shell=True))
+		t1 = Path(os.path.expanduser("~/miniconda3")).as_posix()
+		assert os.path.exists(t1), "Miniconda failed to install - please install manually by running the `miniconda.sh` and install under the name minconda3 in the user directory."
 	elif os_platform == "Linux":
 		logger.info("Downloading miniconda.sh")
-		download_file("https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh", "tools/miniconda3/miniconda.sh")
+		linux_download_url = "https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh"
+		try:
+			download_file(linux_download_url, "miniconda.exe")
+		except Exception as e:
+			print('Failed to download Miniconda!')
+			print(e)
+			print('Please download manually and place in the local-gen folder and rename it to "miniconda.sh".')
+			print(linux_download_url)
+			print('Press any key to continue...')
+			input()
 		logger.info("Installing miniconda.sh")
 		t1 = Path(os.path.expanduser("~/miniconda3")).as_posix()
-		s, e = run_command(f"bash tools/miniconda3/miniconda.sh -b -u -p {t1}", shell=True)
-		assert s==0, e
+		print(run_command(f"bash miniconda.sh -b -u -p {t1}", shell=True))
+		assert os.path.exists(t1), "Miniconda failed to install - please install manually by running the `miniconda.sh` and install under the name minconda3 in the user directory."
 	elif os_platform == "Darwin":
 		logger.info("Downloading miniconda.sh")
-		download_file("https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-arm64.sh", "tools/miniconda3/miniconda.sh")
+
+		mac_download_url = "https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-arm64.sh"
+		try:
+			download_file(mac_download_url, "miniconda.sh")
+		except Exception as e:
+			print('Failed to download Miniconda!')
+			print(e)
+			print('Please download manually and place in the local-gen folder and rename it to "miniconda.sh".')
+			print(mac_download_url)
+			print('Press any key to continue...')
+			input()
 		logger.info("Installing miniconda.sh")
 		t1 = Path(os.path.expanduser("~/miniconda3")).as_posix()
-		s, e = run_command(f"bash tools/miniconda3/miniconda.sh -b -u -p {t1}", shell=True)
-		assert s==0, e
+		print(run_command(f"bash miniconda.sh -b -u -p {t1}", shell=True))
+		assert os.path.exists(t1), "Miniconda failed to install - please install manually by running the `miniconda.sh` and install under the name minconda3 in the user directory."
 	else:
 		print(f"Unknown OS {os_platform} - cannot get conda version.")
 		exit()
@@ -194,6 +241,7 @@ def create_conda_env_var() -> None:
 	logger.info("Creating new environment.")
 	print('The python conda environment will take about 2.8GB in total on disk.')
 	print('Press enter to install the python 3.10.9 conda environment. The command displayed below will not run until you do so, and will wait until finished.')
+	print('THE BELOW COMMAND WILL BE RUNNING IN THE BACKGROUND! PLEASE WAIT FOR IT TO FINISH!')
 	command = f"{get_miniconda_cmdline_filepath()} create -n py3_10_9 python=3.10.9 anaconda"
 	if platform.platform() == "Windows":
 		command = "start " + command
@@ -241,10 +289,10 @@ def download_git_portal_windows() -> None:
 	print("This is using winget so if you don't have that you will need to manually install git.")
 	print("To manually install, visit 'https://git-scm.com/downloads' and run this script again.")
 
-	run_command("winget install --id Git.Git -e --source winget", shell=True)
+	print(run_command("winget install --id Git.Git -e --source winget", shell=True))
 
 	status, _ = run_command("git --version", shell=True)
-	assert status == 0, "Could not locate the 'git' package which is required."
+	assert status == 0, "Could not locate the 'git' package which is required. You may need to restart the shell for the terminal to know the installed git exists, otherwise install it manually and restart the shell."
 
 def download_git_portal_linux() -> None:
 	status, _ = run_command("git --version", shell=True)
@@ -262,7 +310,7 @@ def download_git_portal_linux() -> None:
 		run_command("sudo apt update && sudo apt install -y git", shell=True)
 
 	status, _ = run_command("git --version", shell=True)
-	assert status == 0, "Could not locate the 'git' package which is required."
+	assert status == 0, "Could not locate the 'git' package which is required. You may need to restart the shell for the terminal to know the installed git exists."
 
 def get_github_repository_latest_release_files(api_url : str) -> list[GithubFile]:
 	"""Get the latest release files of the target github repository"""
@@ -320,6 +368,7 @@ def install_comfyui_nodes(custom_nodes_folder : str) -> None:
 		req_txtfile = Path(os.path.join(custom_nodes_folder, folder_name, "requirements.txt")).as_posix()
 		if os.path.exists(req_txtfile):
 			print(f'Installing requirements for: {folder_name} {req_txtfile}')
+			print('This may take a minute.')
 			if os.path.exists(py_exe):
 				print('ComfyUI Embeded Python')
 				site_pckge_folder = Path(os.path.join(COMFYUI_INSTALLATION_FOLDER, "..", "python_embeded", "Lib", "site-packages")).as_posix()
@@ -494,9 +543,20 @@ def comfyui_windows_installer() -> None:
 		before_cwd = os.getcwd()
 		os.chdir(Path(os.path.abspath(directory)).as_posix())
 		try:
+			print(Path(os.path.abspath(directory)).as_posix())
+			print(os.listdir())
 			patoolib.extract_archive("ComfyUI_windows_portable_nvidia.7z", outdir=".")
 		except Exception as e:
-			print("Failed to extract ComfyUI_windows_portable_nvidia.7z - please do it manually.")
+			print("Failed to extract ComfyUI_windows_portable_nvidia.7z.")
+			print("You may just need to restart the terminal if 'patool' was just installed as the terminal needs to update for the executables to be present.")
+			print("Try restart the terminal first before manually unpacking it.")
+			print("To manually unpack it, please install 7zip. https://7-zip.org/download.html")
+			print("Unpack it into the tools folder, and make sure the folder directory is:")
+			print("tools")
+			print("-- ComfyUI_windows_portable")
+			print("---- ComfyUI")
+			print("---- python_embeded")
+			print("---- update")
 			print(e)
 			exit()
 		os.chdir(before_cwd)
@@ -537,7 +597,7 @@ def ask_windows_gpu_cpu() -> int:
 		print("Warning: AMD cards can only run with DirectML which is slower on Windows.")
 		return 2
 
-	is_intel_gpu : str = request_prompt("Is your graphics card a AMD one? (y/n)", ["y", "n"])
+	is_intel_gpu : str = request_prompt("Is your graphics card a Intel one? (y/n)", ["y", "n"])
 	if is_intel_gpu == "y":
 		print("WARNING: Please follow the steps on 'https://github.com/comfyanonymous/ComfyUI' to install Intel GPU support before continuing.")
 		print("Press enter to continue...")
@@ -747,7 +807,7 @@ def install_conda_for_python() -> None:
 	if has_miniconda_been_installed() is False:
 		print('Installing miniconda.')
 		install_miniconda_for_os()
-	assert has_miniconda_been_installed(), "Miniconda is not installed."
+	assert has_miniconda_been_installed(), "Miniconda is not installed. You may need to restart the terminal if you just installed it for the terminal to know its there."
 	print("Miniconda is installed.")
 	if os.path.exists(get_conda_env_directory()) is False:
 		print("Creating Conda Environment.")

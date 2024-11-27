@@ -39,6 +39,7 @@ echo "Running the installer script..."
 python3 installer.py
 if [ $? -ne 0 ]; then
 	echo "Installer script failed. Exiting."
+	read -p ""
 	exit 1
 fi
 

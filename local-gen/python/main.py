@@ -11,6 +11,9 @@ from comfyui import ComfyUI_API, image_to_base64
 import uvicorn
 import asyncio
 
+COMFYUI_NODE_URL : str = '127.0.0.1:8188'
+# COMFYUI_NODE_URL : str = '192.168.1.54:8188' (another device on the network with "--listen 0.0.0.0" cmd line arg)
+
 class GenerateImagesResponse(BaseModel):
 	images : List[str]
 
@@ -24,7 +27,7 @@ async def echo() -> bool:
 @app.post('/generate_workflow', description='Generate a image given the generation workflow.')
 async def generate_image(workflow : dict) -> GenerateImagesResponse:
 	print(workflow)
-	COMFYUI_NODE = ComfyUI_API('127.0.0.1:8188')
+	COMFYUI_NODE = ComfyUI_API(COMFYUI_NODE_URL)
 	await COMFYUI_NODE.is_available()
 	await COMFYUI_NODE.open_websocket()
 	image_array : list[dict] = await COMFYUI_NODE.generate_images_using_workflow_prompt(workflow)

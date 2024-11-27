@@ -48,6 +48,7 @@ echo Running the installer script...
 py installer.py
 if "!errorlevel!" NEQ "0" (
 	echo Installer script failed. Exiting.
+	pause
 	exit /b 1
 )
 
