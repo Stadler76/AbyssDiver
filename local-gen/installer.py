@@ -144,7 +144,7 @@ def run_command(command: str, shell: bool = False) -> int:
 		else:
 			logger.warning(f"Command failed with code {status_code}: {command}")
 
-		return status_code, process.stdout
+		return status_code, process.stdout.read()
 	except Exception as e:
 		logger.error(f"Command execution exception: {command}")
 		logger.exception(f"Exception details: {e}")
