@@ -251,7 +251,7 @@ def create_update_conda_env_var() -> None:
 
 		if platform.platform() == "Windows":
 			command = "call " + command
-		command = f"{get_miniconda_cmdline_filepath()} create -n py3_10_9 python=3.10.9 --yes"
+		command = f"{get_miniconda_cmdline_filepath()} create -n py3_10_9 python=3.10.9 anaconda --yes"
 		print(run_command(command, shell=True))
 
 	logger.info("Listing current environments.")
