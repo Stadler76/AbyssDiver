@@ -233,7 +233,7 @@ def does_conda_env_exist() -> bool:
 def get_conda_env_directory() -> str:
 	return Path(os.path.join(get_windows_miniconda_envs_folder(), "py3_10_9")).as_posix()
 
-def create_conda_env_var() -> None:
+def create_update_conda_env_var() -> None:
 	# create a new virtual environment for python 3.10.9 called "py3_10_9"
 	logger.info("Initializing Conda before install.")
 	run_command(f"{get_miniconda_cmdline_filepath()} init", shell=True)
@@ -750,6 +750,17 @@ def comfyui_linux_mac_runner() -> None:
 def proxy_runner() -> subprocess.Popen:
 	return subprocess.Popen([PYTHON_COMMAND, 'python/main.py'], shell=False)
 
+def get_miniconda_python_exe_path() -> str:
+	os_platform : str = platform.system() # Windows, Linux, Darwin (MacOS)
+	py_cmd = ""
+	if os_platform == "Windows":
+		py_cmd = Path(os.path.join(get_conda_env_directory(), "python.exe")).as_posix()
+	elif os_platform == "Darwin":
+		py_cmd = Path(os.path.join(get_conda_env_directory(), "bin", "python3.10")).as_posix()
+	elif os_platform == "Linux":
+		py_cmd = Path(os.path.join(get_conda_env_directory(), "bin", "python3.10")).as_posix()
+	return py_cmd
+
 def main() -> None:
 	os_platform : str = platform.system() # Windows, Linux, Darwin (MacOS)
 
@@ -763,13 +774,7 @@ def main() -> None:
 
 	get_windows_miniconda_envs_folder()
 
-	if os_platform == "Windows":
-		py_cmd = Path(os.path.join(get_conda_env_directory(), "python.exe")).as_posix()
-	elif os_platform == "Darwin":
-		py_cmd = Path(os.path.join(get_conda_env_directory(), "bin", "python3.10")).as_posix()
-	elif os_platform == "Linux":
-		py_cmd = Path(os.path.join(get_conda_env_directory(), "bin", "python3.10")).as_posix()
-
+	py_cmd = get_miniconda_python_exe_path()
 	version = "3.10.9"
 
 	print(py_cmd)
@@ -817,9 +822,8 @@ def install_conda_for_python() -> None:
 		install_miniconda_for_os()
 	assert has_miniconda_been_installed(), "Miniconda is not installed. You may need to restart the terminal if you just installed it for the terminal to know its there."
 	print("Miniconda is installed.")
-	if os.path.exists(get_conda_env_directory()) is False:
-		print("Creating Conda Environment.")
-		create_conda_env_var()
+	print("Creating/Updating Conda Environment.")
+	create_update_conda_env_var()
 	assert os.path.exists(get_conda_env_directory()), "Conda Environment does not exist."
 	print("Conda Environment exists.")
 
