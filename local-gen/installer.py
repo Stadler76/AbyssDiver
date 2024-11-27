@@ -255,9 +255,13 @@ def create_update_conda_env_var() -> None:
 		print(run_command(command, shell=True))
 
 		print("If it failed to install the environment, please do the following:")
-		print("""1. head to C:/Users/USERNAME/miniconda3/condabin
-2. open a terminal in this directory (put cmd in the directory url box)
-3. type `create -n py3_10_9 python=3.10.9 anaconda`
+		print("""1. head to C:/Users/USERNAME/miniconda3/envs
+2. delete "py3_10_9" if it exists in the folder
+3. head to C:/Users/USERNAME/miniconda3/condabin
+4. open a terminal in this directory (put cmd in the directory url box)
+5. type `conda.bat create -n py3_10_9 python=3.10.9 anaconda`
+
+Note: if you are on Linux/Mac, don't include the '.bat' on the end.
 """)
 
 	logger.info("Listing current environments.")
