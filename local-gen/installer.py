@@ -130,7 +130,6 @@ def run_command(command: str, shell: bool = False) -> int:
 					logger.log(log_level, line.strip())
 					stdout_var += line.strip()
 
-
 		# Use threads to prevent blocking
 		stdout_thread = threading.Thread(target=stream_reader, args=(process.stdout, logging.INFO))
 		stderr_thread = threading.Thread(target=stream_reader, args=(process.stderr, logging.ERROR))
@@ -241,6 +240,18 @@ def get_conda_env_directory() -> str:
 def create_update_conda_env_var() -> None:
 	logger.info("Initializing Conda before install.")
 	print(run_command(f"{get_miniconda_cmdline_filepath()} init", shell=True))
+
+	logger.info("Updating conda dependencies.")
+
+	logger.info("1st command.")
+	print(run_command(f"{get_miniconda_cmdline_filepath()} update --update-deps conda", shell=True))
+
+	logger.info("2nd command.")
+	print(run_command(f"{get_miniconda_cmdline_filepath()} update -n base -c defaults conda", shell=True))
+
+	print("Conda seems to have quite a bit of trouble installing envs. You will need to watch the terminal for messages that detail how to troubleshoot if it does not work.")
+	print("Press enter to continue.")
+	input("")
 
 	# create a new virtual environment for python 3.10.9 called "py3_10_9"
 	if os.path.exists(Path(os.path.join(get_miniconda_cmdline_filepath(), "envs", "py3_10_9")).as_posix()) is False:
