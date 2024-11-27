@@ -246,6 +246,165 @@ const SIMPLE_T2I_PORTRAIT_WORKFLOW_REMOVE_BACKGROUND = {
 	}
 }
 
+const SCENE_GENERATION_WITH_MIDAS_WORKFLOW = {
+	"1": {
+		"inputs": {"image": "00007-4032934194.png","upload": "image"},
+		"class_type": "LoadImage",
+		"_meta": {"title": "Load Image"}
+	},
+	"2": {
+		"inputs": {"a": 6.2832,"bg_threshold": 0.1,"resolution": 512,"image": ["1",0]},
+		"class_type": "MiDaS-DepthMapPreprocessor",
+		"_meta": {"title": "MiDaS Depth Map"}
+	},
+	"3": {
+		"inputs": {"images": ["2",0]},
+		"class_type": "PreviewImage",
+		"_meta": {"title": "Preview Image"}
+	},
+	"5": {
+		"inputs": {"ckpt_name": "ThinkDiffusionXL.safetensors"},
+		"class_type": "CheckpointLoaderSimple",
+		"_meta": {"title": "Load Checkpoint"}
+	},
+	"7": {
+		"inputs": {"control_net_name": "control-lora-depth-rank256.safetensors"},
+		"class_type": "ControlNetLoader",
+		"_meta": {"title": "Load ControlNet Model"}
+	},
+	"8": {
+		"inputs": {
+			"strength": 1,
+			"start_percent": 0,
+			"end_percent": 1,
+			"positive": ["9",0],
+			"negative": ["10",0],
+			"control_net": ["7",0],
+			"image": ["2",0]
+		},
+		"class_type": "ControlNetApplyAdvanced",
+		"_meta": {"title": "Apply ControlNet (Advanced)"}
+	},
+	"9": {
+		"inputs": {"text": "a futuristic cyborg on an alien spaceship","clip": ["5",1]},
+		"class_type": "CLIPTextEncode",
+		"_meta": {"title": "Positive Prompt"}
+	},
+	"10": {
+		"inputs": {"text": "","clip": ["5",1]},
+		"class_type": "CLIPTextEncode",
+		"_meta": {"title": "Negative Prompt"}
+	},
+	"11": {
+		"inputs": {
+			"seed": 961176784184834,
+			"steps": 35,
+			"cfg": 7,
+			"sampler_name": "dpmpp_3m_sde_gpu",
+			"scheduler": "exponential",
+			"denoise": 1,
+			"model": ["5",0],
+			"positive": ["8",0],
+			"negative": ["8",1],
+			"latent_image": ["12",0]
+		},
+		"class_type": "KSampler",
+		"_meta": {"title": "KSampler"}
+	},
+	"12": {
+		"inputs": {"width": 1024,"height": 1024,"batch_size": 1},
+		"class_type": "EmptyLatentImage",
+		"_meta": {"title": "Empty Latent Image"}
+	},
+	"15": {
+		"inputs": {"samples": ["11",0], "vae": ["5",2]},
+		"class_type": "VAEDecode",
+		"_meta": {"title": "VAE Decode"}
+	},
+	"16": {
+		"inputs": {"filename_prefix": "ComfyUI", "images": ["15",0]},
+		"class_type": "SaveImage",
+		"_meta": {"title": "Save Image"}
+	}
+}
+
+const SCENE_GENERATION_WITHOUT_MIDAS_WORKFLOW = {
+	"1": {
+		"inputs": {"image": "00007-4032934194.png","upload": "image"},
+		"class_type": "LoadImage",
+		"_meta": {"title": "Load Image"}
+	},
+	"3": {
+		"inputs": {"images": ["1",0]},
+		"class_type": "PreviewImage",
+		"_meta": {"title": "Preview Image"}
+	},
+	"5": {
+		"inputs": {"ckpt_name": "ThinkDiffusionXL.safetensors"},
+		"class_type": "CheckpointLoaderSimple",
+		"_meta": {"title": "Load Checkpoint"}
+	},
+	"7": {
+		"inputs": {"control_net_name": "control-lora-depth-rank256.safetensors"},
+		"class_type": "ControlNetLoader",
+		"_meta": {"title": "Load ControlNet Model"}
+	},
+	"8": {
+		"inputs": {
+			"strength": 1,
+			"start_percent": 0,
+			"end_percent": 1,
+			"positive": ["9",0],
+			"negative": ["10",0],
+			"control_net": ["7",0],
+			"image": ["1",0]
+		},
+		"class_type": "ControlNetApplyAdvanced",
+		"_meta": {"title": "Apply ControlNet (Advanced)"}
+	},
+	"9": {
+		"inputs": {"text": "a futuristic cyborg on an alien spaceship","clip": ["5",1]},
+		"class_type": "CLIPTextEncode",
+		"_meta": {"title": "Positive Prompt"}
+	},
+	"10": {
+		"inputs": {"text": "","clip": ["5",1]},
+		"class_type": "CLIPTextEncode",
+		"_meta": {"title": "Negative Prompt"}
+	},
+	"11": {
+		"inputs": {
+			"seed": 961176784184834,
+			"steps": 35,
+			"cfg": 7,
+			"sampler_name": "dpmpp_3m_sde_gpu",
+			"scheduler": "exponential",
+			"denoise": 1,
+			"model": ["5",0],
+			"positive": ["8",0],
+			"negative": ["8",1],
+			"latent_image": ["12",0]
+		},
+		"class_type": "KSampler",
+		"_meta": {"title": "KSampler"}
+	},
+	"12": {
+		"inputs": {"width": 1024,"height": 1024,"batch_size": 1},
+		"class_type": "EmptyLatentImage",
+		"_meta": {"title": "Empty Latent Image"}
+	},
+	"15": {
+		"inputs": {"samples": ["11",0], "vae": ["5",2]},
+		"class_type": "VAEDecode",
+		"_meta": {"title": "VAE Decode"}
+	},
+	"16": {
+		"inputs": {"filename_prefix": "ComfyUI", "images": ["15",0]},
+		"class_type": "SaveImage",
+		"_meta": {"title": "Save Image"}
+	}
+}
+
 /*
 	===============================================
 	OPENAI DALLE GENERATOR
@@ -335,17 +494,17 @@ setup.evaluateDalleCharacterDescription = function(mc) {
 	// Curses and conditions
 	if (mc.hasCurse("Freckle Speckle")) description += "Many freckles. ";
 	if (mc.hasCurse("20/20000000")) description += "Wearing thick glasses. ";
-	if (mc.hasCurse("Gooey")) description += "A slime person, translucent slime-skinned. ";
+	if (mc.hasCurse("Gooey")) description += "A slime person, transluscent slime-skinned. ";
 	if (mc.hasCurse("Crossdress Your Heart")) description += "Crossdressing as the opposite gender. ";
 	if (mc.hasCurse("Lingual Leviathan")) description += "A very long tongue sticking out. ";
 	if (mc.hasCurse("Massacre Manicure")) description += "Abnormally sharp and long fingernails. ";
 	if (mc.hasCurse("Flower Power")) description += "Covered in flowers. ";
 	if (mc.hasCurse("Cellulose")) description += "Made of living plant matter, like a dryad. ";
 	if (mc.hasCurse("Wriggly Antennae")) description += "Wriggly insect antennae on forehead. ";
-	if (mc.hasCurse("Carapacian")) description += "Covered in an insect-like carapace. ";
+	if (mc.hasCurse("Carapacian")) description += "Covered in an insect-like carapac. ";
 	if (mc.hasCurse("Creature of the Night")) description += "A vampire, with vampire fangs. ";
 	if (mc.hasCurse("Minish-ish")) description += `Very tiny, only a few inches tall. `;
-	if (mc.hasCurse("Colossal-able")) description += `Enormous, absolutely giant. `;
+	if (mc.hasCurse("Colossal-able")) description += `Enormous, asbolutely giant. `;
 	if (mc.hasCurse("Seafolk")) description += "A merfolk with a merfolk tail. ";
 	if (mc.hasCurse("Tickly Tentacles")) description += `${mc.tentacles} squirming tentacles growing from their body. `;
 	if (mc.hasCurse("Eye-scream")) description += `${mc.extraEyes} extra eyes on their body. `;
@@ -476,7 +635,7 @@ setup.POSITIVE_CATEGORICAL_TAGGING = {
 	],
 
 	"Image Quality" : [
-		"best_quality", "masterpiece", "hd", "4k", "8k", "extremely detailed", "intricate details", "ultra-detailed",
+		"best_quality", "masterpiece", "hd", "4k", "8k", "extremely detailed", "inctricate details", "ultra-detailed",
 		"illustration", "detailed light", "hdr", "best quality", "amazing quality", "very aesthetic", "absurdres",
 		"extremely detailed CG unity 8k wallpaper", "highres", "highly detailed", "soft shadow", "hard shadow",
 		"strong shadow", "depth of field", "an extremely delicate and beautiful"
@@ -511,7 +670,7 @@ setup.POSITIVE_CATEGORICAL_TAGGING = {
 	],
 
 	"Censor" : [
-		"censored", "mosaic censorship", "out-of-frame censoring", "bar censor",
+		"censored", "mosiac censorship", "out-of-frame censoring", "bar censor",
 		"heart censor", "glitch censor", "shadow censor", "tape censor", "blue censor", "tail censor", "ribbon censor",
 		"smoke censor", "feather censor", "soap censor", "one finger selfie challenge", "light censor"
 	],
@@ -529,7 +688,7 @@ setup.NEGATIVE_CATEGORICAL_TAGGING = {
 		"worst quality", "normal quality", "jpeg artifacts", "signature", "watermark", "username", "bad feet",
 		"three legs", "wrong hand", "wrong feet", "wrong fingers", "deformed leg", "abnormal", "malformed",
 		"bad art", "deformed", "disfigured", "mutation", "mutated", "extra limbs", "inaccurate limb",
-		"missing limb", "floating limbs", "disconnected limbs", "long neck", "long body", "mutated skeleton",
+		"missing limb", "floating limbs", "disconnected limbs", "(pencil neck)", "long neck", "long body", "mutated skeleton",
 		"long skeleton", "bad proportions", "mutated hands and fingers", "poorly drawn hands", "malformed hands",
 		"poorly drawn face", "poorly drawn asymmetrical eyes", "mutated face", "low quality", "distorted light",
 		"low quality illustration", "blurry", "bad anatomy"
@@ -700,202 +859,1059 @@ setup.comfyUI_InvokeGenerator = async function(url, payload) {
 	// Return the data for further processing
 	return data;
 }
+function processClothingState(mc_state, mc_curses) {
+	const thresholds = [0, 4, 6, 8, 10];
 
-setup.comfyUI_PrepareCharacterData = function() {
-	// get the character curses
-	const mc_curses = State.variables.mc.curses; // property: getter
-	const mc_curse_names = mc_curses.map(curse => curse.name);
-
-	// get special character data
-	const mc_state = {
-		'real_age' : State.variables.mc.realAge,
-		'apparent_age' : State.variables.mc.appAge,
-		'real_gender' : State.variables.mc.gender,
-		'apparent_gender' : State.variables.mc.appGender,
-		'penis_size' : State.variables.mc.penisCor,
-		'vagina_count' : State.variables.mc.vagina,
-		'double_penis' : State.variables.mc.doublePenis,
-		'sex' : State.variables.mc.sex,
-		'wombs' : State.variables.mc.womb,
-		'lactation' : State.variables.mc.lactation,
-		'breasts' : State.variables.mc.breastsCor,
-		'breastsLabel' : State.variables.mc.breastsLabel,
-		'height' : State.variables.mc.heightCor,
-		'libido' : State.variables.mc.libido,
-		'subdom' : State.variables.mc.subdom,
-
-		'hair' : State.variables.mc.hair,
-		'ears' : State.variables.mc.ears,
-		'bodyHair' : State.variables.mc.bodyHair,
-		'skinType' : State.variables.mc.skinType,
-		'skinColor' : State.variables.mc.skinColor,
-		'eyeColor' : State.variables.mc.eyeColor,
-		'tail' : State.variables.mc.tail,
-		'description' : State.variables.mc.desc,
-		'blood' : State.variables.mc.blood,
-		'genderVoice' : State.variables.mc.genderVoice,
-		'fluids' : State.variables.mc.fluids,
-		'lewdness' : State.variables.mc.lewdness,
-		'horns' : State.variables.mc.horns,
-		'inhuman' : State.variables.mc.inhuman,
-		'eyeCount' : State.variables.mc.eyeCount,
-		'armCount' : State.variables.mc.armCount,
-		'legCount' : State.variables.mc.legCount,
-		'tentacles' : State.variables.mc.tentacles,
-		'extraEyes' : State.variables.mc.extraEyes,
-		'extraMouths' : State.variables.mc.extraMouths
+	const hasCurse = (curseName) => {
+		return mc_curses.some(curse => curse.constructor.name === curseName);
 	};
-	// console.log(mc_state);
 
-	// get the character internal state (deep clone it)
-	const mc_internal_state_clone = Object.fromEntries(Object.entries(State.variables.mc._internalState()));
-	delete mc_internal_state_clone.image; // don't need the image to be sent
-	delete mc_internal_state_clone.events; // don't need the events to be sent
-	delete mc_internal_state_clone.imageIcon; // don't need the image icon to be sent
+	const getHighestReachedThreshold = (value) => {
+		for (let i = thresholds.length - 1; i >= 0; i--) {
+			if (value >= thresholds[i]) {
+				return thresholds[i];
+			}
+		}
+		return 0;
+	};
 
-	// payload to send to proxy/comfyui
-	const payload = {'character' : mc_internal_state_clone, 'curses' : mc_curse_names, 'state' : mc_state,};
-	return payload;
+	const currentThreshold = getHighestReachedThreshold(mc_state.libido);
+	const hasCRB = hasCurse('ClothingRestrictionB');
+	const hasCRC = hasCurse('ClothingRestrictionC');
+
+	const processState = () => {
+		switch (true) {
+
+			case !hasCRB && !hasCRC:
+				switch (currentThreshold) {
+					case 0:
+						console.log('Initial state - No restrictions');
+						return["Modestly Dressed, Fully Clothed","modestClothing"];
+					case 4:
+						console.log('Clothing passed 4 - No restrictions');
+						return["Fulled Clothed","normalClothing"];
+					case 6:
+						console.log('Clothing passed 6 - No restrictions');
+						return["","immodestClothing"];
+					case 8:
+						console.log('Clothing passed 8 - No restrictions');
+						return["","skimpyClothing"];
+					case 10:
+						console.log('Clothing passed 10 - No restrictions');
+						return["","sluttyClothing"];
+				}
+				break;
+			case hasCRB && hasCRC:
+				switch (currentThreshold) {
+					case 0:
+						console.log('Initial state - Both B and C restrictions active');
+						return["","nude"];
+					case 4:
+						console.log('Clothing passed 4 - Both B and C restrictions active');
+						return["","nude"];
+					case 6:
+						console.log('Clothing passed 6 - Both B and C restrictions active');
+						return["","nude"];
+					case 8:
+						console.log('Clothing passed 8 - Both B and C restrictions active');
+						return["","nude"];
+					case 10:
+						console.log('Clothing passed 10 - Both B and C restrictions active');
+						return["","nude"];
+				}
+				break;
+			case hasCRB && !hasCRC:
+				switch (currentThreshold) {
+					case 0:
+						console.log('Initial state - ClothingRestrictionB active');
+						return["Modestly Dressed, Fully Clothed","modestClothing"];
+					case 4:
+						console.log('Clothing passed 4 - ClothingRestrictionB active');
+						return["Fulled Clothed","normalClothing"];
+					case 6:
+	 					console.log('Clothing passed 6 - ClothingRestrictionB active');
+						return["","skimpyClothing"];
+					case 8:
+						console.log('Clothing passed 8 - ClothingRestrictionB active');
+						return["","sluttyClothing"];
+					case 10:
+						console.log('Clothing passed 10 - ClothingRestrictionB active');
+						return["","sluttyClothing"];
+				}
+				break;
+
+			case !hasCRB && hasCRC:
+				switch (currentThreshold) {
+					case 0:
+						console.log('Initial state - ClothingRestrictionC active');
+						return["","skimpyClothing"];
+					case 4:
+						console.log('Clothing passed 4 - ClothingRestrictionC active');
+						return["","sluttyClothing"];
+					case 6:
+						console.log('Clothing passed 6 - ClothingRestrictionC active');
+						return["","sluttyClothing"];
+					case 8:
+						console.log('Clothing passed 8 - ClothingRestrictionC active');
+						return["","sluttyClothing"];
+					case 10:
+						console.log('Clothing passed 10 - ClothingRestrictionC active');
+						return["","sluttyClothing"];
+				}
+				break;
+		}
+	};
+
+	// Return the processed state
+	return processState();
+}
+function processRanges(ranges) {
+	const result = {};
+
+	for (const [rangeName, [value, thresholds]] of Object.entries(ranges)) {
+		const sortedThresholds = [...thresholds].sort((a, b) => a[1] - b[1]);	
+		const matchedThreshold = sortedThresholds.reduce((acc, [description, threshold]) => {
+			return value >= threshold ? { description, threshold } : acc;
+		}, sortedThresholds[0]);
+		result[rangeName] = matchedThreshold.description;
+	}
+
+	return result;
 }
 
-const PREFIX_POSITIVE_PROMPT = "score_9, score_8_up, score_7_up, masterpiece, best quality, cowboy shot, 1girl, solo, source_anime, front view <lora:Dalle3_AnimeStyle_PONY_Lora:1>";
-const PREFIX_NEGATIVE_PROMPT = "score_5, score_4, pony, ugly, ugly face, poorly drawn face, blurry, blurry face, (3d), realistic, muscular, long torso, blurry eyes, poorly drawn eyes, patreon, artist name, (sd, super deformed),";
-const BODY_FITNESS = ["fragile body", "weak body", "average body", "fit body", "very fit body",];
-const HEIGHT_RANGES = [ ["dwarf", 150], ["midget", 160], ["short", 170], ["", 183], ["tall", 195] ];
-const PENIS_SIZES = ["small penis", "below average penis", "average penis", "large penis", "huge penis",];
+setup.comfyUI_PrepareCharacterData = function() {
+	// reset booleans
+	const mc_booleans = {
+		//clothing
+		modestClothing: false,
+		normalClothing: false,
+		immodestClothing: false,
+		skimpyClothing: false,
+		sluttyClothing: false,
+		naked: false,
+		nude: false,
+		//items
+		moonwatcher: false,
+		//expression
+		closedMouth: false,
 
-function heightToRangedValue(height) {
-	for (const [label, maxHeight] of HEIGHT_RANGES) {
-		if (height < maxHeight) {
-			return label;
-		}
-	}
-	return HEIGHT_RANGES[HEIGHT_RANGES.length-1][0];
+	};
+	// console.log(mc_booleans);
+
+	// get the character curses
+	const mc_curses = State.variables.mc.curses;
+	// get special character data
+	const mc_state = {
+		'age' : State.variables.mc.appAge, //years, final calculated age
+		'gender' : State.variables.mc.gender, //0 guy, 3.5 androgynous, 7 girl
+		// 'apparent_gender' : State.variables.mc.appGender, //counts things like smell and voice, much worse metric to use 
+		'penis_size' : State.variables.mc.penisCor, //0 means none,  measured in inches
+		// 'vagina_count' : State.variables.mc.vagina, //avoiding this for now, not enough prompt testing
+		// 'double_penis' : State.variables.mc.doublePenis, //avoiding this for now, not enough prompt testing
+		'sex' : State.variables.mc.sex, // female, male, futa
+		'lactation' : State.variables.mc.lactation, //0 nothing, > 0 some lactation, > 1 extreme lactation
+		'breasts' : State.variables.mc.breastsCor, //Corrected size, base 0, 
+		// 'breastsLabel' : State.variables.mc.breastsLabel, //Letter Size, not used
+		'height' : State.variables.mc.heightCor, //height in cms
+		'libido' : State.variables.mc.libido, //base 2, higher means higher libido
+		'subdom' : State.variables.mc.subdom, //base 0, positive 2 most submissive, -1 dominant
+		'hair' : State.variables.mc.hair, //colour
+		'ears' : State.variables.mc.ears, //type, default "normal human"
+		'bodyHair' : State.variables.mc.bodyHair, //0 meaning none, 1 being normal, 2 being maximum fluff 
+		// 'skinType' : State.variables.mc.skinType, // not usable for prompt
+		'skinColor' : State.variables.mc.skinColor, // is adjusted by curses, use directly
+		'eyeColor' : State.variables.mc.eyeColor, // is adjusted by curses, use directly
+		'tail' : State.variables.mc.tail[0], //mc.tail is an ARRAY, you can't just reference it directly. Changed to tail[0]
+		// 'description' : State.variables.mc.desc, //I have NO idea what this does
+		'blood' : State.variables.mc.blood, //blood colour 
+		// 'genderVoice' : State.variables.mc.genderVoice, //Voices aren't used in the prompt
+		// 'fluids' : State.variables.mc.fluids, //100 is normal, 0 is none, 200 is double, not used for portraits
+		// 'lewdness' : State.variables.mc.lewdness, //Only libido will be referenced, this is too vague to combine the two
+		'horns' : State.variables.mc.horns, // Horn count
+		'hornType' : State.variables.hornVariation, // Horn type, not stored in the MC for some reason??
+		// 'inhuman' : State.variables.mc.inhuman, // not used for portraits
+		// 'eyeCount' : State.variables.mc.eyeCount, // Not using for now, too intrusive on prompt
+		// 'armCount' : State.variables.mc.armCount, // Not using for now, too intrusive on prompt
+		// 'legCount' : State.variables.mc.legCount, // Not using for now, too intrusive on prompt
+		// 'tentacles' : State.variables.mc.tentacles,
+		// 'extraEyes' : State.variables.mc.extraEyes, // Not using for now, too intrusive on prompt
+		// 'extraMouths' : State.variables.mc.extraMouths // Not using for now, too intrusive on prompt
+		'fitness' : State.variables.mc.fit, //-2 is out of shape, 0 is normal, 2 is very fit
+	};
+
+	const mc_ranges = {
+		"sex": [mc_state.gender, [["1boy", 0],["1girl", 3.5]]],
+		"height": [mc_state.height, [["Pixie Sized", 0], ["extremely short", 120], ["very short", 140], ["short", 150], ["below average height", 160], ["average height", 170], ["above average height", 180], ["tall", 190], ["very tall", 200], ["extremely tall", 210], ["titanic height", 300]]],
+		"penis": [mc_state.penis_size, [[["", 0]["micro penis", 0.1],["tiny penis", 2],["small penis", 3] ["below average penis", 4], ["medium penis", 5], ["above average penis", 7], ["large penis", 9], ["huge penis", 11], ["gigantic penis", 13], ["hyper penis", 15]]]],
+		"clothing": [mc_state.libido, [["modestly dressed, fully clothed", 0], ["normal clothing" , 4], ["immodest clothing", 6], ["skimpy clothing", 8], ["slutty slothing", 10]]],
+		"fitness": [mc_state.fitness, [["fragile body", -2], ["weak body", -1], ["average body", 0], ["fit body", 1], ["very fit body", 2]]],
+		"breasts": [mc_state.breasts, [["flat chest", 0], ["flat breasts", 1], ["small breasts", 2], ["medium breasts", 3], ["large breasts", 5], ["huge breasts", 7], ["gigantic breasts", 9], ["hyper breasts", 11]]],
+		"gender": [mc_state.gender, [["hyper masculine man", 0], ["masculine man", 1], ["twink", 2], ["femboy", 3], ["tomboy", 4], ["androgynous woman", 5], ["feminine woman", 6], ["hyper feminine woman", 7]]],
+		"age": [mc_state.age, [["(elder:3), (old:3)", 0], ["young adult", 13], ["adult", 30], ["adult", 40], ["(old:1.1)", 50], ["(old:1.5), senior citizen", 60], ["(old:2), senior citizen", 70]]],
+	};
+
+	console.log(mc_ranges);
+	const mc_range = processRanges(mc_ranges);
+	console.log(mc_range);
+
+	let [clothingString, clothingTrue] = processClothingState(mc_state, mc_curses);
+	mc_booleans[clothingTrue] = true;
+	mc_state.clothing = clothingString;
+	console.log(mc_state.clothing+" "+mc_booleans.modestClothing);
+
+	// payload to send to proxy/comfyui
+	const payload = {'booleans' : mc_booleans, 'curses' : mc_curses, 'state' : mc_state, 'range' : mc_range};
+	return payload;
 }
 
 setup.comfyUI_GenerateCurseParameters = function() {
 	const characterData = setup.comfyUI_PrepareCharacterData();
-
-	let positive = "";
-	let negative = "";
-
-	positive += `${characterData.state.sex},`;
-	positive += `${Math.max(characterData.state.apparent_age, 21)} years old,`;
-	positive += BODY_FITNESS[Math.max(Math.min(characterData.character.fit + 2, 4), 0)] + ",";
-	positive += `${heightToRangedValue(characterData.state.height)},`;
-	positive += `${characterData.state.hair} hair,`;
-	for (const tail of characterData.state.tail) {
-		positive += `${characterData.state.hair} ${tail} tail,`;
-	}
-	positive += `${characterData.state.hair} ${characterData.state.ears} ears,`;
-
-	// CreatureOfTheNight -> Vampire
-	if (characterData.curses.includes("CreatureOfTheNight")) {
-		positive += "vampire,fangs,red eyes,glowing eyes,pale skin,";
-	} else {
-		positive += `${characterData.state.eyeColor} eyes,`;
-		positive += `${characterData.state.skinColor} skin,`;
-	}
-
-	if (characterData.curses.includes("WrigglyAntennae")) {
-		positive += "pink antennae,";
-	}
-	if (characterData.curses.includes("Megadontia")) {
-		positive += "sharp teeth,";
-	}
-	if (characterData.curses.includes("FreckleSpeckle")) {
-		positive += "freckles,";
-	}
-	if (characterData.curses.includes("KnifeEar")) {
-		positive += "pointy ears,";
-	}
-	if (characterData.curses.includes("Horny")) {
-		positive += "succubus horns,";
-	}
-	if (characterData.curses.includes("DrawingSpades")) {
-		positive += "spade tail,";
-	}
-
-	if (characterData.state.sex === "female" && !characterData.curses.includes("ClothingRestrictionA")) {
-		positive += "earrings,";
-	}
-
-	if (!characterData.curses.includes("ClothingRestrictionC")) {
-		positive += "adventurer,leather armor,";
-	}
-
-	if (characterData.curses.includes("ClothingRestrictionC")) {
-		if (characterData.curses.includes("ClothingRestrictionB")) {
-			positive += "nude,";
-		} else {
-			if (characterData.state.sex === "female") {
-				positive += "bra,panties,";
-			} else {
-				positive += "underwear,shirtless,no pants,small penis bulge,";
-			}
-		}
-
-		if (characterData.curses.includes("ClothingRestrictionC") && characterData.curses.includes("ClothingRestrictionB")) {
-			// NUDE
-			if (characterData.curses.includes("Null")) {
-				// null curse
-				positive += "smooth featureless body, no genitalia, soft abstract body aesthetic without explicit details,";
-			} else {
-				// sex-specific
-				if (characterData.state.sex === "female") {
-					if (characterData.curses.includes("TattooTally")) {
-						positive += "succubus tattoo,";
-					}
-					if (characterData.curses.includes("Leaky")) {
-						positive += "pussy juice,";
-					}
-				} else {
-					if (characterData.curses.includes("TattooTally")) {
-						positive += "incubus tattoo,";
-					}
-					if (characterData.curses.includes("Leaky")) {
-						positive += "pre-ejaculation,";
-					}
-				}
-
-				// lactation (both M/F)
-				let lactation = 0;
-				if (characterData.curses.includes("LactationRejuvenationA")) {
-					lactation += 1;
-				}
-				if (characterData.curses.includes("LactationRejuvenationB")) {
-					lactation += 1;
-				}
-
-				if (lactation === 2) {
-					positive += "milk,lactating,lactation,";
-				} else if (lactation === 1) {
-					positive += "dripping lactation,";
-				}
-
-				if (characterData.state.penis_size > 0) {
-					positive += PENIS_SIZES[characterData.state.penis_size-1] + ",";
+	const hasCurse = (curseName) => {
+		return characterData.curses.some(curse => curse.constructor.name === curseName);
+	};
+	characterData.cursePrompts = {
+		"ClothingRestrictionA": {
+			"affects" : {
+				"clothing":{
+					"positive": ["no accessories"],
+					"negative": ["scarves", "hats", "piercings", "pasties", "jewellery", "rings", "necklaces", "gloves", "bracelets", "hair clips", "hair ornaments"],
+					"excludedBy": [],
 				}
 			}
+		},
+		"HairRemoval": {
+			"affects": {
+				"skin": {
+					"positive": ["waxed body", "smooth"],
+					"negative": ["(female pubic hair:2)","(male pubic hair:2)", "(facial hair:2)"],
+					"excludedBy": [],
+				},
+				"eyes": {
+					"positive": ["trimmed eyebrows"],
+					"negative": [],
+					"excludedBy": [],
+				}
+			}
+		},
+			"FreckleSpeckle": {
+				"affects": {
+					"skin": {
+						"positive": ["(freckles)","(Body freckles)"],
+						"negative": [],
+						"excludedBy": [],
+					}
+			}
+		},
+		"Knife-ear": {
+			"affects": {
+				"ears": {
+					"positive": ["elf ears", "((pointed)) ears"],
+					"negative": [],
+					"excludedBy": [],
+				}
+			}
+		},
+		// "IncreasedSensitivity": {
+		// 	"affects": {
+		// 		"behaviour": {
+		// 			"positive": [],
+		// 			"negative": [],
+		// 			"excludedBy": [],
+		// 		}
+		// 	}
+		// },
+		"FluffyEars": {
+			"affects": {
+				"ears": {
+					"positive": ["animal ears"],
+					"negative": ["normal human ears", "4 ears"],
+					"excludedBy": [],
+				},
+				"hair": {
+					"positive": ["animal ears sticking out of hair"],
+					"negative": [],
+					"excludedBy": [],
+				}
+			}
+		},
+		"FluffyTail": {
+			"affects": {
+				"tail": {
+					"positive": ["Furry tail"],
+					"negative": [],
+					"excludedBy": [],
+				}
+			}
+		},
+		"MaximumFluff": {
+			"affects": {
+				"skin": {
+					"positive": ["skin covered in fur"],
+					"negative": [],
+					"excludedBy": [],
+				},
+				"hair": {
+					"positive": ["fur like hair on head"],
+					"negative": [],
+					"excludedBy": [],
+				}
+			}
+		},
+		"Heat/Rut": {
+			"affects": {
+				"behaviour": {
+					"positive": ["(heavy_breathing:1.3)","(full-face blush:1.6)","(chest blush:1.2)"],
+					"negative": [],
+					"excludedBy": [],
+				},
+				"pregnancy": {
+					"positive": [],
+					"negative": [],
+					"excludedBy": [],
+				}
+			}
+		},
+		// "Lightweight": {
+		// 	"affects": {
+		// 		"behaviour": {
+		// 			"positive": [],
+		// 			"negative": [],
+		// 			"excludedBy": [],
+		// 		}
+		// 	}
+		// },
+		"BlushingVirgin": {
+			"affects": {
+				"behaviour": {
+					"positive": ["blushing","shy"],
+					"negative": [],
+					"excludedBy": [],
+				}
+			}
+			},
+		// "SubmissivenessRectificationA": {
+		// 	"affects": {
+		// 		"behaviour": {
+		// 			"positive": ["timid"],
+		// 			"negative": [],
+		// 			"excludedBy": [],
+		// 		}
+		// 	}
+		// },
+		"ClothingRestrictionB": {
+			"affects": {
+				"clothing": {
+					"positive": ["No undergarments"],
+					"negative": ["underwear", "boxers", "briefs", "panties", "thongs", "socks", "stockings", "bra"],
+					"excludedBy": [characterData.booleans.modestClothing, characterData.booleans.normalClothing],
+				}
+			}
+		},
+		// "PowerDom": {
+		// 	"affects": {
+		// 		"behaviour": {
+		// 			"positive": ["confident", "dominatrix"],
+		// 			"negative": [],
+		// 			"excludedBy": [],
+		// 		}
+		// 	}
+		// },
+		"20/20000000": {
+			"affects": {
+				"clothing": {
+					"positive": ["(large glasses)", "(glasses:1.2)"],
+					"negative": [],
+					"excludedBy": [],
+				}
+			}
+		},
+		// "ComicRelief": {
+		// 	"affects": {
+		// 		"behaviour": {
+		// 		"positive": [],
+		// 		"negative": [],
+		// 		"excludedBy": [],
+		// 		}
+		// 	}
+		// },
+		// "EqualOpportunity": {
+		// 	"affects": {
+		// 		"behaviour": {
+		// 		"positive": [],
+		// 		"negative": [],
+		// 		"excludedBy": [],
+		// 		}
+		// 	}
+		// },
+		// "AbsolutePregnancy": {
+		// 	"affects": {
+		// 		"pregnancy": {
+		// 		"positive": ["(Impregnation:1.5)"],
+		// 		"negative": [],
+		// 		"excludedBy": [],
+		// 		}
+		// 	}
+		// },
+		// "AbsoluteBirthControl": {
+		// 	"affects": {
+		// 		"pregnancy": {
+		// 		"positive": [],
+		// 		"negative": [],
+		// 		"excludedBy": [],
+		// 		}
+		// 	}
+		// },
+		// "WackyWombs": {
+		// 	"affects": {
+		// 		"pregnancy": {
+		// 		"positive": [],
+		// 		"negative": [],
+		// 		"excludedBy": [],
+		// 		}
+		// 	}
+		// },
+		"Omnitool": {
+			"affects": {
+				"pregnancy": {
+					"positive": [],
+					"negative": [],
+					"excludedBy": [],
+				}
+			}
+		},
+		"Gooey": {
+			"affects": {
+				"skin": {
+					"positive": ["transparent skin", "see-through skin", "sticky skin", "slimly skin", "gooey skin"],
+					"negative": [],
+					"excludedBy": [],
+				},
+				"hair": {
+					"positive": ["transparent hair", "see-through hair", "sticky hair", "slimly hair", "gooey hair"],
+					"negative": [],
+					"excludedBy": [],
+				},
+				"eyes": {
+					"positive": ["transparent eyes", "see-through eyes", "sticky eyes", "slimly eyes", "gooey eyes"],
+					"negative": [],
+					"excludedBy": [],
+				},
+				"ears": {
+					"positive": ["transparent ears", "see-through ears", "sticky ears", "slimly ears", "gooey ears"],
+					"negative": [],
+					"excludedBy": [],
+				},
+				"breasts": {
+					"positive": ["transparent breasts", "see-through breasts", "sticky breasts", "slimly breasts", "gooey breasts"],
+					"negative": [],
+					"excludedBy": [],
+				},
+				"penis": {
+					"positive": ["transparent penis", "see-through penis", "sticky penis", "slimly penis", "gooey penis"],
+					"negative": [],
+					"excludedBy": [],
+				},
+				"vulva": {
+					"positive": ["transparent penis", "see-through penis", "sticky penis", "slimly penis", "gooey penis"],
+					"negative": [],
+					"excludedBy": [],
+				}
+			}
+		},
+		"DoublePepperoni": {
+			"affects": {
+				"breasts": {
+					"positive": ["(puffy_nipples:2)","(large areolae:2)","(long nipples:2)"],
+					"negative": [],
+					"excludedBy": [characterData.booleans.modestClothing, characterData.booleans.normalClothing],
+				}
+			}
+		},
+		"LiteralBlushingVirgin": {
+			"affects": {
+				"behaviour": {
+					"positive": ["timid", "blushing"],
+					"negative": [],
+					"excludedBy": [],
+				}
+			}
+		},
+		"HypnoHappytime": {
+			"affects": {
+				"behaviour": {
+					"positive": ["hypnotised", "(relaxed:1.4)"],
+					"negative": ["(pendulum)", "(coin)"],
+					"excludedBy": [],
+				},
+				"mouth": {
+					"positive": ["(drooling:0.8)"],
+					"negative": [],
+					"excludedBy": [],
+				}
+			}
+		},
+		// "CrossdressYourHeart": {
+		// 	"affects": {
+		// 		"clothing": {
+		// 			"positive": [],
+		// 			"negative": [],
+		// 			"excludedBy": [nude]
+		// 		}
+		// 	}
+		// },
+		// "LieDetector": {
+		// 	"affects": {
+		// 		"behaviour": {
+		// 			"positive": [],
+		// 			"negative": [],
+		// 			"excludedBy": [],
+		// 		}
+		// 	}
+		// },
+		"Megadontia": {
+			"affects": {
+				"mouth": {
+					"positive": ["(fangs:1.2)", "(sharp teeth:1.2)"],
+					"negative": [],
+					"excludedBy": [characterData.booleans.closedMouth],
+				}
+			}
+		},
+		"Softie": {
+			"affects": {
+				"penis": {
+					"positive": [],
+					"negative": [],
+					"excludedBy": [],
+				},
+				"breasts": {
+					"positive": ["inverted nipples"],
+					"negative": [],
+					"excludedBy": [characterData.booleans.modestClothing, characterData.booleans.normalClothing],
+				}
+			}
+		},
+		"HardMode": {
+			"affects": {
+				"penis": {
+					"positive": ["veiny penis", "(erection:1.2)"],
+					"negative": [],
+					"excludedBy": [characterData.booleans.modestClothing],
+				},
+				"breasts": {
+					"positive": ["(long nipples:2)"],
+					"negative": [],
+					"excludedBy": [characterData.booleans.modestClothing],
+				}
+			}
+		},
+		"LingualLeviathan": {
+			"affects": {
+				"mouth": {
+				"positive": ["(long tongue:1.3)", "(flexible tongue)", "frog tongue"],
+				"negative": [],
+				"excludedBy": [characterData.booleans.closedMouth],
+				}
+			}
+		},
+		"TippingtheScales": {
+		"affects": {
+			"skin": { 
+				"positive": ["reptile scale", "fish scales", "dragon scales"],
+				"negative": [],
+				"excludedBy": [],
+			},
+			"hair": {
+				"positive": ["rough hair", "shiny hair"],
+				"negative": [],
+				"excludedBy": [],
+			}
 		}
-	}
+		},
+		"Reptail": {
+			"affects": {
+				"tail": {
+					"positive": ["scaled tail", "lizard tail"],
+					"negative": ["two tails", "multiple tails"],
+					"excludedBy": [],
+				},
+			},
+		},
+		"ColdBlooded": {
+			"affects": {
+				"behaviour": {
+					"positive": ["shaking", "shivering"],
+					"negative": [],
+					"excludedBy": [],
+				}
+			}
+		},
+		"ClothingRestrictionC": {
+			"affects": {
+				"clothing": {
+					"positive": [],
+					"negative": ["pants", "shirt", "dress", "skirt", "shoes", "sandals", "blouse", "suit"],
+					"excludedBy": [],
+				}
+			}
+		},
+		"MassacreManicure": {
+			"affects": {
+				"limbs": {
+					"positive": ["sharp fingernails", "dangerous fingernails", "long fingernails", "knife fingernails", "scalpel fingernails", "monstrous fingernails"],
+					"negative": [],
+					"excludedBy": [],
+				}
+			}
+		},
+		"DoM": {
+			"affects": {
+				"skin": {
+					"positive": ["bruised","bleeding"],
+					"negative": [],
+					"excludedBy": [],
+				}
+			}
+		},
+		"FlowerPower": {
+		"affects": {
+			"skin": {
+				"positive": ["vines", "flowers", "exotic flower", "hibiscus", "fantasy flower", "climbing foliage"],
+				"negative": [],
+				"excludedBy": [],
+			},
+			"limbs": {
+				"positive": ["vines", "flowers", "fantasy flower"],
+				"negative": [],
+				"excludedBy": [],
+			},
+			"hair": {
+				"positive": ["flowers", "leaves", "fantasy flower", "ornamental flower", "flower crown"],
+				"negative": [],
+				"excludedBy": [],
+			}
+		}
+		},
+		"Cellulose": {
+			"affects": {
+				"skin": {
+				"positive": ["(alruane:1.3)","(plant girl:1.3)"],
+				"negative": [],
+				"excludedBy": [],
+				}
+			}
+		},
+		"Carapacian": {
+			"affects": {
+				"skin": {
+				"positive": ["shell skin", "insect skin"],
+				"negative": [],
+				"excludedBy": [],
+				},
+				"limbs": {
+				"positive": ["armour", "keratin", "chitin", "bone"],
+				"negative": [],
+				"excludedBy": [],
+				},
+			}
+		},
+		"WrigglyAntennae": {
+			"affects": {
+				"hair": {
+					"positive": ["(antennae:1.3)", "antennae coming from hair", "antennae on head", "2 antennae"],
+					"negative": [],
+					"excludedBy": [],
+				}
+			}
+		},
+		// "SubmissivenessRectificationB": {
+		// 	"affects": {
+		// 		"clothing": {
+		// 			"positive": [submissive apparel],
+		// 			"negative": [],
+		// 			"excludedBy": [naked],
+		// 		},
+		// 		"behaviour": {
+		// 			"positive": [blushing, timid look],
+		// 			"negative": [],
+		// 			"excludedBy": [],
+		// 		}
+		// 	}
+		// },
+		// "LactationRejuvenationB": {
+		// 	"affects": {
+		// 		"pregnancy": {
+		// 			"positive": [],
+		// 			"negative": [],
+		// 			"excludedBy": [],
+		// 		},
+		// 		"breasts": {
+		// 			"positive": [],
+		// 			"negative": [],
+		// 			"excludedBy": [],
+		// 		}
+		// 	}
+		// },
+		"Horny": {
+			"affects": {
+				"hair": {
+					"positive": ["smooth horns in hair", "curved horns", "pointed horns"],
+					"negative": [],
+					"excludedBy": [],
+				}
+			}
+		},
+		"DrawingSpades": { 
+			"affects": {
+				"behaviour": {
+					"positive": ["succubus tail", "(((demon tail)))", "long tail", "pointed tail", "curved tail", "spade tail"],
+					"negative": ["multiple tails"],
+					"excludedBy": [],
+				}
+			}
+		},
+		// "Leaky": {
+		// 	"affects": {
+		// 		"penis": {
+		// 		"positive": [viscous liquid, sticky liquid, falling liquid, Overflow, Leakage, dripping],
+		// 		"negative": [],
+		// 		"excludedBy": [],
+		// 		},
+		// 		"vulva": {
+		// 		"positive": [viscous liquid, sticky liquid, falling liquid, Overflow, Leakage, dripping],
+		// 		"negative": [],
+		// 		"excludedBy": [],
+		// 		}
+		// 	}
+		// },
+		// "WanderingHands": {
+		// 	"affects": {
+		// 		"behaviour": {
+		// 		"positive": [],
+		// 		"negative": [],
+		// 		"excludedBy": [],
+		// 		}
+		// 	}
+		// },
+		"SemenDemon": {
+			"affects": {
+				"behaviour": {
+					"positive": ["smug"],
+					"negative": [],
+					"excludedBy": [],
+				},
+				"mouth": {
+					"positive": ["(cum in mouth)","facial"],
+					"negative": [],
+					"excludedBy": [],
+				}
+			}
+		},
+		// "Quota": {
+		// 	"affects": {
+		// 		"behaviour": {
+		// 			"positive": [],
+		// 			"negative": [],
+		// 			"excludedBy": [],
+		// 		}
+		// 	},
+		// },
+		// "SharedSpace": {
+		// 	"affects": {
+		// 		"behaviour": {
+		// 			"positive": [],
+		// 			"negative": [],
+		// 			"excludedBy": [],
+		// 		}
+		// 	}
+		// },
+		// "RandomOrgasms": {
+		// 	"affects": { 
+		// 		"behaviour": {
+		// 		"positive": ["spasm", "leg spasm", "squirting"],
+		// 		"negative": [],
+		// 		"excludedBy": [],
+		// 		}
+		// 	}
+		// },
+		"CreatureoftheNight": {
+			"affects": {
+				"skin": {
+					"positive": ["pale skin"],
+					"negative": [],
+					"excludedBy": [],
+				},
+				"mouth": {
+					"positive": ["(vampire fangs:1.2)"],
+					"negative": [],
+					"excludedBy": [],
+				}
+			}
+		},
+		"Minish-ish": {
+			"affects": {
+				"size": {
+					"positive": ["pencil size", "minimoys size", "schtroumpf size", "cursed"],
+					"negative": [],
+					"excludedBy": [],
+				}
+			}
+		},
+		"Colossal-able": {
+			"affects": {
+				"size": {
+					"positive": ["giant", "tower size", "building size"],
+					"negative": [],
+					"excludedBy": [],
+				}
+			}
+		},
+		// "UrineReamplificationB": {
+		// 	"affects": {
+		// 		"clothing": {
+		// 			"positive": [],
+		// 			"negative": [],
+		// 			"excludedBy": [marusolution],
+		// 		}
+		// 	}
+		// },
+		"EyeonthePrize": {
+			"affects": {
+				"eyes": {
+					"positive": ["white iris on one eye", "transparent iris on one eye", "one non-functional eye", "grey pupil on one eye"],
+					"negative": ["two eyes"],
+					"excludedBy": [characterData.booleans.moonwatcher],
+				}
+			}
+		},
+		// "DeafeningSilence": {
+		// 	"affects": {
+		// 		"ears": {
+		// 			"positive": [broken, twisted, removed, remnant, hollow],
+		// 			"negative": [],
+		// 			"excludedBy": [],
+		// 		}
+		// 	}
+		// },
+		"TaciturnTurnaround": {
+			"affects": {
+				"mouth": {
+					"positive": ["mutilated tongue", "ripped off tongue", "scarred tongue", "removed tongue"],
+					"negative": [],
+					"excludedBy": [],
+				}
+			}
+		},
+		// "Ampu-Q-tie": {
+		// 	"affects": {
+		// 		"limbs": {
+		// 			"positive": ["ripped off", "removed", "bits and pieces", "unprofessional", "painful", "non-functional"],
+		// 			"negative": [],
+		// 			"excludedBy": [],
+		// 		}
+		// 	}
+		// },
+		// "NoseGoes": {
+		// 	"affects": {
 
-	positive += `${characterData.state.breastsLabel} breasts,`; // TODO: change to relative sizes (flat, small, large, huge, enormous)
+		// 	}
+		// },
+		// "ArmArmy": {
+		// 	"affects": {
+		// 		"limbs": {
+		// 			"positive": ["parallel", "thorax", "abdomen", "anatomy"],
+		// 			"negative": [],
+		// 			"excludedBy": [],
+		// 		}
+		// 	}
+		// },
+		// "ALittleExtra": {
+		// 	"affects": {
+		// 		"penis": {
+		// 		"positive": [],
+		// 		"negative": [],
+		// 		"excludedBy": [],
+		// 		},
+		// 		"vulva": {
+		// 		"positive": [],
+		// 		"negative": [],
+		// 		"excludedBy": [],
+		// 		}
+		// 	}
+		// },
+		"Null": {
+			"affects" : {
+				// "penis": {
+				// 	"positive": [],
+				// 	"negative": [genitalia],
+				// 	"excludedBy": [],
+				// },
+				// "vulva": {
+				// 	"positive": [],
+				// 	"negative": [],
+				// 	"excludedBy": [genitalia],
+				// },
+					"breasts": {
+						"positive": ["smooth breasts", "No nipples"],
+						"negative": ["nipples"],
+						"excludedBy": [],
+					}
+			}
+		},
+		// "Seafolk": {
+		// 	"affects": {
+		// 		"limbs": {
+		// 			"positive": ["mermaid", "fins", "gills"],
+		// 			"negative": ["human legs"],
+		// 			"excludedBy": [],
+		// 		}
+		// 	}
+		// },
+		"TakenforGranite": {
+			"affects": {
+				"skin": {
+					"positive": ["stone skin", "granite", "igneous", "Basalt"],
+					"negative": [],
+					"excludedBy": [],
+				}
+			}
+		},
+		// "DoubleTrouble": {
+		// 	"affects": {}
+		// },
+	/*  "Conjoined": { combined, hole, unity , completed, biomass
+		"affects": {}
+		},*/
+		"AdversePossession": {
+			"affects": {
+				"behaviour": {
+					"positive": ["evil grin"],
+					"negative": [],
+					"excludedBy": [],
+				},
+				"eyes": {
+					"positive": ["glowing eyes", "red eyes", "evil eyes", "demonic eyes"],
+					"negative": [],
+					"excludedBy": [],
+				}
+			}
+		},
+		"TicklyTentacles": {
+			"affects": {
+				"limbs": {
+					"positive": ["tentacles growing out back", "soft tentacles", "octopus tentacles", "alien tentacles", "monstrous tentacles", "long tentacles", "prehensile tentacles"],
+					"negative": [],
+					"excludedBy": [],
+				},
+			}
+		},
+		// "Eye-scream": {
+		// 	"affects": {
+		// 		"body": {
+		// 			"positive": ["extra eye on eye location", "alien extra eyes", "orb extra eyes"],
+		// 			"negative": [],
+		// 			"excludedBy": [],
+		// 		}
+		// 	}
+		// },
+		// "AMouthful": {
+		// 	"affects": {
+		// 		"mouth": {
+		// 		"positive": ["monstrous second mouth", "fleshy second mouth", "sharp second mouth", "horror second mouth"],
+		// 		"negative": [],
+		// 		"excludedBy": [],
+		// 		}
+		// 	}
+		// },
+		"BelowtheVeil": {
+			"affects": {
+				"environment": {
+					"positive": ["fog", "mist", "enlightened", "lovecraftian"],
+					"negative": [],
+					"excludedBy": [],
+				}
+			}
+		},
+		"PrincessProtocol": {
+			"affects": {
+				"behaviour": {
+					"positive": ["scared", "nervous", "timid"],
+					"negative": [],
+					"excludedBy": [],
+				},
+				"clothing": {
+					"positive": ["Princess Attire", "dress", "crown", "jewelery", "frilly clothing"],
+					"negative": [],
+					"excludedBy": [hasCurse("Clothing Restriction C"), hasCurse("Clothing Restriction A")],
+				}
+			}
+		},
+		// "GestationJumpstart": {
+		// 	"affects": {
+		// 		"pregnancy": {
+		// 			"positive": [],
+		// 			"negative": [],
+		// 			"excludedBy": [],
+		// 		}
+		// 	}
+		// },
+		"BimboBabble": {
+			"affects": {
+				"clothing": {
+					"positive": ["stylish clothing"],
+					"negative": [],
+					"excludedBy": [characterData.booleans.nude],
+				},
+				"behaviour": {
+					"positive": ["ditzy"],
+					"negative": [],
+					"excludedBy": [],
+				}
+			}
+		}
+	};
+	characterData.cursePromptArray = [];
 
+	let positive = ["score_9, score_8_up, score_7_up, (portrait), ratingsafe, (cowboy shot), solo, source_anime, front view, (normal human ears) <lora:Dalle3_AnimeStyle_PONY_Lora:1>"];
+	let negative = ["toddler", "kindergartener", "child", "underage", "early teen", "shota", "loli", "flat color", "lowres", "bad hands", "bad fingers", "missing fingers", "extra digit", "fewer digits",
+	"worst quality", "normal quality", "jpeg artifacts", "signature", "watermark", "username", "bad feet",
+	"three legs", "wrong hand", "wrong feet", "wrong fingers", "deformed leg", "abnormal", "malformed",
+	"bad art", "deformed", "disfigured", "mutation", "mutated", "extra limbs", "inaccurate limb",
+	"missing limb", "floating limbs", "disconnected limbs", "(pencil neck)", "long neck", "long body", "mutated skeleton",
+	"long skeleton", "bad proportions", "mutated hands and fingers", "poorly drawn hands", "malformed hands",
+	"poorly drawn face", "poorly drawn asymmetrical eyes", "mutated face", "low quality", "distorted light",
+	"low quality illustration", "blurry", "bad anatomy", "(animal ears:2)", "four ears:2"];
+	positive = positive.concat(Object.values(characterData.range));
+	Object.entries(characterData.cursePrompts).forEach(([curseName, curseData]) => {
+		if (hasCurse(curseName)) {
+			Object.entries(curseData.affects || {}).forEach(([category, categoryData]) => {
+				const hasExcludedBy = categoryData.excludedBy.some(exclusion =>
+					hasCurse(exclusion)
+				);
+				if (!hasExcludedBy) {
+					characterData.cursePromptArray.push({
+						category: category,
+						positive: categoryData.positive || [],
+						negative: categoryData.negative || []
+					});
+
+					positive = positive.concat(categoryData.positive || []);
+					negative = negative.concat(categoryData.negative || []);
+				}
+			});
+		}
+	});
+	positive = positive.join(", ");
+	negative = negative.join(", ");
+	// console.log(positive+", henlo"+negative);
 	return [positive, negative];
-}
-
-// TODO: ItsTheTwin is doing this (temporary code)
+};
 setup.comfyUI_GenerateStandardParameters = function() {
 	let [positive, negative] = setup.comfyUI_GenerateCurseParameters();
-
-	positive += PREFIX_POSITIVE_PROMPT + " ,solo,portrait,upper_body,plain dark background," + positive;
-	negative = PREFIX_NEGATIVE_PROMPT + negative;
-
 	let checkpoint = "hassakuXLPony_v13BetterEyesVersion.safetensors";
 	let steps = 20;
 	let cfg = 7.0;
-	let seed = (SugarCube.State.prng.seed | Math.round(Math.random() * 10_000));
+	let seed = (SugarCube.State.variables.seed || Math.round(Math.random() * 10_000));
 	let width = 1024;
 	let height = 1024;
 	return [positive, negative, checkpoint, steps, cfg, seed, width, height];
