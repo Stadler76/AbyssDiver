@@ -323,6 +323,7 @@ def install_comfyui_nodes(custom_nodes_folder : str) -> None:
 		req_txtfile = Path(os.path.join(custom_nodes_folder, folder_name, "requirements.txt")).as_posix()
 		if os.path.exists(req_txtfile):
 			print(f'Installing requirements for: {folder_name} {req_txtfile}')
+			print('This may take a minute.')
 			if os.path.exists(py_exe):
 				print('ComfyUI Embeded Python')
 				site_pckge_folder = Path(os.path.join(COMFYUI_INSTALLATION_FOLDER, "..", "python_embeded", "Lib", "site-packages")).as_posix()
