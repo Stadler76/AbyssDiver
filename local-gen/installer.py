@@ -249,7 +249,6 @@ def create_update_conda_env_var() -> None:
 		print('Press enter to install the python 3.10.9 conda environment. The command displayed below will not run until you do so, and will wait until finished.')
 		print('THE BELOW COMMAND WILL BE RUNNING IN THE BACKGROUND! PLEASE WAIT FOR IT TO FINISH!')
 
-		command = f"{get_miniconda_cmdline_filepath()} create -n py3_10_9 python=3.10.9 anaconda"
 		if platform.platform() == "Windows":
 			command = "start " + command
 		command = f"{get_miniconda_cmdline_filepath()} create -n py3_10_9 python=3.10.9 --yes anaconda"
