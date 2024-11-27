@@ -194,6 +194,7 @@ def create_conda_env_var() -> None:
 	logger.info("Creating new environment.")
 	print('The python conda environment will take about 2.8GB in total on disk.')
 	print('Press enter to install the python 3.10.9 conda environment. The command displayed below will not run until you do so, and will wait until finished.')
+	print('THE BELOW COMMAND WILL BE RUNNING IN THE BACKGROUND! PLEASE WAIT FOR IT TO FINISH!')
 	command = f"{get_miniconda_cmdline_filepath()} create -n py3_10_9 python=3.10.9 anaconda"
 	if platform.platform() == "Windows":
 		command = "start " + command
@@ -241,10 +242,10 @@ def download_git_portal_windows() -> None:
 	print("This is using winget so if you don't have that you will need to manually install git.")
 	print("To manually install, visit 'https://git-scm.com/downloads' and run this script again.")
 
-	run_command("winget install --id Git.Git -e --source winget", shell=True)
+	print(run_command("winget install --id Git.Git -e --source winget", shell=True))
 
 	status, _ = run_command("git --version", shell=True)
-	assert status == 0, "Could not locate the 'git' package which is required."
+	assert status == 0, "Could not locate the 'git' package which is required. You may need to restart the shell for the terminal to know the installed git exists, otherwise install it manually and restart the shell."
 
 def download_git_portal_linux() -> None:
 	status, _ = run_command("git --version", shell=True)
@@ -262,7 +263,7 @@ def download_git_portal_linux() -> None:
 		run_command("sudo apt update && sudo apt install -y git", shell=True)
 
 	status, _ = run_command("git --version", shell=True)
-	assert status == 0, "Could not locate the 'git' package which is required."
+	assert status == 0, "Could not locate the 'git' package which is required. You may need to restart the shell for the terminal to know the installed git exists."
 
 def get_github_repository_latest_release_files(api_url : str) -> list[GithubFile]:
 	"""Get the latest release files of the target github repository"""
@@ -747,7 +748,7 @@ def install_conda_for_python() -> None:
 	if has_miniconda_been_installed() is False:
 		print('Installing miniconda.')
 		install_miniconda_for_os()
-	assert has_miniconda_been_installed(), "Miniconda is not installed."
+	assert has_miniconda_been_installed(), "Miniconda is not installed. You may need to restart the terminal if you just installed it for the terminal to know its there."
 	print("Miniconda is installed.")
 	if os.path.exists(get_conda_env_directory()) is False:
 		print("Creating Conda Environment.")
