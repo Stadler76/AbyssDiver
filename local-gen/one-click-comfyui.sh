@@ -5,9 +5,21 @@
 
 echo "Installing minimum requirements for one-click ComfyUI installer."
 
-# Check if Python is installed
-if command -v python3 &>/dev/null; then
+# Check for 'py', 'python', or 'python3' in order
+if command -v py &>/dev/null; then
+	PYTHON_CMD="py"
+elif command -v python &>/dev/null; then
+	PYTHON_CMD="python"
+elif command -v python3 &>/dev/null; then
+	PYTHON_CMD="python3"
+else
+	PYTHON_CMD=""
+fi
+
+# If Python is found, print its version and proceed, otherwise install Python
+if [[ -n "$PYTHON_CMD" ]]; then
 	echo "Python is already installed."
+	$PYTHON_CMD --version
 else
 	echo "Python is not installed. Installing Python..."
 	./install_python_linux_macos.sh
@@ -20,7 +32,8 @@ else
 	exec "$0" "$@"
 fi
 
-python3 -m pip install --upgrade pip
+# Upgrade pip using the detected Python command
+$PYTHON_CMD -m pip install --upgrade pip
 if [ $? -ne 0 ]; then
 	echo "Failed to upgrade pip. Exiting."
 	exit 1
@@ -28,7 +41,7 @@ fi
 
 # Install required Python packages
 echo "Installing required Python packages..."
-python3 -m pip install -r requirements.txt
+$PYTHON_CMD -m pip install -r requirements.txt
 if [ $? -ne 0 ]; then
 	echo "Failed to install required Python packages. Exiting."
 	exit 1
@@ -36,7 +49,7 @@ fi
 
 # Run the installer script
 echo "Running the installer script..."
-python3 installer.py
+$PYTHON_CMD installer.py
 if [ $? -ne 0 ]; then
 	echo "Installer script failed. Exiting."
 	read -p ""
