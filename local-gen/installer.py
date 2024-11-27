@@ -241,13 +241,16 @@ def create_update_conda_env_var() -> None:
 	logger.info("Initializing Conda before install.")
 	print(run_command(f"{get_miniconda_cmdline_filepath()} init", shell=True))
 
-	logger.info("Updating conda dependencies.")
+	logger.info("Updating conda dependencies and clean.")
 
 	logger.info("1st command.")
 	print(run_command(f"{get_miniconda_cmdline_filepath()} update --update-deps conda", shell=True))
 
 	logger.info("2nd command.")
 	print(run_command(f"{get_miniconda_cmdline_filepath()} update -n base -c defaults conda", shell=True))
+
+	logger.info("3rd command.")
+	print(run_command(f"{get_miniconda_cmdline_filepath()} clean --all", shell=True))
 
 	print("Conda seems to have quite a bit of trouble installing envs. You will need to watch the terminal for messages that detail how to troubleshoot if it does not work.")
 	print("Press enter to continue.")
