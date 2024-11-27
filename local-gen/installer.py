@@ -26,6 +26,7 @@ import tarfile
 import time
 import patoolib
 import logging
+import threading
 
 CUSTOM_COMMAND_LINE_ARGS_FOR_COMFYUI = []
 
@@ -104,35 +105,50 @@ def download_file(url: str, destination: str, range : bool = False) -> None:
 
 	print("Download complete.")
 
+def stream_reader(pipe, log_level):
+	"""Reads from a pipe and logs each line at the given log level."""
+	with pipe:
+		for line in iter(pipe.readline, ''):
+			logger.log(log_level, line.strip())
+
 def run_command(command: str, shell: bool = False) -> int:
 	logger.info('RUNNING COMMAND:')
 	logger.info(command)
 	logger.info('=' * 20)
+
 	try:
 		process = subprocess.Popen(
 			command,
 			shell=shell,
-			start_new_session=True,
 			stdout=subprocess.PIPE,
 			stderr=subprocess.PIPE,
 			text=True,
-			bufsize=1,  # Line buffering
+			bufsize=1
 		)
-		for line in process.stdout:
-			logger.info(line.strip())
-		for line in process.stderr:
-			logger.error(line.strip())
-		process.wait() # Ensure the process completes
+
+		# Use threads to prevent blocking
+		stdout_thread = threading.Thread(target=stream_reader, args=(process.stdout, logging.INFO))
+		stderr_thread = threading.Thread(target=stream_reader, args=(process.stderr, logging.ERROR))
+
+		stdout_thread.start()
+		stderr_thread.start()
+
+		# Wait for the process and threads to complete
+		process.wait()
+		stdout_thread.join()
+		stderr_thread.join()
+
 		status_code = process.returncode
 		if status_code == 0:
 			logger.info(f"Command succeeded: {command}")
 		else:
 			logger.warning(f"Command failed with code {status_code}: {command}")
+
 		return status_code
 	except Exception as e:
 		logger.error(f"Command execution exception: {command}")
 		logger.exception(f"Exception details: {e}")
-		return -1  # FAILED
+		return -1
 
 def unzip_targz(filepath : str, directory : str) -> None:
 	os.makedirs(directory, exist_ok=True)
