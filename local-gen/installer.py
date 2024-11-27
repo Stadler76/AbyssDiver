@@ -183,7 +183,7 @@ def install_miniconda_for_os() -> None:
 			print('Please download manually and place in the local-gen folder and rename it to "miniconda.exe".')
 			print(windows_download_url)
 			print('Press enter to continue...')
-			input()
+			input("")
 		logger.info("Installing miniconda.sh")
 		print(run_command("miniconda.exe /S", shell=True))
 		t1 = Path(os.path.expanduser("~/miniconda3")).as_posix()
@@ -199,7 +199,7 @@ def install_miniconda_for_os() -> None:
 			print('Please download manually and place in the local-gen folder and rename it to "miniconda.sh".')
 			print(linux_download_url)
 			print('Press enter to continue...')
-			input()
+			input("")
 		logger.info("Installing miniconda.sh")
 		t1 = Path(os.path.expanduser("~/miniconda3")).as_posix()
 		print(run_command(f"bash miniconda.sh -b -u -p {t1}", shell=True))
@@ -216,7 +216,7 @@ def install_miniconda_for_os() -> None:
 			print('Please download manually and place in the local-gen folder and rename it to "miniconda.sh".')
 			print(mac_download_url)
 			print('Press enter to continue...')
-			input()
+			input("")
 		logger.info("Installing miniconda.sh")
 		t1 = Path(os.path.expanduser("~/miniconda3")).as_posix()
 		print(run_command(f"bash miniconda.sh -b -u -p {t1}", shell=True))
@@ -386,7 +386,7 @@ def prompt_safetensor_file_install(folder : str, filename : str, download_url : 
 		return
 	while True:
 		print("Press enter to continue once downloaded... ")
-		input()
+		input("")
 		if os.path.exists(Path(os.path.join(folder, filename)).as_posix()) is True:
 			break
 		print(f"You have not renamed the safetensors file or placed it in the directory {folder}!")
@@ -501,7 +501,7 @@ def install_comfyui_and_models_process(install_directory : str) -> None:
 		print("Note: The total file size required for the Abyss Diver content will add up to 7.1GB")
 		print("You will need a total of at least 19.3GBs available.")
 		print("Press enter to continue...")
-		input()
+		input("")
 
 	print("ComfyUI is located at: ", Path(os.path.abspath(install_directory)).as_posix()) # install_directory)
 	install_comfyui_nodes(Path(os.path.join(COMFYUI_INSTALLATION_FOLDER, "custom_nodes")).as_posix())
@@ -522,7 +522,7 @@ def install_comfyui_and_models_process(install_directory : str) -> None:
 		print("This is REQUIRED to run the local generation.")
 		print(f"You will need to download a total of {len(CIVITAI_MODELS_TO_DOWNLOAD.values()) + len(CIVITAI_LORAS_TO_DOWNLOAD.values())} files.")
 		print("Press enter to continue...")
-		input()
+		input("")
 
 		install_comfyui_checkpoints(Path(os.path.join(COMFYUI_INSTALLATION_FOLDER, "models", "checkpoints")).as_posix())
 		install_comfyui_loras(Path(os.path.join(COMFYUI_INSTALLATION_FOLDER, "models", "loras")).as_posix())
@@ -601,7 +601,7 @@ def ask_windows_gpu_cpu() -> int:
 	if is_intel_gpu == "y":
 		print("WARNING: Please follow the steps on 'https://github.com/comfyanonymous/ComfyUI' to install Intel GPU support before continuing.")
 		print("Press enter to continue...")
-		input()
+		input("")
 		return 3
 
 	is_directml_mode : str = request_prompt("Do you want to run in DirectML (for unsupported GPUs you can try use this)? (y/n)", ["y", "n"])
@@ -711,7 +711,7 @@ def comfyui_linux_mac_runner() -> None:
 		print("App Store: https://apps.apple.com/us/app/xcode/id497799835?mt=12")
 		print("Developer Website: https://developer.apple.com/download/applications/")
 		print("Press enter to continue...")
-		input()
+		input("")
 
 		print('Installing Torch with MPS enabled.')
 		print(run_command(f"export USE_MPS=1 && {PYTHON_COMMAND} -m pip install --pre torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/nightly/cpu --target {target_site_packages}", shell=True))
