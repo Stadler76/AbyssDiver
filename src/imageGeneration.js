@@ -658,8 +658,10 @@ setup.ComfyUI_GenerateAdvancedHTMLPage = function() {
 	return html_text;
 }
 
+const PROXY_BASE_URL = "http://127.0.0.1:12500";
+
 setup.updateComfyUIStatus = async function() {
-	const url = "http://127.0.0.1:12500/echo";
+	const url = PROXY_BASE_URL + "/echo";
 
 	var is_running = false;
 
@@ -938,7 +940,7 @@ setup.comfyUI_GeneratePortraitWorkflow = async function() {
 	return workflow;
 }
 
-// http://127.0.0.1:12500/generate_image
+// PROXY_BASE_URL/generate_image
 var is_generation_busy = false;
 var last_workflow = null;
 setup.comfyUI_GeneratePortrait = async function() {
@@ -955,7 +957,7 @@ setup.comfyUI_GeneratePortrait = async function() {
 	notificationElement.style.display = "none";
 
 	// data to be sent to comfyui
-	const url = "http://127.0.0.1:12500/generate_workflow"
+	const url = PROXY_BASE_URL + "/generate_workflow"
 
 	// log outputted workflow
 	// console.log(workflow);
@@ -1005,59 +1007,3 @@ setup.comfyUI_GeneratePortrait = async function() {
 		throw new Error('Failed to store image due to error: ' + error);
 	}
 }
-
-/*
-	// TODO: future update (also edit return to be the raise Error)
-
-	setup.comfyUI_PrepareSceneData = async function(scene_id, scene_params) {
-		return {'scene_id' : scene_id, 'scene_params' : scene_params}
-	}
-
-	// http://127.0.0.1:12500/generate_scene
-	setup.comfyUI_GenerateCharacterScene = async function(scene_id, scene_params) {
-		if (is_generation_busy) {
-			return;
-		}
-		is_generation_busy = true;
-
-		// notification element
-		const notificationElement = document.getElementById('notification');
-
-		// data to be sent to comfyui
-		const url = "http://127.0.0.1:12500/generate_scene";
-
-		// prepare Payload
-		const payload = {'character' : setup.comfyUI_PrepareCharacterData(), 'scene' : setup.comfyUI_PrepareSceneData(scene_id, scene_params)}
-
-		// inspect payload
-		console.log(payload);
-
-		// request to the proxy to generate the portrait
-		let data = null;
-		try {
-			data = await setup.comfyUI_InvokeGenerator(url, {'character' : payload});
-		} catch (error) {
-			console.error('Unable to invoke ComfyUI generator.');
-			is_generation_busy = false;
-			return;
-		}
-
-		// check if we actually received any images
-		if (data.images == null || data.images.length == 0) {
-			console.error('No images returned from server. This might be due to an issue with the proxy server or ComfyUI!');
-			notificationElement.textContent = 'Error generating image: ' + error.message + (error.response ? (await error.response.json()).error : 'No additional error information from OpenAI.');
-			notificationElement.style.display = 'block';
-			is_generation_busy = false;
-			return;
-		}
-
-		// once we receive the images, save it under the key
-		const storeKey = scene_id;
-		const b64Images = data.images; // Assuming the images are returned as base64 strings
-		console.log("Base64 Data Length: ", b64Images.reduce((sum, str) => sum + str.length, 0));
-		setup.storeImage(storeKey, b64Images)
-			.then(() => console.log('Image successfully stored.'))
-			.finally(() => is_generation_busy)
-			.catch((error) => console.error('Failed to store image:', error));
-	}
-*/
