@@ -250,8 +250,8 @@ def create_update_conda_env_var() -> None:
 		print('THE BELOW COMMAND WILL BE RUNNING IN THE BACKGROUND! PLEASE WAIT FOR IT TO FINISH!')
 
 		if platform.platform() == "Windows":
-			command = "start " + command
-		command = f"{get_miniconda_cmdline_filepath()} create -n py3_10_9 python=3.10.9 --yes anaconda"
+			command = "call " + command
+		command = f"{get_miniconda_cmdline_filepath()} create -n py3_10_9 python=3.10.9 --yes"
 		print(run_command(command, shell=True))
 
 	logger.info("Listing current environments.")
