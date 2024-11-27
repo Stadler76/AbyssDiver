@@ -182,8 +182,8 @@ def install_miniconda_for_os() -> None:
 			print(e)
 			print('Please download manually and place in the local-gen folder and rename it to "miniconda.exe".')
 			print(windows_download_url)
-			print('Press any key to continue...')
-			input()
+			print('Press enter to continue...')
+			input("")
 		logger.info("Installing miniconda.sh")
 		print(run_command("miniconda.exe /S", shell=True))
 		t1 = Path(os.path.expanduser("~/miniconda3")).as_posix()
@@ -198,8 +198,8 @@ def install_miniconda_for_os() -> None:
 			print(e)
 			print('Please download manually and place in the local-gen folder and rename it to "miniconda.sh".')
 			print(linux_download_url)
-			print('Press any key to continue...')
-			input()
+			print('Press enter to continue...')
+			input("")
 		logger.info("Installing miniconda.sh")
 		t1 = Path(os.path.expanduser("~/miniconda3")).as_posix()
 		print(run_command(f"bash miniconda.sh -b -u -p {t1}", shell=True))
@@ -215,8 +215,8 @@ def install_miniconda_for_os() -> None:
 			print(e)
 			print('Please download manually and place in the local-gen folder and rename it to "miniconda.sh".')
 			print(mac_download_url)
-			print('Press any key to continue...')
-			input()
+			print('Press enter to continue...')
+			input("")
 		logger.info("Installing miniconda.sh")
 		t1 = Path(os.path.expanduser("~/miniconda3")).as_posix()
 		print(run_command(f"bash miniconda.sh -b -u -p {t1}", shell=True))
@@ -233,7 +233,7 @@ def does_conda_env_exist() -> bool:
 def get_conda_env_directory() -> str:
 	return Path(os.path.join(get_windows_miniconda_envs_folder(), "py3_10_9")).as_posix()
 
-def create_conda_env_var() -> None:
+def create_update_conda_env_var() -> None:
 	# create a new virtual environment for python 3.10.9 called "py3_10_9"
 	logger.info("Initializing Conda before install.")
 	run_command(f"{get_miniconda_cmdline_filepath()} init", shell=True)
@@ -386,7 +386,7 @@ def prompt_safetensor_file_install(folder : str, filename : str, download_url : 
 		return
 	while True:
 		print("Press enter to continue once downloaded... ")
-		input()
+		input("")
 		if os.path.exists(Path(os.path.join(folder, filename)).as_posix()) is True:
 			break
 		print(f"You have not renamed the safetensors file or placed it in the directory {folder}!")
@@ -501,7 +501,7 @@ def install_comfyui_and_models_process(install_directory : str) -> None:
 		print("Note: The total file size required for the Abyss Diver content will add up to 7.1GB")
 		print("You will need a total of at least 19.3GBs available.")
 		print("Press enter to continue...")
-		input()
+		input("")
 
 	print("ComfyUI is located at: ", Path(os.path.abspath(install_directory)).as_posix()) # install_directory)
 	install_comfyui_nodes(Path(os.path.join(COMFYUI_INSTALLATION_FOLDER, "custom_nodes")).as_posix())
@@ -522,7 +522,7 @@ def install_comfyui_and_models_process(install_directory : str) -> None:
 		print("This is REQUIRED to run the local generation.")
 		print(f"You will need to download a total of {len(CIVITAI_MODELS_TO_DOWNLOAD.values()) + len(CIVITAI_LORAS_TO_DOWNLOAD.values())} files.")
 		print("Press enter to continue...")
-		input()
+		input("")
 
 		install_comfyui_checkpoints(Path(os.path.join(COMFYUI_INSTALLATION_FOLDER, "models", "checkpoints")).as_posix())
 		install_comfyui_loras(Path(os.path.join(COMFYUI_INSTALLATION_FOLDER, "models", "loras")).as_posix())
@@ -601,7 +601,7 @@ def ask_windows_gpu_cpu() -> int:
 	if is_intel_gpu == "y":
 		print("WARNING: Please follow the steps on 'https://github.com/comfyanonymous/ComfyUI' to install Intel GPU support before continuing.")
 		print("Press enter to continue...")
-		input()
+		input("")
 		return 3
 
 	is_directml_mode : str = request_prompt("Do you want to run in DirectML (for unsupported GPUs you can try use this)? (y/n)", ["y", "n"])
@@ -675,7 +675,7 @@ def comfyui_windows_runner() -> subprocess.Popen:
 	process = subprocess.Popen(args, cwd=COMFYUI_INSTALLATION_FOLDER, shell=False)
 	return process
 
-def comfyui_linux_runner() -> None:
+def comfyui_linux_mac_runner() -> None:
 	"""Run ComfyUI on Linux"""
 	assert COMFYUI_INSTALLATION_FOLDER, "COMFYUI_INSTALLATION_FOLDER is not set to anything - exiting."
 
@@ -705,7 +705,16 @@ def comfyui_linux_runner() -> None:
 	elif device ==3:
 		# Mac
 		print('Installing Metal CPU')
-		run_command(f"{PYTHON_COMMAND} -m pip install --pre torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/nightly/cpu --target {target_site_packages}", shell=True)
+
+		print("Building PyTorch with MPS support requires Xcode 13.3.1 or later.")
+		print("You can download the latest public Xcode release on the Mac App Store OR the latest beta release on the Mac App Store / Apple Developer website.")
+		print("App Store: https://apps.apple.com/us/app/xcode/id497799835?mt=12")
+		print("Developer Website: https://developer.apple.com/download/applications/")
+		print("Press enter to continue...")
+		input("")
+
+		print('Installing Torch with MPS enabled.')
+		print(run_command(f"export USE_MPS=1 && {PYTHON_COMMAND} -m pip install --pre torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/nightly/cpu --target {target_site_packages}", shell=True))
 
 	write_last_device(device)
 
@@ -724,15 +733,14 @@ def comfyui_linux_runner() -> None:
 	if device == 0:
 		# cpu
 		print('Added CPU argument')
-		args.append("--cpu")
+		args.append("--cpu --force-fp16")
 	elif device == 1:
 		print("Check Cuda Malloc")
 		if request_prompt("Are any of your currently plugged-in GPUs older than the 1060 series (but not including the 1060)? (y/n): ", ["y", "n"]) == "y":
 			args.append("--disable-cuda-malloc")
 	elif device == 3:
 		# mac
-		print('Enable Mac Options')
-		args.append("--cpu --force-fp16")
+		print('No Mac Options needed.')
 
 	print("Running the ComfyUI process.")
 	print(args, COMFYUI_INSTALLATION_FOLDER)
@@ -741,6 +749,17 @@ def comfyui_linux_runner() -> None:
 
 def proxy_runner() -> subprocess.Popen:
 	return subprocess.Popen([PYTHON_COMMAND, 'python/main.py'], shell=False)
+
+def get_miniconda_python_exe_path() -> str:
+	os_platform : str = platform.system() # Windows, Linux, Darwin (MacOS)
+	py_cmd = ""
+	if os_platform == "Windows":
+		py_cmd = Path(os.path.join(get_conda_env_directory(), "python.exe")).as_posix()
+	elif os_platform == "Darwin":
+		py_cmd = Path(os.path.join(get_conda_env_directory(), "bin", "python3.10")).as_posix()
+	elif os_platform == "Linux":
+		py_cmd = Path(os.path.join(get_conda_env_directory(), "bin", "python3.10")).as_posix()
+	return py_cmd
 
 def main() -> None:
 	os_platform : str = platform.system() # Windows, Linux, Darwin (MacOS)
@@ -755,13 +774,7 @@ def main() -> None:
 
 	get_windows_miniconda_envs_folder()
 
-	if os_platform == "Windows":
-		py_cmd = Path(os.path.join(get_conda_env_directory(), "python.exe")).as_posix()
-	elif os_platform == "Darwin":
-		py_cmd = Path(os.path.join(get_conda_env_directory(), "bin", "python3.10")).as_posix()
-	elif os_platform == "Linux":
-		py_cmd = Path(os.path.join(get_conda_env_directory(), "bin", "python3.10")).as_posix()
-
+	py_cmd = get_miniconda_python_exe_path()
 	version = "3.10.9"
 
 	print(py_cmd)
@@ -792,7 +805,7 @@ def main() -> None:
 		process_proxy = proxy_runner()
 		time.sleep(3) # let proxy output its message first
 		print('Running main.')
-		process_comfyui = comfyui_linux_runner()
+		process_comfyui = comfyui_linux_mac_runner()
 	else:
 		exit()
 
@@ -809,9 +822,8 @@ def install_conda_for_python() -> None:
 		install_miniconda_for_os()
 	assert has_miniconda_been_installed(), "Miniconda is not installed. You may need to restart the terminal if you just installed it for the terminal to know its there."
 	print("Miniconda is installed.")
-	if os.path.exists(get_conda_env_directory()) is False:
-		print("Creating Conda Environment.")
-		create_conda_env_var()
+	print("Creating/Updating Conda Environment.")
+	create_update_conda_env_var()
 	assert os.path.exists(get_conda_env_directory()), "Conda Environment does not exist."
 	print("Conda Environment exists.")
 
