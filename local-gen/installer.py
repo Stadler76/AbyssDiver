@@ -262,7 +262,7 @@ def create_update_conda_env_var() -> None:
 
 		if platform.platform() == "Windows":
 			command = "call " + command
-		command = f"{get_miniconda_cmdline_filepath()} create -n py3_10_9 python=3.10.9 anaconda --force"
+		command = f"{get_miniconda_cmdline_filepath()} create --force -n py3_10_9 python=3.10.9 anaconda"
 		print(run_command(command, shell=True))
 
 		print("If it failed to install the environment, please do the following:")
