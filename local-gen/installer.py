@@ -105,12 +105,6 @@ def download_file(url: str, destination: str, range : bool = False) -> None:
 
 	print("Download complete.")
 
-def stream_reader(pipe, log_level):
-	"""Reads from a pipe and logs each line at the given log level."""
-	with pipe:
-		for line in iter(pipe.readline, ''):
-			logger.log(log_level, line.strip())
-
 def run_command(command: str, shell: bool = False) -> int:
 	logger.info('RUNNING COMMAND:')
 	logger.info(command)
@@ -126,6 +120,17 @@ def run_command(command: str, shell: bool = False) -> int:
 			bufsize=1
 		)
 
+		stdout_var : str = ""
+
+		def stream_reader(pipe, log_level):
+			nonlocal stdout_var
+			"""Reads from a pipe and logs each line at the given log level."""
+			with pipe:
+				for line in iter(pipe.readline, ''):
+					logger.log(log_level, line.strip())
+					stdout_var += line.strip()
+
+
 		# Use threads to prevent blocking
 		stdout_thread = threading.Thread(target=stream_reader, args=(process.stdout, logging.INFO))
 		stderr_thread = threading.Thread(target=stream_reader, args=(process.stderr, logging.ERROR))
@@ -138,13 +143,13 @@ def run_command(command: str, shell: bool = False) -> int:
 		stdout_thread.join()
 		stderr_thread.join()
 
-		status_code = str(process.returncode) + "\n" + str(process.stderr)
+		status_code = str(process.returncode)
 		if status_code == 0:
 			logger.info(f"Command succeeded: {command}")
 		else:
 			logger.warning(f"Command failed with code {status_code}: {command}")
 
-		return status_code, process.stdout.read()
+		return status_code, stdout_var
 	except Exception as e:
 		logger.error(f"Command execution exception: {command}")
 		logger.exception(f"Exception details: {e}")
@@ -591,20 +596,23 @@ def ask_windows_gpu_cpu() -> int:
 	is_gpu_mode : str = request_prompt("Will you be running image generation on your graphics card? (y/n)", ["y", "n"])
 	if is_gpu_mode == "n": return 0
 
+	print('Due to issues only nvidia is available on Windows.')
+	print('If you do not have a NVIDIA graphics card, you will be running on the CPU.')
+
 	is_nvidia_gpu : str = request_prompt("Is your graphics card a NVIDIA one? (y/n)", ["y", "n"])
 	if is_nvidia_gpu == "y": return 1
 
-	is_amd_gpu : str = request_prompt("Is your graphics card a AMD one? (y/n)", ["y", "n"])
-	if is_amd_gpu == "y":
-		print("Warning: AMD cards can only run with DirectML which is slower on Windows.")
-		return 2
+	# is_amd_gpu : str = request_prompt("Is your graphics card a AMD one? (y/n)", ["y", "n"])
+	# if is_amd_gpu == "y":
+	# 	print("Warning: AMD cards can only run with DirectML which is slower on Windows.")
+	# 	return 2
 
-	is_intel_gpu : str = request_prompt("Is your graphics card a Intel one? (y/n)", ["y", "n"])
-	if is_intel_gpu == "y":
-		print("WARNING: Please follow the steps on 'https://github.com/comfyanonymous/ComfyUI' to install Intel GPU support before continuing.")
-		print("Press enter to continue...")
-		input("")
-		return 3
+	# is_intel_gpu : str = request_prompt("Is your graphics card a Intel one? (y/n)", ["y", "n"])
+	# if is_intel_gpu == "y":
+	# 	print("WARNING: Please follow the steps on 'https://github.com/comfyanonymous/ComfyUI' to install Intel GPU support before continuing.")
+	# 	print("Press enter to continue...")
+	# 	input("")
+	# 	return 3
 
 	# is_directml_mode : str = request_prompt("Do you want to run in DirectML (for unsupported GPUs you can try use this)? (y/n)", ["y", "n"])
 	# if is_directml_mode == "y":
@@ -653,7 +661,7 @@ def comfyui_windows_runner() -> subprocess.Popen:
 
 	print("Running ComfyUI.")
 
-	device : int = ask_windows_gpu_cpu() # 0:cpu, 1:cuda, 2:amd, 3:intel
+	device : int = ask_windows_gpu_cpu() # 0:cpu, 1:cuda, 2:amd, 3:intel, 4:direct(not available)
 
 	embeded_py_filepath = Path(os.path.abspath(f"{COMFYUI_INSTALLATION_FOLDER}/../python_embeded/python.exe")).as_posix()
 	target_site_packages = Path(os.path.join(COMFYUI_INSTALLATION_FOLDER, "python_embeded", "Lib", "site-packages")).as_posix()
@@ -661,21 +669,24 @@ def comfyui_windows_runner() -> subprocess.Popen:
 	process : subprocess.Popen = None
 	args = [embeded_py_filepath, "-s", "main.py", "--windows-standalone-build", '--disable-auto-launch'] + CUSTOM_COMMAND_LINE_ARGS_FOR_COMFYUI
 
-	args.append('--lowvram')
-
 	if device == 0:
 		# cpu
-		args.pop() # remove lowvram
 		args.append("--cpu")
-	# elif device == 2 or device == 4:
+	elif device == 1:
+		args.append('--lowvram')
+	elif device == 2:
+		args.append("--cpu")
+	elif device == 3:
+		args.append("--cpu")
+	elif device == 4:
 	# 	# amd/DirectML
 	# 	print('Installing Torch DirectML. Please wait a moment.')
 	# 	print(run_command(f'{embeded_py_filepath} -m pip install torch_directml --target {target_site_packages}', shell=True))
 	# 	args.append("--directml")
+		args.append("--cpu")
 	else:
-		# force cpu
-		print('Due to some issues with torch directml, it will be unavailable. AMD/DirectML will direct to CPU.')
-		args.pop() # remove lowvram
+		# unknown
+		print('Unknown device.')
 		args.append("--cpu")
 
 	print("Running the comfyui process.")
