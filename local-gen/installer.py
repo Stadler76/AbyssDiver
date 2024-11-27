@@ -234,16 +234,16 @@ def get_conda_env_directory() -> str:
 	return Path(os.path.join(get_windows_miniconda_envs_folder(), "py3_10_9")).as_posix()
 
 def create_update_conda_env_var() -> None:
-	# create a new virtual environment for python 3.10.9 called "py3_10_9"
 	logger.info("Initializing Conda before install.")
 	run_command(f"{get_miniconda_cmdline_filepath()} init", shell=True)
 
-	logger.info("Creating new environment.")
-	print('The python conda environment will take about 2.8GB in total on disk.')
-	print('Press enter to install the python 3.10.9 conda environment. The command displayed below will not run until you do so, and will wait until finished.')
-	print('THE BELOW COMMAND WILL BE RUNNING IN THE BACKGROUND! PLEASE WAIT FOR IT TO FINISH!')
+	# create a new virtual environment for python 3.10.9 called "py3_10_9"
+	if os.path.exists(Path(os.path.join(get_miniconda_cmdline_filepath(), "envs", "py3_10_9")).as_posix()) is False:
+		logger.info("Creating new environment.")
+		print('The python conda environment will take about 2.8GB in total on disk.')
+		print('Press enter to install the python 3.10.9 conda environment. The command displayed below will not run until you do so, and will wait until finished.')
+		print('THE BELOW COMMAND WILL BE RUNNING IN THE BACKGROUND! PLEASE WAIT FOR IT TO FINISH!')
 
-	if os.path.exists(Path(os.path.join(get_miniconda_cmdline_filepath(), "py3_10_9")).as_posix()) is False:
 		command = f"{get_miniconda_cmdline_filepath()} create -n py3_10_9 python=3.10.9 anaconda"
 		if platform.platform() == "Windows":
 			command = "start " + command
