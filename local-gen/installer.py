@@ -143,7 +143,7 @@ def run_command(command: str, shell: bool = False) -> int:
 		stdout_thread.join()
 		stderr_thread.join()
 
-		status_code = str(process.returncode)
+		status_code = process.returncode
 		if status_code == 0:
 			logger.info(f"Command succeeded: {command}")
 		else:
