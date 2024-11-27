@@ -249,9 +249,6 @@ def create_update_conda_env_var() -> None:
 	logger.info("2nd command.")
 	print(run_command(f"{get_miniconda_cmdline_filepath()} update -n base -c defaults conda", shell=True))
 
-	logger.info("3rd command.")
-	print(run_command(f"{get_miniconda_cmdline_filepath()} clean --all", shell=True))
-
 	print("Conda seems to have quite a bit of trouble installing envs. You will need to watch the terminal for messages that detail how to troubleshoot if it does not work.")
 	print("Press enter to continue.")
 	input("")
@@ -262,6 +259,9 @@ def create_update_conda_env_var() -> None:
 		print('The python conda environment will take about 2.8GB in total on disk.')
 		print('Press enter to install the python 3.10.9 conda environment. The command displayed below will not run until you do so, and will wait until finished.')
 		print('THE BELOW COMMAND WILL BE RUNNING IN THE BACKGROUND! PLEASE WAIT FOR IT TO FINISH!')
+
+		logger.info("Cleaning conda before installing.")
+		print(run_command(f"{get_miniconda_cmdline_filepath()} clean --all", shell=True))
 
 		if platform.platform() == "Windows":
 			command = "call " + command
