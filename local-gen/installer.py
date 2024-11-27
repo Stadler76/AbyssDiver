@@ -172,31 +172,55 @@ def install_miniconda_for_os() -> None:
 	os_platform : str = platform.system() # Windows, Linux, Darwin (MacOS)
 	logger.info(f"Installing miniconda for OS: {os_platform}")
 	logger.info(f"If the install process fails to install, install it manually from the link printed below:")
-	directory = Path("tools/miniconda3").as_posix()
-	os.makedirs(directory, exist_ok=True)
-	print('Working Directory: ', directory)
 	if os_platform == "Windows":
-		os.chdir("tools/miniconda3")
 		logger.info("Downloading miniconda.exe")
-		download_file("https://repo.anaconda.com/miniconda/Miniconda3-latest-Windows-x86_64.exe", "miniconda.exe")
+		windows_download_url = "https://repo.anaconda.com/miniconda/Miniconda3-latest-Windows-x86_64.exe"
+		try:
+			download_file(windows_download_url, "miniconda.exe")
+		except Exception as e:
+			print('Failed to download Miniconda!')
+			print(e)
+			print('Please download manually and place in the local-gen folder and rename it to "miniconda.exe".')
+			print(windows_download_url)
+			print('Press any key to continue...')
+			input()
 		logger.info("Installing miniconda.sh")
-		s, e = run_command("miniconda.exe /S", shell=True)
-		assert s==0, e
-		os.chdir("../..")
+		print(run_command("miniconda.exe /S", shell=True))
+		t1 = Path(os.path.expanduser("~/miniconda3")).as_posix()
+		assert os.path.exists(t1), "Miniconda failed to install - please install manually by running the `miniconda.sh` and install under the name minconda3 in the user directory."
 	elif os_platform == "Linux":
 		logger.info("Downloading miniconda.sh")
-		download_file("https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh", "tools/miniconda3/miniconda.sh")
+		linux_download_url = "https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh"
+		try:
+			download_file(linux_download_url, "miniconda.exe")
+		except Exception as e:
+			print('Failed to download Miniconda!')
+			print(e)
+			print('Please download manually and place in the local-gen folder and rename it to "miniconda.sh".')
+			print(linux_download_url)
+			print('Press any key to continue...')
+			input()
 		logger.info("Installing miniconda.sh")
 		t1 = Path(os.path.expanduser("~/miniconda3")).as_posix()
-		s, e = run_command(f"bash tools/miniconda3/miniconda.sh -b -u -p {t1}", shell=True)
-		assert s==0, e
+		print(run_command(f"bash miniconda.sh -b -u -p {t1}", shell=True))
+		assert os.path.exists(t1), "Miniconda failed to install - please install manually by running the `miniconda.sh` and install under the name minconda3 in the user directory."
 	elif os_platform == "Darwin":
 		logger.info("Downloading miniconda.sh")
-		download_file("https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-arm64.sh", "tools/miniconda3/miniconda.sh")
+
+		mac_download_url = "https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-arm64.sh"
+		try:
+			download_file(mac_download_url, "miniconda.sh")
+		except Exception as e:
+			print('Failed to download Miniconda!')
+			print(e)
+			print('Please download manually and place in the local-gen folder and rename it to "miniconda.sh".')
+			print(mac_download_url)
+			print('Press any key to continue...')
+			input()
 		logger.info("Installing miniconda.sh")
 		t1 = Path(os.path.expanduser("~/miniconda3")).as_posix()
-		s, e = run_command(f"bash tools/miniconda3/miniconda.sh -b -u -p {t1}", shell=True)
-		assert s==0, e
+		print(run_command(f"bash miniconda.sh -b -u -p {t1}", shell=True))
+		assert os.path.exists(t1), "Miniconda failed to install - please install manually by running the `miniconda.sh` and install under the name minconda3 in the user directory."
 	else:
 		print(f"Unknown OS {os_platform} - cannot get conda version.")
 		exit()
