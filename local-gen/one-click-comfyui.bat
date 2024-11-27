@@ -55,6 +55,8 @@ if "%PYTHON_CMD%"=="" (
 
 :: Install required Python packages
 echo Installing required Python packages...
+%PYTHON_CMD% -m ensurepip
+%PYTHON_CMD% -m pip install --upgrade pip
 %PYTHON_CMD% -m pip install -r requirements.txt
 if %errorlevel% neq 0 (
 	echo Failed to install required Python packages. Exiting.
