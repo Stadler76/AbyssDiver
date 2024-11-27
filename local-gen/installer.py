@@ -504,9 +504,10 @@ def comfyui_windows_installer() -> None:
 		try:
 			patoolib.extract_archive("ComfyUI_windows_portable_nvidia.7z", outdir=".")
 		except Exception as e:
-			print("Failed to extract ComfyUI_windows_portable_nvidia.7z - please do it manually.")
+			print("Failed to extract ComfyUI_windows_portable_nvidia.7z.")
 			print("You may just need to restart the terminal if 'patool' was just installed as the terminal needs to update for the executables to be present.")
 			print("Try restart the terminal first before manually unpacking it.")
+			print("To manually unpack it, please install 7zip. https://7-zip.org/download.html")
 			print(e)
 			exit()
 		os.chdir(before_cwd)
