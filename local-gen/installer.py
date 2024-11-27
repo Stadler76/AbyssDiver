@@ -502,6 +502,8 @@ def comfyui_windows_installer() -> None:
 		before_cwd = os.getcwd()
 		os.chdir(Path(os.path.abspath(directory)).as_posix())
 		try:
+			print(Path(os.path.abspath(directory)).as_posix())
+			print(os.listdir())
 			patoolib.extract_archive("ComfyUI_windows_portable_nvidia.7z", outdir=".")
 		except Exception as e:
 			print("Failed to extract ComfyUI_windows_portable_nvidia.7z.")
@@ -548,7 +550,7 @@ def ask_windows_gpu_cpu() -> int:
 		print("Warning: AMD cards can only run with DirectML which is slower on Windows.")
 		return 2
 
-	is_intel_gpu : str = request_prompt("Is your graphics card a AMD one? (y/n)", ["y", "n"])
+	is_intel_gpu : str = request_prompt("Is your graphics card a Intel one? (y/n)", ["y", "n"])
 	if is_intel_gpu == "y":
 		print("WARNING: Please follow the steps on 'https://github.com/comfyanonymous/ComfyUI' to install Intel GPU support before continuing.")
 		print("Press enter to continue...")
