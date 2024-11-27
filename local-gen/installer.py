@@ -675,7 +675,7 @@ def comfyui_windows_runner() -> subprocess.Popen:
 	process = subprocess.Popen(args, cwd=COMFYUI_INSTALLATION_FOLDER, shell=False)
 	return process
 
-def comfyui_linux_runner() -> None:
+def comfyui_linux_mac_runner() -> None:
 	"""Run ComfyUI on Linux"""
 	assert COMFYUI_INSTALLATION_FOLDER, "COMFYUI_INSTALLATION_FOLDER is not set to anything - exiting."
 
@@ -705,7 +705,16 @@ def comfyui_linux_runner() -> None:
 	elif device ==3:
 		# Mac
 		print('Installing Metal CPU')
-		run_command(f"{PYTHON_COMMAND} -m pip install --pre torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/nightly/cpu --target {target_site_packages}", shell=True)
+
+		print("Building PyTorch with MPS support requires Xcode 13.3.1 or later.")
+		print("You can download the latest public Xcode release on the Mac App Store OR the latest beta release on the Mac App Store / Apple Developer website.")
+		print("App Store: https://apps.apple.com/us/app/xcode/id497799835?mt=12")
+		print("Developer Website: https://developer.apple.com/download/applications/")
+		print("Press any key to continue...")
+		input()
+
+		print('Installing Torch with MPS enabled.')
+		print(run_command(f"export USE_MPS=1 && {PYTHON_COMMAND} -m pip install --pre torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/nightly/cpu --target {target_site_packages}", shell=True))
 
 	write_last_device(device)
 
@@ -724,15 +733,14 @@ def comfyui_linux_runner() -> None:
 	if device == 0:
 		# cpu
 		print('Added CPU argument')
-		args.append("--cpu")
+		args.append("--cpu --force-fp16")
 	elif device == 1:
 		print("Check Cuda Malloc")
 		if request_prompt("Are any of your currently plugged-in GPUs older than the 1060 series (but not including the 1060)? (y/n): ", ["y", "n"]) == "y":
 			args.append("--disable-cuda-malloc")
 	elif device == 3:
 		# mac
-		print('Enable Mac Options')
-		args.append("--cpu --force-fp16")
+		print('No Mac Options needed.')
 
 	print("Running the ComfyUI process.")
 	print(args, COMFYUI_INSTALLATION_FOLDER)
@@ -792,7 +800,7 @@ def main() -> None:
 		process_proxy = proxy_runner()
 		time.sleep(3) # let proxy output its message first
 		print('Running main.')
-		process_comfyui = comfyui_linux_runner()
+		process_comfyui = comfyui_linux_mac_runner()
 	else:
 		exit()
 
