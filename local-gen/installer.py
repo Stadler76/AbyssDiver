@@ -74,6 +74,7 @@ def request_prompt(prompt : str, allowed_responses : list[str]) -> str:
 
 def download_file(url: str, destination: str, range : bool = False) -> None:
 	"""Download a file from a URL and save it to a specified destination with support for resuming."""
+	print(url)
 	headers = {}
 	if os.path.exists(destination) and range is True:
 		# Get the size of the partially downloaded file
@@ -149,6 +150,7 @@ def get_windows_miniconda_envs_folder() -> str:
 def install_miniconda_for_os() -> None:
 	os_platform : str = platform.system() # Windows, Linux, Darwin (MacOS)
 	logger.info(f"Installing miniconda for OS: {os_platform}")
+	logger.info(f"If the install process fails to install, install it manually from the link printed below:")
 	directory = Path("tools/miniconda3").as_posix()
 	os.makedirs(directory, exist_ok=True)
 	print('Working Directory: ', directory)
