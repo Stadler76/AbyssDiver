@@ -112,6 +112,7 @@ def run_command(command: str, shell: bool = False) -> int:
 		process = subprocess.Popen(
 			command,
 			shell=shell,
+			start_new_session=True,
 			stdout=subprocess.PIPE,
 			stderr=subprocess.PIPE,
 			text=True,
