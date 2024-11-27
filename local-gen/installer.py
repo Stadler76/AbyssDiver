@@ -242,10 +242,12 @@ def create_update_conda_env_var() -> None:
 	print('The python conda environment will take about 2.8GB in total on disk.')
 	print('Press enter to install the python 3.10.9 conda environment. The command displayed below will not run until you do so, and will wait until finished.')
 	print('THE BELOW COMMAND WILL BE RUNNING IN THE BACKGROUND! PLEASE WAIT FOR IT TO FINISH!')
-	command = f"{get_miniconda_cmdline_filepath()} create -n py3_10_9 python=3.10.9 anaconda"
-	if platform.platform() == "Windows":
-		command = "start " + command
-	run_command(command, shell=True)
+
+	if os.path.exists(Path(os.path.join(get_miniconda_cmdline_filepath(), "py3_10_9")).as_posix()) is False:
+		command = f"{get_miniconda_cmdline_filepath()} create -n py3_10_9 python=3.10.9 anaconda"
+		if platform.platform() == "Windows":
+			command = "start " + command
+		run_command(command, shell=True)
 
 	logger.info("Listing current environments.")
 	run_command(f"{get_miniconda_cmdline_filepath()} env list", shell=True)
