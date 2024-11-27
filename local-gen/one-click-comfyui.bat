@@ -23,6 +23,8 @@ if %errorlevel% equ 0 (
 	)
 )
 
+echo "%PYTHON_CMD%"
+
 :: If Python command is still not set, install Python
 if "%PYTHON_CMD%"=="" (
 	echo Python not found. Installing Python...
