@@ -667,11 +667,15 @@ def comfyui_windows_runner() -> subprocess.Popen:
 	if device == 0:
 		# cpu
 		args.append("--cpu")
-	elif device == 2 or device == 4:
-		# amd/DirectML
-		print('Installing Torch DirectML. Please wait a moment.')
-		print(run_command(f'{embeded_py_filepath} -m pip install torch_directml --target {target_site_packages}', shell=True))
-		args.append("--directml")
+	# elif device == 2 or device == 4:
+	# 	# amd/DirectML
+	# 	print('Installing Torch DirectML. Please wait a moment.')
+	# 	print(run_command(f'{embeded_py_filepath} -m pip install torch_directml --target {target_site_packages}', shell=True))
+	# 	args.append("--directml")
+	else:
+		# force cpu
+		print('Due to some issues with torch directml, it will be unavailable. AMD/DirectML will direct to CPU.')
+		args.append("--cpu")
 
 	print("Running the comfyui process.")
 	process = subprocess.Popen(args, cwd=COMFYUI_INSTALLATION_FOLDER, shell=False)
