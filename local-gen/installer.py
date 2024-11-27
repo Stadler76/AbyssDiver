@@ -233,14 +233,14 @@ def install_miniconda_for_os() -> None:
 	logger.info("Finished installing miniconda")
 
 def does_conda_env_exist() -> bool:
-	return os.path.exists(os.path.join(get_windows_miniconda_envs_folder(), "py3_10_9"))
+	return os.path.exists(Path(os.path.join(get_windows_miniconda_envs_folder(), "py3_10_9")).as_posix())
 
 def get_conda_env_directory() -> str:
 	return Path(os.path.join(get_windows_miniconda_envs_folder(), "py3_10_9")).as_posix()
 
 def create_update_conda_env_var() -> None:
 	logger.info("Initializing Conda before install.")
-	run_command(f"{get_miniconda_cmdline_filepath()} init", shell=True)
+	print(run_command(f"{get_miniconda_cmdline_filepath()} init", shell=True))
 
 	# create a new virtual environment for python 3.10.9 called "py3_10_9"
 	if os.path.exists(Path(os.path.join(get_miniconda_cmdline_filepath(), "envs", "py3_10_9")).as_posix()) is False:
@@ -252,16 +252,16 @@ def create_update_conda_env_var() -> None:
 		command = f"{get_miniconda_cmdline_filepath()} create -n py3_10_9 python=3.10.9 anaconda"
 		if platform.platform() == "Windows":
 			command = "start " + command
-		run_command(command, shell=True)
+		print(run_command(command, shell=True))
 
 	logger.info("Listing current environments.")
-	run_command(f"{get_miniconda_cmdline_filepath()} env list", shell=True)
+	print(run_command(f"{get_miniconda_cmdline_filepath()} env list", shell=True))
 
 	logger.info("Initializing Conda after install.")
-	run_command(f"{get_miniconda_cmdline_filepath()} init", shell=True)
+	print(run_command(f"{get_miniconda_cmdline_filepath()} init", shell=True))
 
 	logger.info("Activating python 3.10.9 environment.")
-	run_command(f"{get_miniconda_cmdline_filepath()} activate py3_10_9", shell=True)
+	print(run_command(f"{get_miniconda_cmdline_filepath()} activate py3_10_9", shell=True))
 
 def get_python_version() -> tuple[Union[str, None], Union[str, None]]:
 	"""Find the python version that is installed."""
