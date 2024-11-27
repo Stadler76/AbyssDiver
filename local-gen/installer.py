@@ -606,9 +606,9 @@ def ask_windows_gpu_cpu() -> int:
 		input("")
 		return 3
 
-	is_directml_mode : str = request_prompt("Do you want to run in DirectML (for unsupported GPUs you can try use this)? (y/n)", ["y", "n"])
-	if is_directml_mode == "y":
-		return 4
+	# is_directml_mode : str = request_prompt("Do you want to run in DirectML (for unsupported GPUs you can try use this)? (y/n)", ["y", "n"])
+	# if is_directml_mode == "y":
+	# 	return 4
 
 	print("Unfortunately the card you provided is not supported on Windows.")
 	print("Image generation will be running on the CPU, unless you restart this file and utilize DirectML.")
@@ -661,11 +661,11 @@ def comfyui_windows_runner() -> subprocess.Popen:
 	process : subprocess.Popen = None
 	args = [embeded_py_filepath, "-s", "main.py", "--windows-standalone-build", '--disable-auto-launch'] + CUSTOM_COMMAND_LINE_ARGS_FOR_COMFYUI
 
-	if device != 0:
-		args.append('--lowvram')
+	args.append('--lowvram')
 
 	if device == 0:
 		# cpu
+		args.pop() # remove lowvram
 		args.append("--cpu")
 	# elif device == 2 or device == 4:
 	# 	# amd/DirectML
@@ -675,6 +675,7 @@ def comfyui_windows_runner() -> subprocess.Popen:
 	else:
 		# force cpu
 		print('Due to some issues with torch directml, it will be unavailable. AMD/DirectML will direct to CPU.')
+		args.pop() # remove lowvram
 		args.append("--cpu")
 
 	print("Running the comfyui process.")
