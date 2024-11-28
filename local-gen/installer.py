@@ -794,12 +794,12 @@ def comfyui_linux_mac_runner() -> None:
 
 	print("Running the ComfyUI process.")
 	print(args, COMFYUI_INSTALLATION_FOLDER)
-	process = subprocess.Popen(args, cwd=COMFYUI_INSTALLATION_FOLDER, shell=True)
+	process = subprocess.Popen(args, cwd=COMFYUI_INSTALLATION_FOLDER, shell=False)
 	return process
 
 def proxy_runner() -> subprocess.Popen:
 	print(f'Using {PYTHON_COMMAND} to open python/main.py')
-	return subprocess.Popen([PYTHON_COMMAND, 'python/main.py'], shell=True)
+	return subprocess.Popen([PYTHON_COMMAND, 'python/main.py'], shell=False)
 
 def get_miniconda_python_exe_path() -> str:
 	os_platform : str = platform.system() # Windows, Linux, Darwin (MacOS)
