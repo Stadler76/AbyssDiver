@@ -31,7 +31,12 @@ import threading
 
 CUSTOM_COMMAND_LINE_ARGS_FOR_COMFYUI = []
 
-COMFYUI_REPOSITORY_URL : str = "https://github.com/comfyanonymous/ComfyUI"
+print("Are you planning to use a AMD GPU? (y/n)")
+if input("") == "y":
+	COMFYUI_REPOSITORY_URL : str = "https://github.com/patientx/ComfyUI-Zluda"
+else:
+	COMFYUI_REPOSITORY_URL : str = "https://github.com/comfyanonymous/ComfyUI"
+
 COMFYUI_API_REPOSITORY_URL : str = "https://api.github.com/repos/comfyanonymous/ComfyUI"
 COMFYUI_CUSTOM_NODES : list[str] = ["https://github.com/ltdrdata/ComfyUI-Manager", "https://github.com/john-mnz/ComfyUI-Inspyrenet-Rembg"]
 
