@@ -31,7 +31,7 @@ import threading
 
 CUSTOM_COMMAND_LINE_ARGS_FOR_COMFYUI = []
 
-print("Are you planning to use a AMD GPU? (y/n)")
+print("Are you planning to use a AMD GPU on WINDOWS? (y/n)")
 if input("") == "y":
 	COMFYUI_REPOSITORY_URL : str = "https://github.com/patientx/ComfyUI-Zluda"
 else:
