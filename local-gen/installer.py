@@ -260,7 +260,7 @@ def create_update_conda_env_var() -> None:
 	if os.path.exists("tools/envs/py3_10_9") is False:
 		logger.info("Creating new environment.")
 		print('The python conda environment will take about 2.8GB in total on disk.')
-		print('Press enter to install the python 3.10.9 conda environment. The command displayed below will not run until you do so, and will wait until finished.')
+		print('Press enter to install the python 3.10.9 conda environment. The command displayed below will not run until you press ENTER. This may take a period of time so wait until its finished.')
 		print('THE BELOW COMMAND WILL BE RUNNING IN THE BACKGROUND! PLEASE WAIT FOR IT TO FINISH!')
 
 		logger.info("Cleaning conda before installing.")
