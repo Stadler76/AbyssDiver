@@ -266,7 +266,10 @@ def create_update_conda_env_var() -> None:
 	logger.info("2nd command.")
 	print(run_command(f"\"{get_miniconda_cmdline_filepath()}\" update -n base -c defaults conda", shell=True))
 
-	print("Conda seems to have quite a bit of trouble installing envs. You will need to watch the terminal for messages that detail how to troubleshoot if it does not work.")
+	print("="*20)
+	print("Conda seems to have quite a bit of trouble installing by itself.")
+	print("You will need to watch the terminal for messages and when it stops moving press enter (as this will confirm with yes any prompts).")
+	print("When it hits the 'z' related packages, it may take a second as they are quite large")
 	print("Press enter to continue.")
 	input("")
 
