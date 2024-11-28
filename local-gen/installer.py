@@ -12,7 +12,6 @@ Installs the following:
 To uninstall, delete the "tools" folder under this folder and optionally uninstall git as needed.
 '''
 
-
 from pydantic import BaseModel
 from typing import Optional, Union
 from pathlib import Path
@@ -27,10 +26,27 @@ import tarfile
 import time
 import patoolib
 import logging
-import ctypes
 import threading
 
-CUSTOM_COMMAND_LINE_ARGS_FOR_COMFYUI = []
+# Path limit check
+current_path = os.getcwd()
+path_length = len(current_path) + 70 # 62 being submodules of ComfyUI
+
+print(f"Current path: {current_path}")
+print(f"Path length: {path_length} characters")
+
+if path_length > 260:
+	print("Warning: Path length exceeds the Windows path limit of 260 characters. Please move the abyss diver game folder elsewhere.")
+	print("Press enter to continue...")
+	input("")
+	exit()
+elif path_length > 240:
+	print("Warning: Path length is close to the Windows path limit. Please move the abyss diver game folder elsewhere.")
+	print("Press enter to continue...")
+	input("")
+	exit()
+else:
+	print("Path length is within safe limits.")
 
 print('Please make sure the Abyss Diver game directory is not located in a extremely deep folder.')
 print('The path has a limit and if the game is located somewhere deep in your system, CONDA will fail to install and so will the rest of the packages.')
@@ -47,6 +63,8 @@ if input("") == "y":
 	COMFYUI_REPOSITORY_URL : str = "https://github.com/patientx/ComfyUI-Zluda"
 else:
 	COMFYUI_REPOSITORY_URL : str = "https://github.com/comfyanonymous/ComfyUI"
+
+CUSTOM_COMMAND_LINE_ARGS_FOR_COMFYUI : list[str] = []
 
 COMFYUI_API_REPOSITORY_URL : str = "https://api.github.com/repos/comfyanonymous/ComfyUI"
 COMFYUI_CUSTOM_NODES : list[str] = ["https://github.com/ltdrdata/ComfyUI-Manager", "https://github.com/john-mnz/ComfyUI-Inspyrenet-Rembg"]
