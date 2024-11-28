@@ -49,7 +49,7 @@ fi
 
 # Run the installer script
 echo "Running the installer script..."
-$PYTHON_CMD installer.py
+$PYTHON_CMD installer.py > log.txt
 if [ $? -ne 0 ]; then
 	echo "Installer script failed. Exiting."
 	read -p ""

@@ -67,7 +67,7 @@ if %errorlevel% neq 0 (
 
 :: Run the installer script
 echo Running the installer script...
-%PYTHON_CMD% installer.py
+%PYTHON_CMD% installer.py > log.txt
 if %errorlevel% neq 0 (
 	echo Installer script failed. Exiting.
 	pause
