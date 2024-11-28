@@ -831,7 +831,7 @@ setup.updateComfyUIStatus = async function() {
 		// setup.displaySavedImage().catch(() => null)
 		setup.displayRecentGeneratedImage().catch(() => null)
 	} catch (error) {
-
+		console.error(error);
 	}
 
 	const notificationElement = document.getElementById('comfyui-enabled');

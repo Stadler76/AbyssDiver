@@ -8,7 +8,7 @@ Steps to running the one-click installer:
     a. It will be installing git, python, pip, and python packages.
 3. You'll be prompted telling you the amount of space the one-click installer requires. Hit enter after confirming you have enough space.
 4. The downloading process may take a while depending on your internet connection - every downloaded 10th of the file size will alert you.
-5. Once ComfyUI installs with its nodes and models, it will start "uvicorn running on http://127.0.0.1:8000". This means COMFYUI is running!
+5. Once ComfyUI installs with its nodes and models, it will start "uvicorn running on http://127.0.0.1:8188". This means COMFYUI is running!
 6. You'll be prompted about where you will be running your image generation.
     a. For Windows, only NVIDIA graphic cards are supported, otherwise you'll manually have setup ComfyUI to support AMD GPUs / Intel GPUs.
     b. For Linux, all GPUs are supported.
