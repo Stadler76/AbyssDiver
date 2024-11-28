@@ -170,7 +170,7 @@ def has_miniconda_been_installed() -> bool:
 	return os.path.exists(get_miniconda_cmdline_filepath())
 
 def get_windows_miniconda_envs_folder() -> str:
-	return Path(os.path.expanduser("~/miniconda3/envs")).as_posix()
+	return Path(os.path.abspath("tools/envs")).as_posix()
 
 def install_miniconda_for_os() -> None:
 	os_platform : str = platform.system() # Windows, Linux, Darwin (MacOS)
@@ -253,8 +253,11 @@ def create_update_conda_env_var() -> None:
 	print("Press enter to continue.")
 	input("")
 
+	where_to_store_env = Path(os.path.abspath("tools/envs")).as_posix()
+	os.makedirs(where_to_store_env, exist_ok=True)
+
 	# create a new virtual environment for python 3.10.9 called "py3_10_9"
-	if os.path.exists(Path(os.path.join(get_miniconda_cmdline_filepath(), "envs", "py3_10_9")).as_posix()) is False:
+	if os.path.exists("tools/envs/py3_10_9") is False:
 		logger.info("Creating new environment.")
 		print('The python conda environment will take about 2.8GB in total on disk.')
 		print('Press enter to install the python 3.10.9 conda environment. The command displayed below will not run until you do so, and will wait until finished.')
@@ -265,17 +268,14 @@ def create_update_conda_env_var() -> None:
 
 		if platform.platform() == "Windows":
 			command = "call " + command
-		command = f"{get_miniconda_cmdline_filepath()} create --force -n py3_10_9 python=3.10.9 anaconda"
+		command = f"{get_miniconda_cmdline_filepath()} create --prefix {os.path.join(where_to_store_env, "py3_10_9")} --force python=3.10.9 anaconda"
 		print(run_command(command, shell=True))
 
 		print("If it failed to install the environment, please do the following:")
-		print("""1. head to C:/Users/USERNAME/miniconda3/envs
+		print(f"""1. head to tools/envs if it exists, otherwise skip step 1 and 2
 2. delete "py3_10_9" if it exists in the folder
-3. head to C:/Users/USERNAME/miniconda3/condabin
-4. open a terminal in this directory (put cmd in the directory url box)
-5. type `conda.bat create -n py3_10_9 python=3.10.9 anaconda`
-
-Note: if you are on Linux/Mac, don't include the '.bat' on the end.
+4. open a terminal in this directory (local-gen folder) by put "cmd" in the directory url box
+5. type `{get_miniconda_cmdline_filepath()} create --prefix {os.path.join(where_to_store_env, "py3_10_9")} python=3.10.9 anaconda`
 """)
 
 	logger.info("Listing current environments.")
