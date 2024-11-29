@@ -662,39 +662,6 @@ def ask_windows_gpu_cpu() -> int:
 	print("Image generation will be running on the CPU, unless you restart this file and utilize DirectML.")
 	return 0
 
-def ask_linux_gpu_cpu() -> int:
-	is_gpu_mode : str = request_prompt("Will you be running image generation on your graphics card? (y/n)", ["y", "n"])
-	if is_gpu_mode == "n":
-		return 0
-
-	is_mac : str =  request_prompt("Are you on a MAC device? (y/n)", ["y", "n"])
-	if is_mac == "y":
-		return 3
-
-	is_nvidia_gpu : str = request_prompt("Is your graphics card a NVIDIA one? (y/n)", ["y", "n"])
-	if is_nvidia_gpu == "y":
-		return 1
-
-	is_amd_linux : str =  request_prompt("Is your graphics card a AMD one? (y/n)", ["y", "n"])
-	if is_amd_linux == "y":
-		return 2
-
-	print("You have a unsupported graphics card - will default to CPU mode.")
-	return 0
-
-def get_last_device() -> Optional[int]:
-	if os.path.exists('device') is False:
-		return None
-	try:
-		with open("device", "r") as file:
-			return int(file.read())
-	except:
-		return None
-
-def write_last_device(device : int) -> None:
-	with open("device", "w") as file:
-		file.write(str(device))
-
 def comfyui_windows_runner() -> subprocess.Popen:
 	"""Run the ComfyUI portable on Windows."""
 	assert COMFYUI_INSTALLATION_FOLDER, "COMFYUI_INSTALLATION_FOLDER is not set to anything - exiting."
@@ -804,86 +771,6 @@ def comfyui_linux_mac_runner() -> None:
 	print(args, COMFYUI_INSTALLATION_FOLDER)
 	process = subprocess.Popen(args, cwd=COMFYUI_INSTALLATION_FOLDER, shell=False)
 	return process
-
-def proxy_runner() -> subprocess.Popen:
-	print(f'Using {PYTHON_COMMAND} to open python/main.py')
-	return subprocess.Popen([PYTHON_COMMAND, 'python/main.py'], shell=False)
-
-def get_miniconda_python_exe_path() -> str:
-	os_platform : str = platform.system() # Windows, Linux, Darwin (MacOS)
-	py_cmd = ""
-	if os_platform == "Windows":
-		py_cmd = Path(os.path.join(get_conda_env_directory(), "python.exe")).as_posix()
-	elif os_platform == "Darwin":
-		py_cmd = Path(os.path.join(get_conda_env_directory(), "bin", "python3.10")).as_posix()
-	elif os_platform == "Linux":
-		py_cmd = Path(os.path.join(get_conda_env_directory(), "bin", "python3.10")).as_posix()
-	return py_cmd
-
-def main() -> None:
-	os_platform : str = platform.system() # Windows, Linux, Darwin (MacOS)
-
-	available_ops : str = ", ".join(WHITELISTED_OPERATION_SYSTEMS)
-	assert os_platform in WHITELISTED_OPERATION_SYSTEMS, f"Operating System {os_platform} is unsupported! Available platforms are: {available_ops}"
-
-	print(f'Running one-click-comfyui on operating system {os_platform}.')
-
-	print("Checking conda.")
-	install_conda_for_python()
-
-	py_cmd = get_miniconda_python_exe_path()
-	version = "3.10.9"
-
-	print(py_cmd)
-	assert os.path.exists(py_cmd), "Conda failed to install - no python was available."
-
-	print(py_cmd, version)
-
-	global PYTHON_COMMAND
-	PYTHON_COMMAND = py_cmd
-
-	print(f"Found python ({py_cmd}) of version {version}.")
-
-	print(run_command(f"\"{PYTHON_COMMAND}\" -m pip install -r requirements.txt", shell=True))
-
-	process_proxy : subprocess.Popen
-	process_comfyui : subprocess.Popen
-
-	if os_platform == "Windows":
-		print('Installing for Windows!')
-		comfyui_windows_installer()
-		process_proxy = proxy_runner()
-		time.sleep(3) # let proxy output its message first
-		process_comfyui = comfyui_windows_runner()
-	elif os_platform == "Linux" or os_platform == "Darwin":
-		print(f'Installing for {os_platform}!')
-		comfyui_linux_installer()
-		print('Running proxy.')
-		process_proxy = proxy_runner()
-		time.sleep(3) # let proxy output its message first
-		print('Running main.')
-		process_comfyui = comfyui_linux_mac_runner()
-	else:
-		exit()
-
-	try:
-		process_proxy.wait() # wait for process to terminate
-		process_comfyui.wait() # wait for comfyui to terminate
-	except KeyboardInterrupt: # CTRL+C
-		os.kill(process_proxy.pid, signal.SIGTERM)
-		os.kill(process_comfyui.pid, signal.SIGTERM)
-
-def install_conda_for_python() -> None:
-	if has_miniconda_been_installed() is False:
-		print('Installing miniconda.')
-		install_miniconda_for_os()
-	assert has_miniconda_been_installed(), "Miniconda is not installed. You may need to restart the terminal if you just installed it for the terminal to know its there."
-	print("Miniconda is installed.")
-	print("Creating/Updating Conda Environment.")
-	create_update_conda_env_var()
-	print(get_conda_env_directory())
-	assert os.path.exists(get_conda_env_directory()), "Conda Environment does not exist."
-	print("Conda Environment exists.")
 
 if __name__ == '__main__':
 	main()
