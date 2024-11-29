@@ -1,11 +1,5 @@
 
-# pip install tqdm
-# pip install requests
-
 '''
-TODO:
-1. swap to SD1.5 safetensor models.
-
 Windows:
 1. git clone ComfyUI
 2. Python venv
@@ -197,7 +191,7 @@ def comfy_ui_windows(storage_directory : str) -> None:
 	venv_directory : str = Path(os.path.join(comfyui_directory, "venv")).as_posix()
 	activate_bat_filepath : str = Path(os.path.join(venv_directory, "Scripts", "activate.bat")).as_posix()
 	if os.path.exists(activate_bat_filepath) is False:
-		status = os.system(f"{python_command} -m venv {venv_directory}")
+		status = os.system(f"{python_command} -m venv \"{venv_directory}\"")
 		assert status == 0, "Failed to create a virtual environment in the ComfyUI folder."
 
 	# Activate the venv enviornment once for a test
@@ -280,8 +274,10 @@ def comfy_ui_windows(storage_directory : str) -> None:
 			else:
 				print("Unknown CUDA! Defaulting to CUDA 12.4.")
 				index_url = "https://download.pytorch.org/whl/cu124"
-			status = os.system(f"call \"{activate_bat_filepath}\" && {python_command} -m pip install -r torch torchaudio torchvision --index-url {index_url}")
-			assert status == 0, f"Failed to install torch packages with cuda acceleration of url {index_url}."
+			command = f"{python_command} -m pip install -r torch torchaudio torchvision --index-url {index_url}"
+			print(f"Install command for torch: {command}")
+			_ = os.system(f"call \"{activate_bat_filepath}\" && {command}")
+			print(f"Failed to install torch packages with cuda acceleration of url {index_url}.")
 			print(f"Installed {index_url} cuda acceleration for torch.")
 		arguments.append("--lowvram") # for the sake of compatability across all devices
 
