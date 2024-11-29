@@ -246,7 +246,7 @@ def comfy_ui_windows(storage_directory : str) -> None:
 		repository_url = COMFY_UI_DEFAULT_REPOSITORY_URL
 		previous_directory = os.getcwd()
 		os.chdir(storage_directory)
-		status = os.system(f"git clone {repository_url}")
+		status = os.system(f"git clone {repository_url}") # ignore: type
 		assert status == 0, "git clone has failed - check if you have git installed."
 		os.chdir(previous_directory)
 
