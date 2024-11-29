@@ -31,6 +31,7 @@ import platform
 import subprocess
 import threading
 import logging
+import time
 
 def get_installed_python() -> str:
 	status = os.system("py --version")
@@ -274,7 +275,7 @@ def comfy_ui_windows(storage_directory : str) -> None:
 			else:
 				print("Unknown CUDA! Defaulting to CUDA 12.4.")
 				index_url = "https://download.pytorch.org/whl/cu124"
-			command = f"{python_command} -m pip install -r torch torchaudio torchvision --index-url {index_url}"
+			command = f"{python_command} -m pip install --upgrade torch torchaudio torchvision --index-url {index_url}"
 			print(f"Install command for torch: {command}")
 			_ = os.system(f"call \"{activate_bat_filepath}\" && {command}")
 			print(f"Failed to install torch packages with cuda acceleration of url {index_url}.")
@@ -293,12 +294,37 @@ def comfy_ui_windows(storage_directory : str) -> None:
 	print(command2)
 
 	print("Starting both ComfyUI and Proxy scripts.")
+
+	def delay_print() -> None:
+		try:
+			import requests
+		except:
+			print("Cannot import requests - skipping check.")
+			return
+
+		time.sleep(5)
+
+		proxy_ip : str = "http://127.0.0.1:12500/echo"
+		r = requests.get(proxy_ip)
+		if r.status_code == 200:
+			print(f"Cannot connect to the proxy on {proxy_ip}! The proxy failed to startup!")
+
+		comfyui_ip = "http://127.0.0.1:8188"
+		r = requests.get(comfyui_ip)
+		if r.status_code == 200:
+			print(f"Cannot connect to ComfyUI on {comfyui_ip}! ComfyUI failed to startup!")
+
+		print("Head to Abyss Diver and open the AI Portrait page!")
+
 	thread1 = threading.Thread(target=lambda : run_command(command1))
 	thread2 = threading.Thread(target=lambda : run_command(command2))
+	thread3 = threading.Thread(target=delay_print)
 	thread1.start()
 	thread2.start()
+	thread3.start()
 	thread1.join()
 	thread2.join()
+	thread3.join()
 	print("Both ComfyUI and Proxy scripts have finished.")
 
 def comfy_ui_linux(storage_directory : str) -> None:

@@ -10,7 +10,6 @@ from uuid import uuid4
 
 import aiohttp
 import asyncio
-import asyncio
 import base64
 import json
 import traceback
@@ -239,7 +238,7 @@ COMFYUI_NODE_URL : str = '127.0.0.1:8188' # change this to redirect
 class GenerateImagesResponse(BaseModel):
 	images : List[str]
 
-async def generate_worflow_image(workflow : dict) -> str:
+async def generate_worflow_image(workflow : dict) -> Optional[str]:
 	COMFYUI_NODE = ComfyUI_API(COMFYUI_NODE_URL)
 	await COMFYUI_NODE.is_available()
 	await COMFYUI_NODE.open_websocket()
@@ -262,7 +261,8 @@ async def echo() -> bool:
 async def generate_worflow(workflow : dict) -> Optional[GenerateImagesResponse]:
 	print(workflow)
 	try:
-		image_bs4 : str = await generate_worflow_image(workflow)
+		image_bs4 : Optional[str] = await generate_worflow_image(workflow)
+		assert image_bs4, "Could not get the generated image from ComfyUI."
 		return GenerateImagesResponse(images=[image_bs4])
 	except Exception as e:
 		print(e)
