@@ -45,8 +45,6 @@ if %errorlevel% neq 0 (
 )
 
 :: Install required Python packages
-echo Ensuring pip is installed.
-%PYTHON_CMD% -m ensurepip
 echo Upgrading pip.
 %PYTHON_CMD% -m pip install --upgrade pip
 echo Installing installer.py packages.

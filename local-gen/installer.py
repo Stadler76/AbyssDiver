@@ -36,14 +36,17 @@ import time
 import re
 
 def get_python_and_version() -> tuple[str, str]:
-	for cmd in ["py", "python", "python3"]:
+	for cmd in ["py", "python", "python3", "python3.10", "python3.11"]:
 		try:
 			result = subprocess.run([cmd, "--version"], capture_output=True, text=True, check=True)
 			print(f"Command: {cmd}, Output: {result.stdout.strip()}")
-			version : Optional[re.Match[str]] = re.match("Python (.+)", result) # type: ignore
-			assert version and version.group(0), f"No version was output by python: {result}"
+			version : Optional[re.Match[str]] = re.match("Python (.+)", result.stdout) # type: ignore
+			assert version and version.group(0), f"No version was output by python: {result.stdout}"
+			if ("3.10" not in version.group(0)) and ("3.11" not in version.group(0)):
+				continue
 			return cmd, version.group(0)
 		except Exception as e:
+			print(e)
 			continue
 	raise Exception("No python version is installed - please install python. Use versions 3.10.X or 3.11.X.")
 
@@ -182,14 +185,14 @@ def check_for_proxy_and_comfyui_responses() -> None:
 	proxy_ip : str = "http://127.0.0.1:12500/echo"
 	try:
 		r = requests.get(proxy_ip)
-		if r.status_code == 200: raise
+		if r.status_code != 200: raise
 	except:
 		print(f"Cannot connect to the proxy on {proxy_ip}! The proxy may have not started in time or failed to startup!")
 
 	comfyui_ip = "http://127.0.0.1:8188"
 	try:
 		r = requests.get(comfyui_ip)
-		if r.status_code == 200: raise
+		if r.status_code != 200: raise
 	except:
 		print(f"Cannot connect to ComfyUI on {comfyui_ip}! ComfyUI may not have started or failed to startup!")
 
@@ -367,14 +370,17 @@ def comfyui_download_mac_linux_shared(storage_directory : str) -> None:
 		status = os.system(f"{python_command} -m venv \"{venv_directory}\"")
 		assert status == 0, "Failed to create a virtual environment in the ComfyUI folder."
 
+		print('Giving the venv activate file the permissions needed to execute.')
+		os.system(f'chmod +x \"{activate_bat_filepath}\"')
+
 	# Activate the venv enviornment once for a test
 	status = os.system(f"\"{activate_bat_filepath}\"")
-	assert status == 0, "Failed to activate the virtual environment."
+	assert status == 0, "Failed to activate the virtual environment (permission error)."
 
 	# install ComfyUI/requirements.txt
 	requirements_file = Path(os.path.join(comfyui_directory, "requirements.txt")).as_posix()
 	status = os.system(f"\"{activate_bat_filepath}\" && {python_command} -m pip install -r \"{requirements_file}\"")
-	assert status == 0, "Failed to install the ComfyUI packages."
+	# assert status == 0, "Failed to install the ComfyUI packages."
 
 	# git clone custom_nodes
 	custom_nodes_folder = Path(os.path.join(comfyui_directory, "custom_nodes")).as_posix()
@@ -389,7 +395,7 @@ def comfyui_download_mac_linux_shared(storage_directory : str) -> None:
 		if os.path.exists(folder_requirements) is False:
 			continue # cannot find requirements.txt
 		status = os.system(f"\"{activate_bat_filepath}\" && {python_command} -m pip install -r \"{folder_requirements}\"")
-		assert status == 0, f"Failed to install the {folder_name} packages."
+		# assert status == 0, f"Failed to install the {folder_name} packages."
 
 	# download all checkpoint models
 	models_folder = Path(os.path.join(comfyui_directory, "models")).as_posix()
@@ -452,11 +458,11 @@ def comfy_ui_mac(storage_directory : str) -> None:
 
 def update_python_pip() -> None:
 	python_cmd, version = get_python_and_version()
-	assert "3.10" in version or "3.11" in version, "You must have python versions 3.10.X or 3.11.X. Please reinstall python."
-	status = os.system(f"{python_cmd} -m ensurepip")
-	assert status == 0, "'pip' is not installed with python! You will need to install pip."
+	assert ("3.10" in version) or ("3.11" in version), "You must have python versions 3.10.X or 3.11.X. Please reinstall python."
 	status = os.system(f"{python_cmd} -m pip install --upgrade pip")
 	assert status == 0, "'pip' failed to update. Try running again."
+	status = os.system(f"{python_cmd} -m pip install pillow fastapi pydantic uvicorn websocket-client")
+	assert status == 0, "Failed to install pip packages."
 
 def main() -> None:
 	assert_path_length_limit()

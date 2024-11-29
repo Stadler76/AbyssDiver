@@ -21,8 +21,14 @@ if [[ -n "$PYTHON_CMD" ]]; then
 	echo "Python is already installed."
 	$PYTHON_CMD --version
 else
-	echo "Python is not installed. Please install python 3.10.X/3.11.X."
-	echo "Once you do so, press enter to exit the terminal and restart it."
+	echo "Python is not installed. Please install Python 3.10.X/3.11.X with pip."
+	if [[ "$(uname -s)" == "Linux" ]]; then
+		echo "You will be prompted to install it now."
+		sudo apt install python3
+		sudo apt install python3-pip
+		sudo apt install python3-venv
+	fi
+	echo "Press enter to exit the terminal and restart it."
 	read -p ""
 	exit 1
 fi
