@@ -48,15 +48,6 @@ elif path_length > 240:
 else:
 	print("Path length is within safe limits.")
 
-print('Please make sure the Abyss Diver game directory is not located in a extremely deep folder.')
-print('The path has a limit and if the game is located somewhere deep in your system, CONDA will fail to install and so will the rest of the packages.')
-print('The game is located at the following:')
-print(Path(os.path.abspath(__file__)).as_posix())
-print(f"Has a length of: {len(Path(os.path.abspath(__file__)).as_posix())}")
-print('Make sure its not extremely long in CHARACTER LENGTH, its recommended for the length to be <75 characters')
-print("Press enter to continue./")
-input("")
-
 print("Are you planning to use a AMD GPU on WINDOWS? (y/n)")
 print("If you aren't sure what yours is, visit the Task Manager, in Performance, GPU, and look at the GPU name for 'AMD' in its name.")
 if input("") == "y":
@@ -141,7 +132,7 @@ def download_file(url: str, destination: str, range : bool = False) -> None:
 
 	print("Download complete.")
 
-def run_command(command: str, shell: bool = False) -> int:
+def run_command(command: str, shell: bool = False) -> tuple[int, str]:
 	logger.info('RUNNING COMMAND:')
 	logger.info(command)
 	logger.info('=' * 20)
