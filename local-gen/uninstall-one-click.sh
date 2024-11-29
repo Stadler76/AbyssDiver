@@ -32,24 +32,9 @@ else
 	exec "$0" "$@"
 fi
 
-# Upgrade pip using the detected Python command
-$PYTHON_CMD -m pip install --upgrade pip
-if [ $? -ne 0 ]; then
-	echo "Failed to upgrade pip. Exiting."
-	exit 1
-fi
-
-# Install required Python packages
-echo "Installing required Python packages..."
-$PYTHON_CMD -m pip install -r requirements.txt
-if [ $? -ne 0 ]; then
-	echo "Failed to install required Python packages. Exiting."
-	exit 1
-fi
-
 # Run the installer script
 echo "Running the installer script..."
-$PYTHON_CMD installer.py > log.txt
+$PYTHON_CMD uninstaller.py > ulog.txt
 if [ $? -ne 0 ]; then
 	echo "Installer script failed. Exiting."
 	read -p ""

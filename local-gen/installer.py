@@ -26,12 +26,46 @@ import tarfile
 import time
 import patoolib
 import logging
-import ctypes
 import threading
 
-CUSTOM_COMMAND_LINE_ARGS_FOR_COMFYUI = []
+# Path limit check
+current_path = os.getcwd()
+path_length = len(current_path) + 70 # 62 being submodules of ComfyUI
 
-COMFYUI_REPOSITORY_URL : str = "https://github.com/comfyanonymous/ComfyUI"
+print(f"Current path: {current_path}")
+print(f"Path length: {path_length} characters")
+
+if path_length > 260:
+	print("Warning: Path length exceeds the Windows path limit of 260 characters. Please move the abyss diver game folder elsewhere.")
+	print("Press enter to continue...")
+	input("")
+	exit()
+elif path_length > 240:
+	print("Warning: Path length is close to the Windows path limit. Please move the abyss diver game folder elsewhere.")
+	print("Press enter to continue...")
+	input("")
+	exit()
+else:
+	print("Path length is within safe limits.")
+
+print('Please make sure the Abyss Diver game directory is not located in a extremely deep folder.')
+print('The path has a limit and if the game is located somewhere deep in your system, CONDA will fail to install and so will the rest of the packages.')
+print('The game is located at the following:')
+print(Path(os.path.abspath(__file__)).as_posix())
+print(f"Has a length of: {len(Path(os.path.abspath(__file__)).as_posix())}")
+print('Make sure its not extremely long in CHARACTER LENGTH, its recommended for the length to be <75 characters')
+print("Press enter to continue./")
+input("")
+
+print("Are you planning to use a AMD GPU on WINDOWS? (y/n)")
+print("If you aren't sure what yours is, visit the Task Manager, in Performance, GPU, and look at the GPU name for 'AMD' in its name.")
+if input("") == "y":
+	COMFYUI_REPOSITORY_URL : str = "https://github.com/patientx/ComfyUI-Zluda"
+else:
+	COMFYUI_REPOSITORY_URL : str = "https://github.com/comfyanonymous/ComfyUI"
+
+CUSTOM_COMMAND_LINE_ARGS_FOR_COMFYUI : list[str] = []
+
 COMFYUI_API_REPOSITORY_URL : str = "https://api.github.com/repos/comfyanonymous/ComfyUI"
 COMFYUI_CUSTOM_NODES : list[str] = ["https://github.com/ltdrdata/ComfyUI-Manager", "https://github.com/john-mnz/ComfyUI-Inspyrenet-Rembg"]
 
@@ -69,8 +103,9 @@ class GithubFile(BaseModel):
 def request_prompt(prompt : str, allowed_responses : list[str]) -> str:
 	print(prompt)
 	value = input("")
+	tttt1 = ",".join(allowed_responses)
 	while value not in allowed_responses:
-		print("Invalid response.") # github @spookexe was here
+		print(f"Invalid response - please answer again with one of the following: {tttt1}") # github @spookexe was here
 		value = input("")
 	return value
 
@@ -251,7 +286,10 @@ def create_update_conda_env_var() -> None:
 	logger.info("2nd command.")
 	print(run_command(f"\"{get_miniconda_cmdline_filepath()}\" update -n base -c defaults conda", shell=True))
 
-	print("Conda seems to have quite a bit of trouble installing envs. You will need to watch the terminal for messages that detail how to troubleshoot if it does not work.")
+	print("="*20)
+	print("Conda seems to have quite a bit of trouble installing by itself.")
+	print("You will need to watch the terminal for messages and when it stops moving press enter (as this will confirm with yes any prompts).")
+	print("When it hits the 'z' related packages, it may take a second as they are quite large")
 	print("Press enter to continue.")
 	input("")
 
