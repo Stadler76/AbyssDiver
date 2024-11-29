@@ -103,8 +103,9 @@ class GithubFile(BaseModel):
 def request_prompt(prompt : str, allowed_responses : list[str]) -> str:
 	print(prompt)
 	value = input("")
+	tttt1 = ",".join(allowed_responses)
 	while value not in allowed_responses:
-		print("Invalid response.") # github @spookexe was here
+		print(f"Invalid response - please answer again with one of the following: {tttt1}") # github @spookexe was here
 		value = input("")
 	return value
 
