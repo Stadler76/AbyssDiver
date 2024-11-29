@@ -658,22 +658,6 @@ def ask_windows_gpu_cpu() -> int:
 	is_nvidia_gpu : str = request_prompt("Is your graphics card a NVIDIA one? (y/n)", ["y", "n"])
 	if is_nvidia_gpu == "y": return 1
 
-	# is_amd_gpu : str = request_prompt("Is your graphics card a AMD one? (y/n)", ["y", "n"])
-	# if is_amd_gpu == "y":
-	# 	print("Warning: AMD cards can only run with DirectML which is slower on Windows.")
-	# 	return 2
-
-	# is_intel_gpu : str = request_prompt("Is your graphics card a Intel one? (y/n)", ["y", "n"])
-	# if is_intel_gpu == "y":
-	# 	print("WARNING: Please follow the steps on 'https://github.com/comfyanonymous/ComfyUI' to install Intel GPU support before continuing.")
-	# 	print("Press enter to continue...")
-	# 	input("")
-	# 	return 3
-
-	# is_directml_mode : str = request_prompt("Do you want to run in DirectML (for unsupported GPUs you can try use this)? (y/n)", ["y", "n"])
-	# if is_directml_mode == "y":
-	# 	return 4
-
 	print("Unfortunately the card you provided is not supported on Windows.")
 	print("Image generation will be running on the CPU, unless you restart this file and utilize DirectML.")
 	return 0
