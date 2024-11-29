@@ -21,40 +21,36 @@ if [[ -n "$PYTHON_CMD" ]]; then
 	echo "Python is already installed."
 	$PYTHON_CMD --version
 else
-	echo "Python is not installed. Installing Python..."
-	./install_python_linux_macos.sh
-	if [ $? -ne 0 ]; then
-		echo "Failed to install Python. Exiting."
-		exit 1
-	fi
-
-	echo "Restarting the script..."
-	exec "$0" "$@"
+	echo "Python is not installed. Please install python 3.10.X/3.11.X."
+	echo "Once you do so, press enter to exit the terminal and restart it."
+	read -p ""
+	exit 1
 fi
 
 # Upgrade pip using the detected Python command
 $PYTHON_CMD -m pip install --upgrade pip
 if [ $? -ne 0 ]; then
-	echo "Failed to upgrade pip. Exiting."
+	echo "Failed to upgrade pip. Press enter to exit."
+	read -p ""
 	exit 1
 fi
 
 # Install required Python packages
-echo "Installing required Python packages..."
-$PYTHON_CMD -m pip install -r requirements.txt
+echo "Installing required installer.py packages."
+$PYTHON_CMD -m pip install requests tqdm
+echo "Installing proxy packages."
+$PYTHON_CMD -m pip install pydantic pillow websocket-client aiohttp
 if [ $? -ne 0 ]; then
-	echo "Failed to install required Python packages. Exiting."
+	echo "Failed to install the required packages. Press enter to exit."
+	read -p ""
 	exit 1
 fi
 
 # Run the installer script
-echo "Running the installer script..."
-$PYTHON_CMD installer.py > log.txt
+echo "Running the installer.py script..."
+$PYTHON_CMD installer.py
 if [ $? -ne 0 ]; then
 	echo "Installer script failed. Exiting."
 	read -p ""
 	exit 1
 fi
-
-echo "Installation completed successfully."
-read -p "Press Enter to continue..." -n1 -s

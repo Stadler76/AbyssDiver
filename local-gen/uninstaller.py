@@ -41,21 +41,11 @@ def query_file(filepath : str) -> None:
 def uninstall_process() -> None:
 	print("Starting uninstallation.")
 
-	miniconda_exe = Path(os.path.join(os.path.dirname(os.path.abspath(__file__)), "miniconda.exe")).as_posix()
-	if os.path.exists(miniconda_exe):
-		query_file(miniconda_exe)
+	batch_file_directory : str = Path(os.path.join(os.path.dirname(os.path.abspath(__file__)))).as_posix()
 
-	miniconda_sh = Path(os.path.join(os.path.dirname(os.path.abspath(__file__)), "miniconda.sh")).as_posix()
-	if os.path.exists(miniconda_sh):
-		query_file(miniconda_sh)
-
-	tools_directory_absolute = Path(os.path.join(os.path.dirname(os.path.abspath(__file__)), "tools")).as_posix()
-	if os.path.exists(tools_directory_absolute):
-		query_directory(tools_directory_absolute)
-
-	miniconda3_directory = Path(os.path.join(os.path.expanduser("~"), "miniconda3")).as_posix()
-	if os.path.exists(miniconda3_directory):
-		query_directory(miniconda3_directory)
+	tools_directory = Path(os.path.join(batch_file_directory, "tools")).as_posix()
+	if os.path.exists(tools_directory):
+		query_directory(tools_directory)
 
 	print("Uninstallation has finished.")
 	print("Press enter to close.")
@@ -64,11 +54,11 @@ def uninstall_process() -> None:
 def main() -> None:
 	print("This is the uninstaller program for the ComfyUI Local Generation.")
 	print("")
-	print("This will not uninstall python, but will uninstall ComfyUI and Conda.")
+	print("This will not uninstall python or git, but will uninstall ComfyUI.")
 	print("")
 	print("You will be asked before it deletes any directories with the total directory size provided.")
 	print("")
-	print("To proceed with the uninstallation, first make sure the one-click-comfyui.bat/sh terminals are closed.")
+	print("To proceed with the uninstallation, first make sure the one-click-comfyui terminals are closed.")
 	print("Once you have done so, press enter to continue.")
 	print("")
 	input("")

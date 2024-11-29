@@ -33,30 +33,9 @@ if "%PYTHON_CMD%"=="" (
 	exit /b 1
 )
 
-:: Check for the git command
-where git >nul 2>&1
-if %errorlevel% neq 0 (
-	echo You are required to install git.
-	echo Please head to https://git-scm.com/downloads/win and install the "64-bit Git for Windows Setup".
-	echo Once you have done so, close the terminal and run the batch file again.
-	echo Press enter to exit...
-	pause
-	exit /b 1
-)
-
-:: Install required Python packages
-echo Ensuring pip is installed.
-%PYTHON_CMD% -m ensurepip
-echo Upgrading pip.
-%PYTHON_CMD% -m pip install --upgrade pip
-echo Installing installer.py packages.
-%PYTHON_CMD% -m pip install tqdm requests
-echo Installing proxy packages.
-%PYTHON_CMD% -m pip install pydantic pillow websocket-client aiohttp fastapi requests_toolbelt uvicorn[standard]
-
-:: Run the installer.py
-echo Running the installer.py
-call %PYTHON_CMD% installer.py
+:: Run the uninstaller.py
+echo Running the uninstaller.py
+call %PYTHON_CMD% uninstaller.py
 
 echo Press enter to exit...
 pause
