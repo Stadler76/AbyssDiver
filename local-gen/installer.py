@@ -266,7 +266,7 @@ def comfy_ui_windows(storage_directory : str) -> None:
 
 	# install ComfyUI/requirements.txt
 	requirements_file = Path(os.path.join(comfyui_directory, "requirements.txt")).as_posix()
-	status = os.system(f"call \"{activate_bat_filepath}\" && {python_command} -m pip install -r \"{requirements_file}\"")
+	status = os.system(f"call \"{activate_bat_filepath}\" && python -m pip install -r \"{requirements_file}\"")
 	assert status == 0, "Failed to install the ComfyUI packages."
 
 	# git clone custom_nodes
@@ -281,7 +281,7 @@ def comfy_ui_windows(storage_directory : str) -> None:
 		print(folder_requirements)
 		if os.path.exists(folder_requirements) is False:
 			continue # cannot find requirements.txt
-		status = os.system(f"call \"{activate_bat_filepath}\" && {python_command} -m pip install -r \"{folder_requirements}\"")
+		status = os.system(f"call \"{activate_bat_filepath}\" && python -m pip install -r \"{folder_requirements}\"")
 		assert status == 0, f"Failed to install the {folder_name} packages."
 
 	# download all checkpoint models
@@ -314,7 +314,7 @@ def comfy_ui_windows(storage_directory : str) -> None:
 			else:
 				print("Unknown CUDA! Defaulting to CUDA 12.4 (latest).")
 				index_url = "https://download.pytorch.org/whl/cu124"
-			command = f"{python_command} -m pip install --upgrade torch torchaudio torchvision --index-url {index_url}"
+			command = f"python -m pip install --upgrade torch torchaudio torchvision --index-url {index_url}"
 			print(f"Install command for torch: {command}")
 			_ = os.system(f"call \"{activate_bat_filepath}\" && {command}")
 			print(f"Failed to install torch packages with cuda acceleration of url {index_url}.")
@@ -323,7 +323,7 @@ def comfy_ui_windows(storage_directory : str) -> None:
 
 	# start comfyui
 	main_py = Path(os.path.join(comfyui_directory, "main.py")).as_posix()
-	command1 = f'cmd.exe /c "call \"{activate_bat_filepath}\" && {python_command} \"{main_py}\" ' + " ".join(arguments) + '"'
+	command1 = f'cmd.exe /c "call \"{activate_bat_filepath}\" && python -s \"{main_py}\" ' + " ".join(arguments) + '"'
 	print("Running ComfyUI with the following commands:")
 	print(command1)
 
@@ -379,7 +379,7 @@ def comfyui_download_mac_linux_shared(storage_directory : str) -> None:
 
 	# install ComfyUI/requirements.txt
 	requirements_file = Path(os.path.join(comfyui_directory, "requirements.txt")).as_posix()
-	status = os.system(f"\"{activate_bat_filepath}\" && {python_command} -m pip install -r \"{requirements_file}\"")
+	status = os.system(f"\"{activate_bat_filepath}\" && python -m pip install -r \"{requirements_file}\"")
 	# assert status == 0, "Failed to install the ComfyUI packages."
 
 	# git clone custom_nodes
@@ -394,7 +394,7 @@ def comfyui_download_mac_linux_shared(storage_directory : str) -> None:
 		print(folder_requirements)
 		if os.path.exists(folder_requirements) is False:
 			continue # cannot find requirements.txt
-		status = os.system(f"\"{activate_bat_filepath}\" && {python_command} -m pip install -r \"{folder_requirements}\"")
+		status = os.system(f"\"{activate_bat_filepath}\" && python -m pip install -r \"{folder_requirements}\"")
 		# assert status == 0, f"Failed to install the {folder_name} packages."
 
 	# download all checkpoint models
@@ -412,7 +412,7 @@ def start_comfyui_linux_mac_shared(comfyui_directory : str, arguments : list[str
 	activate_bat_filepath : str = Path(os.path.join(venv_directory, "bin", "activate")).as_posix()
 
 	main_py = Path(os.path.join(comfyui_directory, "main.py")).as_posix()
-	command1 = f'\"{activate_bat_filepath}\" && {python_command} \"{main_py}\" ' + " ".join(arguments) + '"'
+	command1 = f'\"{activate_bat_filepath}\" && python \"{main_py}\" ' + " ".join(arguments) + '"'
 	print("Running ComfyUI with the following commands:")
 	print(command1)
 
@@ -441,6 +441,9 @@ def comfy_ui_linux(storage_directory : str) -> None:
 	comfyui_directory = Path(os.path.join(storage_directory, "ComfyUI")).as_posix()
 
 	arguments = ["--disable-auto-launch"]
+
+	print("At the current moment, only CPU support is made for Linux.")
+	arguments.append("--cpu")
 
 	start_comfyui_linux_mac_shared(comfyui_directory, arguments)
 

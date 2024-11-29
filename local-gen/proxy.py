@@ -203,8 +203,11 @@ class ComfyUI_API:
 	async def generate_images_using_workflow_prompt(self, prompt : dict, include_previews : bool = True) -> list[dict]:
 		'''Complete the full sequence of giving a prompt and receiving the images.'''
 		prompt_id : str = await self.queue_prompt(prompt)
+		print('Track progress')
 		await self.track_progress(prompt_id, list(prompt.keys()))
+		print('Fetching images from ComfyUI')
 		images_spookexe : list[dict] = await self.fetch_prompt_id_images(prompt_id, include_previews=include_previews)
+		print('Cleaming up prompt id')
 		await self.cleanup_prompt_id(prompt_id)
 		return images_spookexe
 
@@ -263,6 +266,7 @@ async def generate_worflow(workflow : dict) -> Optional[GenerateImagesResponse]:
 	try:
 		image_bs4 : Optional[str] = await generate_worflow_image(workflow)
 		assert image_bs4, "Could not get the generated image from ComfyUI."
+		print('Image was generated - sending result to Abyss Diver')
 		return GenerateImagesResponse(images=[image_bs4])
 	except Exception as e:
 		print(e)
