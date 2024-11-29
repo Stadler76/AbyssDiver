@@ -273,7 +273,7 @@ def comfy_ui_windows(storage_directory : str) -> None:
 			elif input("Are you using CUDA 12.4? (y/n)") == "y":
 				index_url = "https://download.pytorch.org/whl/cu124"
 			else:
-				print("Unknown CUDA! Defaulting to CUDA 12.4.")
+				print("Unknown CUDA! Defaulting to CUDA 12.4 (latest).")
 				index_url = "https://download.pytorch.org/whl/cu124"
 			command = f"{python_command} -m pip install --upgrade torch torchaudio torchvision --index-url {index_url}"
 			print(f"Install command for torch: {command}")
