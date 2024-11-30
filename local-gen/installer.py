@@ -53,7 +53,6 @@ def get_python_and_version() -> tuple[str, str]:
 			continue
 	raise Exception("No suitable Python version is installed - please install Python 3.10.X or 3.11.X.")
 
-
 def get_installed_python() -> str:
 	cmd, _ = get_python_and_version()
 	return cmd
@@ -270,7 +269,7 @@ def comfy_ui_windows(storage_directory : str) -> None:
 	# install ComfyUI/requirements.txt
 	print('Installing ComfyUI requirements.')
 	requirements_file = Path(os.path.join(comfyui_directory, "requirements.txt")).as_posix()
-	os.system(f"{python_filepath} -m pip install -r \"{requirements_file}\"")
+	subprocess.run([python_filepath, "-m", "pip", "install", "-r", str(requirements_file)], check=True)
 
 	# git clone custom_nodes
 	print('Cloning all custom nodes.')
@@ -287,7 +286,7 @@ def comfy_ui_windows(storage_directory : str) -> None:
 		if os.path.exists(folder_requirements) is False:
 			continue # cannot find requirements.txt
 		print(f'Installing {folder_name} requirements.')
-		os.system(f"{python_filepath} -m pip install -r \"{folder_requirements}\"")
+		subprocess.run([python_filepath, "-m", "pip", "install", "-r", str(folder_requirements)], check=True)
 
 	# download all checkpoint models
 	models_folder = Path(os.path.join(comfyui_directory, "models")).as_posix()
