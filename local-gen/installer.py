@@ -41,19 +41,18 @@ def get_python_and_version() -> tuple[str, str]:
 			result = subprocess.run([cmd, "--version"], capture_output=True, text=True, check=True)
 			print(f"Command: {cmd}")
 			print(f"Output: {result.stdout.strip()}")
-			version : Optional[re.Match[str]] = re.fullmatch("Python (.+)", result.stdout) # type: ignore
-			print(version)
-			assert version and version.group(0), f"No version was output by python: {result.stdout}"
-			print(version.group(0))
-			print("3.10" in version.group(0))
-			print("3.11" in version.group(0))
-			if "3.10" in version.group(0) or "3.11" in version.group(0):
-				return cmd, version.group(0)
+			version = re.search(r"Python (\d+\.\d+\.\d+)", result.stdout)
+			if version:
+				print(f"Extracted Version: {version.group(1)}")
+				if version.group(1).startswith("3.10") or version.group(1).startswith("3.11"):
+					return cmd, version.group(1)
+			else:
+				print("No version match found.")
 		except Exception as e:
-			result = None
-			print(e)
+			print(f"Command '{cmd}' failed: {e}")
 			continue
-	raise Exception("No python version is installed - please install python. Use versions 3.10.X or 3.11.X.")
+	raise Exception("No suitable Python version is installed - please install Python 3.10.X or 3.11.X.")
+
 
 def get_installed_python() -> str:
 	cmd, _ = get_python_and_version()
