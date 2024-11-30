@@ -374,12 +374,12 @@ def comfyui_download_mac_linux_shared(storage_directory : str) -> None:
 		os.system(f'chmod +x \"{activate_bat_filepath}\"')
 
 	# Activate the venv enviornment once for a test
-	status = os.system(f"source \"{activate_bat_filepath}\"")
+	status = os.system(f"\"{activate_bat_filepath}\"")
 	assert status == 0, "Failed to activate the virtual environment (permission error)."
 
 	# install ComfyUI/requirements.txt
 	requirements_file = Path(os.path.join(comfyui_directory, "requirements.txt")).as_posix()
-	status = os.system(f"source \"{activate_bat_filepath}\" && python -m pip install -r \"{requirements_file}\"")
+	status = os.system(f"\"{activate_bat_filepath}\" && python3 -m pip install -r \"{requirements_file}\"")
 	# assert status == 0, "Failed to install the ComfyUI packages."
 
 	# git clone custom_nodes
@@ -394,7 +394,7 @@ def comfyui_download_mac_linux_shared(storage_directory : str) -> None:
 		print(folder_requirements)
 		if os.path.exists(folder_requirements) is False:
 			continue # cannot find requirements.txt
-		status = os.system(f"source \"{activate_bat_filepath}\" && python -m pip install -r \"{folder_requirements}\"")
+		status = os.system(f"\"{activate_bat_filepath}\" && python3 -m pip install -r \"{folder_requirements}\"")
 		# assert status == 0, f"Failed to install the {folder_name} packages."
 
 	# download all checkpoint models
@@ -412,7 +412,7 @@ def start_comfyui_linux_mac_shared(comfyui_directory : str, arguments : list[str
 	activate_bat_filepath : str = Path(os.path.join(venv_directory, "bin", "activate")).as_posix()
 
 	main_py = Path(os.path.join(comfyui_directory, "main.py")).as_posix()
-	command1 = f'source \"{activate_bat_filepath}\" && python \"{main_py}\" ' + " ".join(arguments) + '"'
+	command1 = f'\"{activate_bat_filepath}\" && python3 \"{main_py}\" ' + " ".join(arguments) + '"'
 	print("Running ComfyUI with the following commands:")
 	print(command1)
 
