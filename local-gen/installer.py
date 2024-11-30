@@ -118,12 +118,12 @@ def download_file(url: str, filepath: str, chunk_size: int = 64) -> None:
 	progress_bar.close()
 	print(f"File downloaded to {filepath}")
 
-def run_command(command: str, shell: bool = False) -> tuple[int, str]:
-	print(f'RUNNING COMMAND: {command}')
+def run_command(args: list[str] | str, shell: bool = False) -> tuple[int, str]:
+	print(f'RUNNING COMMAND: {str(args)}')
 	print('=' * 10)
 	try:
 		process = subprocess.Popen(
-			command,
+			args,
 			shell=shell,
 			stdout=subprocess.PIPE,
 			stderr=subprocess.PIPE,
@@ -149,12 +149,12 @@ def run_command(command: str, shell: bool = False) -> tuple[int, str]:
 		stderr_thread.join()
 		status_code = process.returncode
 		if status_code == 0:
-			print(f"Command succeeded: {command}")
+			print(f"Command succeeded: {str(args)}")
 		else:
-			print(f"Command failed with code {status_code}: {command}")
+			print(f"Command failed with code {status_code}: {str(args)}")
 		return status_code, stdout_var
 	except Exception as e:
-		print(f"Command execution exception: {command}")
+		print(f"Command execution exception: {str(args)}")
 		print(f"Exception details: {e}")
 		return -1, str(e)
 
@@ -180,7 +180,7 @@ def check_for_proxy_and_comfyui_responses() -> None:
 		print("Cannot import requests package - skipping proxy/comfyui response checks.")
 		return
 
-	time.sleep(30) # more wait time lolz (first load takes a minute)
+	time.sleep(20) # more wait time lolz (first load takes a minute)
 
 	proxy_ip : str = "http://127.0.0.1:12500/echo"
 	try:
@@ -196,7 +196,9 @@ def check_for_proxy_and_comfyui_responses() -> None:
 	except:
 		print(f"Cannot connect to ComfyUI on {comfyui_ip}! ComfyUI may not have started or failed to startup!")
 
+	print("Successfully connected to both ComfyUI and the Proxy!")
 	print("Head to Abyss Diver and open the AI Portrait page!")
+	print("")
 
 def clone_custom_nodes_to_folder(custom_nodes_folder : str) -> None:
 	previous_directory = os.getcwd()
@@ -323,19 +325,19 @@ def comfy_ui_windows(storage_directory : str) -> None:
 
 	# start comfyui
 	main_py = Path(os.path.join(comfyui_directory, "main.py")).as_posix()
-	command1 = f'cmd.exe /c "call \"{activate_bat_filepath}\" && python -s \"{main_py}\" ' + " ".join(arguments) + '"'
+	command1_args = [activate_bat_filepath, '&&', python_command, main_py] + arguments
 	print("Running ComfyUI with the following commands:")
-	print(command1)
+	print(command1_args)
 
 	proxy_py : str = Path(os.path.join(os.path.dirname(os.path.abspath(__file__)), "proxy.py")).as_posix()
-	command2 = f"{python_command} \"{proxy_py}\""
+	command2_args = [python_command, proxy_py]
 	print("Running Proxy with the following commands:")
-	print(command2)
+	print(command2_args)
 
 	print("Starting both ComfyUI and Proxy scripts.")
 
-	thread1 = threading.Thread(target=lambda : run_command(command1))
-	thread2 = threading.Thread(target=lambda : run_command(command2))
+	thread1 = threading.Thread(target=lambda : run_command(command1_args))
+	thread2 = threading.Thread(target=lambda : run_command(command2_args))
 	thread3 = threading.Thread(target=check_for_proxy_and_comfyui_responses)
 	thread1.start()
 	thread2.start()
@@ -379,7 +381,7 @@ def comfyui_download_mac_linux_shared(storage_directory : str) -> None:
 
 	# install ComfyUI/requirements.txt
 	requirements_file = Path(os.path.join(comfyui_directory, "requirements.txt")).as_posix()
-	status = os.system(f"\"{activate_bat_filepath}\" && python3 -m pip install -r \"{requirements_file}\"")
+	status = os.system(f"\"{activate_bat_filepath}\" && {python_command} -m pip install -r \"{requirements_file}\"")
 	# assert status == 0, "Failed to install the ComfyUI packages."
 
 	# git clone custom_nodes
@@ -394,7 +396,7 @@ def comfyui_download_mac_linux_shared(storage_directory : str) -> None:
 		print(folder_requirements)
 		if os.path.exists(folder_requirements) is False:
 			continue # cannot find requirements.txt
-		status = os.system(f"\"{activate_bat_filepath}\" && python3 -m pip install -r \"{folder_requirements}\"")
+		status = os.system(f"\"{activate_bat_filepath}\" && {python_command} -m pip install -r \"{folder_requirements}\"")
 		# assert status == 0, f"Failed to install the {folder_name} packages."
 
 	# download all checkpoint models
@@ -412,19 +414,20 @@ def start_comfyui_linux_mac_shared(comfyui_directory : str, arguments : list[str
 	activate_bat_filepath : str = Path(os.path.join(venv_directory, "bin", "activate")).as_posix()
 
 	main_py = Path(os.path.join(comfyui_directory, "main.py")).as_posix()
-	command1 = f'\"{activate_bat_filepath}\" && python3 \"{main_py}\" ' + " ".join(arguments) + '"'
+
+	command1_args = [activate_bat_filepath, '&&', python_command, main_py] + arguments
 	print("Running ComfyUI with the following commands:")
-	print(command1)
+	print(command1_args)
 
 	proxy_py : str = Path(os.path.join(os.path.dirname(os.path.abspath(__file__)), "proxy.py")).as_posix()
-	command2 = f"{python_command} \"{proxy_py}\""
+	command2_args = [python_command, proxy_py]
 	print("Running Proxy with the following commands:")
-	print(command2)
+	print(command2_args)
 
 	print("Starting both ComfyUI and Proxy scripts.")
 
-	thread1 = threading.Thread(target=lambda : run_command(command1))
-	thread2 = threading.Thread(target=lambda : run_command(command2))
+	thread1 = threading.Thread(target=lambda : run_command(command1_args))
+	thread2 = threading.Thread(target=lambda : run_command(command2_args))
 	thread3 = threading.Thread(target=check_for_proxy_and_comfyui_responses)
 	thread1.start()
 	thread2.start()
