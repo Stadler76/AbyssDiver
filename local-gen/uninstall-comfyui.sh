@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # You may need to give file execution permissions on Linux!
-# chmod +x one-click-install.sh
+# chmod +x uninstall-comfyui.sh
 
 echo "Installing minimum requirements for one-click ComfyUI installer."
 
@@ -21,25 +21,17 @@ if [[ -n "$PYTHON_CMD" ]]; then
 	echo "Python is already installed."
 	$PYTHON_CMD --version
 else
-	echo "Python is not installed. Installing Python..."
-	./install_python_linux_macos.sh
-	if [ $? -ne 0 ]; then
-		echo "Failed to install Python. Exiting."
-		exit 1
-	fi
-
-	echo "Restarting the script..."
-	exec "$0" "$@"
-fi
-
-# Run the installer script
-echo "Running the installer script..."
-$PYTHON_CMD uninstaller.py > ulog.txt
-if [ $? -ne 0 ]; then
-	echo "Installer script failed. Exiting."
+	echo "Python is not installed. Please install python 3.10.X/3.11.X."
+	echo "Once you do so, press enter to exit the terminal and restart it."
 	read -p ""
 	exit 1
 fi
 
-echo "Installation completed successfully."
-read -p "Press Enter to continue..." -n1 -s
+# Run the installer script
+echo "Running uninstaller.py"
+$PYTHON_CMD uninstaller.py
+if [ $? -ne 0 ]; then
+	echo "Installer script failed. Press enter to exit."
+	read -p ""
+	exit 1
+fi

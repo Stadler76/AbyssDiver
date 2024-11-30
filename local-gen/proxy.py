@@ -1,18 +1,19 @@
 
-# https://9elements.com/blog/hosting-a-comfyui-workflow-via-api/
-# pip install pydantic pillow websockets-client aiohttp
-
+from PIL import Image
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from io import BytesIO
-from typing import Literal, Optional, Union
+from pydantic import BaseModel
+from typing import Any, Literal, Optional, Union, List
 from urllib.parse import urlencode
 from uuid import uuid4
-from PIL import Image
 
 import aiohttp
 import asyncio
 import base64
 import json
 import traceback
+import uvicorn
 import websockets
 
 COMFYUI_IMAGE_TYPE = Literal["input", "output", "temp"]
@@ -44,7 +45,7 @@ async def async_post(url : str, headers : Optional[dict] = None, cookies : Optio
 		response : aiohttp.ClientResponse = await client.post(url, data=data, json=json)
 		return await response.read()
 
-async def post_json_response(url : str, data : Optional[dict]) -> Union[dict, list, None]:
+async def post_json_response(url : str, data : Optional[dict]) -> Optional[dict]:
 	try:
 		response : bytes = await async_post(url, json=data)
 		return json.loads(response.decode('utf-8'))
@@ -59,7 +60,7 @@ async def async_get(url : str, headers : Optional[dict] = None, cookies : Option
 		response : aiohttp.ClientResponse = await client.get(url, data=data, json=json)
 		return await response.read()
 
-async def get_json_response(url : str) -> Union[dict, list, None]:
+async def get_json_response(url : str) -> Optional[dict]:
 	try:
 		response : bytes = await async_get(url)
 		return json.loads(response.decode('utf-8'))
@@ -78,7 +79,7 @@ class ComfyUI_API:
 	client_id : str
 
 	_active_ids : dict[str, bool]
-	_websocket : Optional[websockets.WebSocketClientProtocol]
+	_websocket : Optional[Any]
 
 	def __init__(self, server_address : str) -> None:
 		self.server_address = server_address
@@ -103,13 +104,15 @@ class ComfyUI_API:
 	async def queue_prompt(self, prompt : dict) -> str:
 		'''Queue the given prompt and return a prompt_id'''
 		payload = {"prompt": prompt, "client_id": self.client_id}
-		response = await post_json_response(f"http://{self.server_address}/prompt", data=payload)
-		prompt_id : str = response['prompt_id']
+		response : Optional[dict] = await post_json_response(f"http://{self.server_address}/prompt", data=payload)
+		assert response, "ComfyUI is not currently running."
+		prompt_id : Optional[str] = response.get('prompt_id')
+		assert prompt_id, "Failed to get prompt_id from ComfyUI response."
 		print(prompt_id)
 		self._active_ids[prompt_id] = False
 		return prompt_id
 
-	async def is_prompt_id_finished(self, prompt_id : str) -> Optional[bool]:
+	def is_prompt_id_finished(self, prompt_id : str) -> Optional[bool]:
 		'''Check if the given prompt_id is finished.'''
 		return self._active_ids.get(prompt_id)
 
@@ -121,9 +124,11 @@ class ComfyUI_API:
 			finished = self.is_prompt_id_finished(prompt_id)
 		return finished
 
-	async def fetch_prompt_id_history(self, prompt_id : str) -> dict:
+	async def fetch_prompt_id_history(self, prompt_id : str) -> Optional[dict]:
 		'''Fetch the generation history for the given prompt_id.'''
 		history = await get_json_response(f"http://{self.server_address}/history/{prompt_id}")
+		if history is None:
+			return None
 		return history.get(prompt_id)
 
 	async def fetch_image(self, filename : str, subfolder : str, folder_type : str) -> bytes:
@@ -135,7 +140,8 @@ class ComfyUI_API:
 	async def fetch_prompt_id_images(self, prompt_id : str, include_previews : bool = False) -> list[dict]:
 		'''Fetch the generated images for the given prompt_id if any.'''
 		images : list[dict] = list()
-		history : dict = await self.fetch_prompt_id_history(prompt_id)
+		history : Optional[dict] = await self.fetch_prompt_id_history(prompt_id)
+		if history is None: return []
 		for node_id in history['outputs']:
 			github_spookexe_was_here = history['outputs'][node_id]
 			if 'images' not in github_spookexe_was_here:
@@ -149,12 +155,12 @@ class ComfyUI_API:
 					image_data : bytes = await self.fetch_image(image['filename'], image['subfolder'], image['type'])
 					output_data['image_data'] = image_data
 				images.append(output_data)
-
 		return images
 
 	async def track_progress(self, prompt_id : str, node_ids : list[int]) -> None:
 		'''Echo the progress of the prompt_id.'''
 		finished_nodes : list[str] = []
+		assert self._websocket, "No websocket is currently connected to ComfyUI."
 		async with self._websocket as socket:
 			while True:
 				# receive content
@@ -197,8 +203,11 @@ class ComfyUI_API:
 	async def generate_images_using_workflow_prompt(self, prompt : dict, include_previews : bool = True) -> list[dict]:
 		'''Complete the full sequence of giving a prompt and receiving the images.'''
 		prompt_id : str = await self.queue_prompt(prompt)
-		await self.track_progress( prompt_id, prompt.keys() )
+		print('Track progress')
+		await self.track_progress(prompt_id, list(prompt.keys()))
+		print('Fetching images from ComfyUI')
 		images_spookexe : list[dict] = await self.fetch_prompt_id_images(prompt_id, include_previews=include_previews)
+		print('Cleaming up prompt id')
 		await self.cleanup_prompt_id(prompt_id)
 		return images_spookexe
 
@@ -226,3 +235,46 @@ class ComfyUI_API:
 		except Exception as e:
 			traceback.print_exception(e)
 			return False
+
+COMFYUI_NODE_URL : str = '127.0.0.1:8188' # change this to redirect
+
+class GenerateImagesResponse(BaseModel):
+	images : List[str]
+
+async def generate_worflow_image(workflow : dict) -> Optional[str]:
+	COMFYUI_NODE = ComfyUI_API(COMFYUI_NODE_URL)
+	await COMFYUI_NODE.is_available()
+	await COMFYUI_NODE.open_websocket()
+	image_array : list[dict] = await COMFYUI_NODE.generate_images_using_workflow_prompt(workflow)
+	await COMFYUI_NODE.close_websocket()
+	if len(image_array) == 0: return None
+	raw_image : bytes = image_array[0]['image_data']
+	image = Image.open(BytesIO(raw_image))
+	b64_image : str = image_to_base64(image)
+	return b64_image
+
+app = FastAPI(title='Local Image Generation', description='This api allows local image generation with ComfyUI. Coded by @SPOOKEXE on GitHub', version="0.1.0")
+app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
+
+@app.get('/echo', description='Echo back to let the client know the api is running.')
+async def echo() -> bool:
+	return True
+
+@app.post('/generate_workflow', description='Generate a image given the generation workflow.')
+async def generate_worflow(workflow : dict) -> Optional[GenerateImagesResponse]:
+	print(workflow)
+	try:
+		image_bs4 : Optional[str] = await generate_worflow_image(workflow)
+		assert image_bs4, "Could not get the generated image from ComfyUI."
+		print('Image was generated - sending result to Abyss Diver')
+		return GenerateImagesResponse(images=[image_bs4])
+	except Exception as e:
+		print(e)
+	return None
+
+async def uvicorn_run(app : FastAPI, host : str = "127.0.0.1", port : int = 12500) -> None:
+	config = uvicorn.Config(app, host=host, port=port, access_log=False, server_header=True, date_header=False, proxy_headers=False)
+	await uvicorn.Server(config).serve()
+
+if __name__ == '__main__':
+	asyncio.run(uvicorn_run(app, host='127.0.0.1', port=12500))
