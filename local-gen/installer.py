@@ -255,27 +255,30 @@ def comfy_ui_windows(storage_directory : str) -> None:
 	assert os.path.exists(comfyui_directory), "ComfyUI failed to be cloned."
 
 	# Setup the virtual environment
-	python_command : str = get_installed_python()
 	venv_directory : str = Path(os.path.join(comfyui_directory, "venv")).as_posix()
-	activate_bat_filepath : str = Path(os.path.join(venv_directory, "Scripts", "activate.bat")).as_posix()
-	if os.path.exists(activate_bat_filepath) is False:
-		status = os.system(f"{python_command} -m venv \"{venv_directory}\"")
+	python_filepath : str = Path(os.path.join(venv_directory, "Scripts", "python.exe")).as_posix()
+	if os.path.exists(python_filepath) is False:
+		print(f'No virtual enviornment python located at: {python_filepath}')
+		print(f"{get_installed_python()} -m venv \"{venv_directory}\"")
+		status = os.system(f"{get_installed_python()} -m venv \"{venv_directory}\"")
 		assert status == 0, "Failed to create a virtual environment in the ComfyUI folder."
 
 	# Activate the venv enviornment once for a test
-	status = os.system(f"call \"{activate_bat_filepath}\"")
+	status = os.system(f"\"{python_filepath}\" --version")
 	assert status == 0, "Failed to activate the virtual environment."
 
 	# install ComfyUI/requirements.txt
+	print('Installing ComfyUI requirements.')
 	requirements_file = Path(os.path.join(comfyui_directory, "requirements.txt")).as_posix()
-	status = os.system(f"call \"{activate_bat_filepath}\" && python -m pip install -r \"{requirements_file}\"")
-	assert status == 0, "Failed to install the ComfyUI packages."
+	os.system(f"{python_filepath} -m pip install -r \"{requirements_file}\"")
 
 	# git clone custom_nodes
+	print('Cloning all custom nodes.')
 	custom_nodes_folder = Path(os.path.join(comfyui_directory, "custom_nodes")).as_posix()
 	clone_custom_nodes_to_folder(custom_nodes_folder)
 
 	# pip install custom_nodes requirements.txt
+	print('Installing custom nodes requirements.')
 	for folder_name in os.listdir(custom_nodes_folder):
 		if os.path.isdir(Path(os.path.join(custom_nodes_folder, folder_name)).as_posix()) is False:
 			continue # not a folder
@@ -283,8 +286,8 @@ def comfy_ui_windows(storage_directory : str) -> None:
 		print(folder_requirements)
 		if os.path.exists(folder_requirements) is False:
 			continue # cannot find requirements.txt
-		status = os.system(f"call \"{activate_bat_filepath}\" && python -m pip install -r \"{folder_requirements}\"")
-		assert status == 0, f"Failed to install the {folder_name} packages."
+		print(f'Installing {folder_name} requirements.')
+		os.system(f"{python_filepath} -m pip install -r \"{folder_requirements}\"")
 
 	# download all checkpoint models
 	models_folder = Path(os.path.join(comfyui_directory, "models")).as_posix()
@@ -296,13 +299,13 @@ def comfy_ui_windows(storage_directory : str) -> None:
 
 	arguments = ["--windows-standalone-build", "--disable-auto-launch"]
 
+	print('Askung user for GPU device.')
 	device_n = ask_user_for_gpu_device()
 	if device_n == 0:
 		arguments.append("--cpu")
 	elif device_n == 1:
 		try:
-			import torch
-			assert torch.cuda.is_available(), "Cuda is not available."
+			assert os.system(f"{python_filepath} -c \"import torch\"") == 0, "Torch failed to import."
 		except:
 			print("Installing torch torchaudio and torchvision with CUDA acceleration.")
 			print("Please open a new terminal, type 'nvidia-smi' and find the CUDA Version: XX.X.")
@@ -316,21 +319,21 @@ def comfy_ui_windows(storage_directory : str) -> None:
 			else:
 				print("Unknown CUDA! Defaulting to CUDA 12.4 (latest).")
 				index_url = "https://download.pytorch.org/whl/cu124"
-			command = f"python -m pip install --upgrade torch torchaudio torchvision --index-url {index_url}"
+			command = f"{python_filepath} -m pip install --upgrade torch torchaudio torchvision --index-url {index_url}"
 			print(f"Install command for torch: {command}")
-			_ = os.system(f"call \"{activate_bat_filepath}\" && {command}")
+			_ = os.system(command)
 			print(f"Failed to install torch packages with cuda acceleration of url {index_url}.")
 			print(f"Installed {index_url} cuda acceleration for torch.")
 		arguments.append("--lowvram") # for the sake of compatability across all devices
 
 	# start comfyui
 	main_py = Path(os.path.join(comfyui_directory, "main.py")).as_posix()
-	command1_args = [activate_bat_filepath, '&&', python_command, main_py] + arguments
+	command1_args = [python_filepath, main_py] + arguments
 	print("Running ComfyUI with the following commands:")
 	print(command1_args)
 
 	proxy_py : str = Path(os.path.join(os.path.dirname(os.path.abspath(__file__)), "proxy.py")).as_posix()
-	command2_args = [python_command, proxy_py]
+	command2_args = [python_filepath, proxy_py]
 	print("Running Proxy with the following commands:")
 	print(command2_args)
 
@@ -365,24 +368,23 @@ def comfyui_download_mac_linux_shared(storage_directory : str) -> None:
 	assert os.path.exists(comfyui_directory), "ComfyUI failed to be cloned."
 
 	# Setup the virtual environment
-	python_command : str = get_installed_python()
 	venv_directory : str = Path(os.path.join(comfyui_directory, "venv")).as_posix()
-	activate_bat_filepath : str = Path(os.path.join(venv_directory, "bin", "activate")).as_posix()
-	if os.path.exists(activate_bat_filepath) is False:
-		status = os.system(f"{python_command} -m venv \"{venv_directory}\"")
+	python_filepath : str = Path(os.path.join(venv_directory, "bin", "python")).as_posix()
+	if os.path.exists(python_filepath) is False:
+		status = os.system(f"{get_installed_python()} -m venv \"{venv_directory}\"")
 		assert status == 0, "Failed to create a virtual environment in the ComfyUI folder."
 
-		print('Giving the venv activate file the permissions needed to execute.')
-		os.system(f'chmod +x \"{activate_bat_filepath}\"')
+		print('Giving the venv python file the permissions needed to execute.')
+		os.system(f'chmod +x \"{python_filepath}\"')
 
 	# Activate the venv enviornment once for a test
-	status = os.system(f"\"{activate_bat_filepath}\"")
+	status = os.system(f"{python_filepath} --version")
 	assert status == 0, "Failed to activate the virtual environment (permission error)."
 
 	# install ComfyUI/requirements.txt
+	print('Installing ComfyUI requirements')
 	requirements_file = Path(os.path.join(comfyui_directory, "requirements.txt")).as_posix()
-	status = os.system(f"\"{activate_bat_filepath}\" && {python_command} -m pip install -r \"{requirements_file}\"")
-	# assert status == 0, "Failed to install the ComfyUI packages."
+	os.system(f"{python_filepath} -m pip install -r \"{requirements_file}\"")
 
 	# git clone custom_nodes
 	custom_nodes_folder = Path(os.path.join(comfyui_directory, "custom_nodes")).as_posix()
@@ -396,8 +398,8 @@ def comfyui_download_mac_linux_shared(storage_directory : str) -> None:
 		print(folder_requirements)
 		if os.path.exists(folder_requirements) is False:
 			continue # cannot find requirements.txt
-		status = os.system(f"\"{activate_bat_filepath}\" && {python_command} -m pip install -r \"{folder_requirements}\"")
-		# assert status == 0, f"Failed to install the {folder_name} packages."
+		print(f'Installing {folder_name} custom_node requirements')
+		os.system(f"{python_filepath} -m pip install -r \"{folder_requirements}\"")
 
 	# download all checkpoint models
 	models_folder = Path(os.path.join(comfyui_directory, "models")).as_posix()
@@ -409,18 +411,17 @@ def comfyui_download_mac_linux_shared(storage_directory : str) -> None:
 
 def start_comfyui_linux_mac_shared(comfyui_directory : str, arguments : list[str]) -> None:
 	# start comfyui
-	python_command : str = get_installed_python()
 	venv_directory : str = Path(os.path.join(comfyui_directory, "venv")).as_posix()
-	activate_bat_filepath : str = Path(os.path.join(venv_directory, "bin", "activate")).as_posix()
+	python_filepath : str = Path(os.path.join(venv_directory, "bin", "python")).as_posix()
 
 	main_py = Path(os.path.join(comfyui_directory, "main.py")).as_posix()
 
-	command1_args = [activate_bat_filepath, '&&', python_command, main_py] + arguments
+	command1_args = [python_filepath, main_py] + arguments
 	print("Running ComfyUI with the following commands:")
 	print(command1_args)
 
 	proxy_py : str = Path(os.path.join(os.path.dirname(os.path.abspath(__file__)), "proxy.py")).as_posix()
-	command2_args = [python_command, proxy_py]
+	command2_args = [python_filepath, proxy_py]
 	print("Running Proxy with the following commands:")
 	print(command2_args)
 
