@@ -38,13 +38,17 @@ import re
 def get_python_and_version() -> tuple[str, str]:
 	for cmd in ["python3.10", "python3.11", "python3", "python", "py"]:
 		try:
-			result = subprocess.run([cmd, "--version"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, capture_output=True, text=True, check=True)
-			print(f"Command: {cmd}, Output: {result.stdout.strip()}")
-			version : Optional[re.Match[str]] = re.match("Python (.+)", result.stdout) # type: ignore
+			result = subprocess.run([cmd, "--version"], capture_output=True, text=True, check=True)
+			print(f"Command: {cmd}")
+			print(f"Output: {result.stdout.strip()}")
+			version : Optional[re.Match[str]] = re.fullmatch("Python (.+)", result.stdout) # type: ignore
+			print(version)
 			assert version and version.group(0), f"No version was output by python: {result.stdout}"
-			if ("3.10" not in version.group(0)) and ("3.11" not in version.group(0)):
-				continue
-			return cmd, version.group(0)
+			print(version.group(0))
+			print("3.10" in version.group(0))
+			print("3.11" in version.group(0))
+			if "3.10" in version.group(0) or "3.11" in version.group(0):
+				return cmd, version.group(0)
 		except Exception as e:
 			result = None
 			print(e)
