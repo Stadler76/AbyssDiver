@@ -84,8 +84,18 @@ COMFY_UI_AMD_GPU_REPOSITORY_URL : str = "https://github.com/patientx/ComfyUI-Zlu
 
 COMFYUI_CUSTOM_NODES : list[str] = ["https://github.com/ltdrdata/ComfyUI-Manager", "https://github.com/john-mnz/ComfyUI-Inspyrenet-Rembg"]
 
-HUGGINGFACE_CHECKPOINTS_TO_DOWNLOAD : dict[str, str] = {"hassakuXLPony_v13BetterEyesVersion.safetensors" : "https://huggingface.co/FloricSpacer/AbyssDiverModels/resolve/main/hassakuXLPony_v13BetterEyesVersion.safetensors?download=true"}
-HUGGINGFACE_LORAS_TO_DOWNLOAD : dict[str, str] = {"DallE3-magik.safetensors" : "https://huggingface.co/FloricSpacer/AbyssDiverModels/resolve/main/DallE3-magik.safetensors?download=true"}
+HUGGINGFACE_CHECKPOINTS_TO_DOWNLOAD : dict[str, Optional[str]] = {
+	# SD1.5
+	"hassakuHentaiModel_v13.safetensors" : None,
+	# PonyXL
+	"hassakuXLPony_v13BetterEyesVersion.safetensors" : "https://huggingface.co/FloricSpacer/AbyssDiverModels/resolve/main/hassakuXLPony_v13BetterEyesVersion.safetensors?download=true"
+}
+HUGGINGFACE_LORAS_TO_DOWNLOAD : dict[str, Optional[str]] = {
+	# SD1.5
+	"midjourneyanime.safetensors" : None,
+	# PonyXL
+	"DallE3-magik.safetensors" : "https://huggingface.co/FloricSpacer/AbyssDiverModels/resolve/main/DallE3-magik.safetensors?download=true"
+}
 
 CUSTOM_COMMAND_LINE_ARGS_FOR_COMFYUI : list[str] = [] # custom arguments to pass to comfyui
 
@@ -208,6 +218,9 @@ def comfy_ui_experimental_amd_windows(storage_directory : str) -> None:
 
 def download_checkpoints_to_subfolder(models_folder : str) -> None:
 	for filename, checkpoint_url in HUGGINGFACE_CHECKPOINTS_TO_DOWNLOAD.items():
+		if checkpoint_url is None:
+			print(filename, 'checkpoint has no download set yet.')
+			continue
 		checkpoint_filepath = Path(os.path.join(models_folder, "checkpoints", filename)).as_posix()
 		if os.path.exists(checkpoint_filepath) is True:
 			print(f"Checkpoint {filename} is already installed.")
@@ -221,6 +234,9 @@ def download_checkpoints_to_subfolder(models_folder : str) -> None:
 
 def download_loras_to_subfolder(models_folder : str) -> None:
 	for filename, lora_url in HUGGINGFACE_LORAS_TO_DOWNLOAD.items():
+		if lora_url is None:
+			print(filename, 'lora has no download set yet.')
+			continue
 		lora_filepath = Path(os.path.join(models_folder, "loras", filename)).as_posix()
 		if os.path.exists(lora_filepath) is True:
 			print(f"Checkpoint {filename} is already installed.")
