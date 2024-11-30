@@ -264,7 +264,8 @@ def comfy_ui_windows(storage_directory : str) -> None:
 
 	# install proxy requirements
 	print('Installing proxy requirements.')
-	os.system(f"{python_filepath} -m pip install tqdm requests fastapi pydantic pillow websocket-client aiohttp uvicorn websockets")
+	packages = ["tqdm", "requests", "fastapi", "pydantic", "pillow", "websocket-client", "aiohttp", "uvicorn", "websockets"]
+	subprocess.run([python_filepath, "-m", "pip", "install"] + packages, check=True)
 
 	# install ComfyUI/requirements.txt
 	print('Installing ComfyUI requirements.')
@@ -304,7 +305,8 @@ def comfy_ui_windows(storage_directory : str) -> None:
 		arguments.append("--cpu")
 	elif device_n == 1:
 		try:
-			assert os.system(f'{python_filepath} -c "import torch; assert torch.cuda.is_available(), \'cuda not available\'"') == 0, "Torch failed to import."
+			process = subprocess.run([python_filepath, "-c" "import torch; assert torch.cuda.is_available(), \'cuda not available\'"], check=True)
+			assert process.returncode == 0, "Torch failed to import."
 		except:
 			print("Installing torch torchaudio and torchvision with CUDA acceleration.")
 			print("Please open a new terminal, type 'nvidia-smi' and find the CUDA Version: XX.X.")
@@ -318,10 +320,7 @@ def comfy_ui_windows(storage_directory : str) -> None:
 			else:
 				print("Unknown CUDA! Defaulting to CUDA 12.4 (latest).")
 				index_url = "https://download.pytorch.org/whl/cu124"
-			command = f"{python_filepath} -m pip install --upgrade torch torchaudio torchvision --index-url {index_url}"
-			print(f"Install command for torch: {command}")
-			_ = os.system(command)
-			print(f"Failed to install torch packages with cuda acceleration of url {index_url}.")
+			_ = subprocess.run([python_filepath, "-m", "pip", "install", "--upgrade", "torch", "torchaudio", "torchvision", "--index-url", index_url], check=True)
 			print(f"Installed {index_url} cuda acceleration for torch.")
 		arguments.append("--lowvram") # for the sake of compatability across all devices
 
