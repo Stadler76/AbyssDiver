@@ -162,14 +162,6 @@ def ask_user_for_gpu_device() -> int:
 	if input("Are you using a NVIDIA graphics card? (y/n)") == "y":
 		return 1 # NVIDIA cuda
 
-	if input("Are you using a AMD graphics card? (y/n)") == "y":
-		print("AMD is not supported at the moment. Using CPU instead.")
-		return 0 # AMD
-
-	if input("Are you using a Intel graphics card? (y/n)") == "y":
-		print("Intel is not supported at the moment. Using CPU instead.")
-		return 0 # Intel
-
 	print("Due to no device being supported, CPU will automatically be selected.")
 	return 0
 
@@ -267,6 +259,10 @@ def comfy_ui_windows(storage_directory : str) -> None:
 	status = os.system(f"\"{python_filepath}\" --version")
 	assert status == 0, "Failed to activate the virtual environment."
 
+	# install proxy requirements
+	print('Installing proxy requirements.')
+	os.system(f"{python_filepath} -m pip install tqdm requests fastapi pydantic pillow websocket-client aiohttp uvicorn websockets")
+
 	# install ComfyUI/requirements.txt
 	print('Installing ComfyUI requirements.')
 	requirements_file = Path(os.path.join(comfyui_directory, "requirements.txt")).as_posix()
@@ -299,13 +295,13 @@ def comfy_ui_windows(storage_directory : str) -> None:
 
 	arguments = ["--windows-standalone-build", "--disable-auto-launch"]
 
-	print('Askung user for GPU device.')
+	print('Asking user for GPU device.')
 	device_n = ask_user_for_gpu_device()
 	if device_n == 0:
 		arguments.append("--cpu")
 	elif device_n == 1:
 		try:
-			assert os.system(f"{python_filepath} -c \"import torch\"") == 0, "Torch failed to import."
+			assert os.system(f'{python_filepath} -c "import torch; assert torch.cuda.is_available(), \'cuda not available\'"') == 0, "Torch failed to import."
 		except:
 			print("Installing torch torchaudio and torchvision with CUDA acceleration.")
 			print("Please open a new terminal, type 'nvidia-smi' and find the CUDA Version: XX.X.")
@@ -380,6 +376,9 @@ def comfyui_download_mac_linux_shared(storage_directory : str) -> None:
 	# Activate the venv enviornment once for a test
 	status = os.system(f"{python_filepath} --version")
 	assert status == 0, "Failed to activate the virtual environment (permission error)."
+
+	# install proxy requirements
+	os.system(f"{python_filepath} -m pip install tqdm requests fastapi pydantic pillow websocket-client aiohttp uvicorn websockets")
 
 	# install ComfyUI/requirements.txt
 	print('Installing ComfyUI requirements')
@@ -468,8 +467,6 @@ def update_python_pip() -> None:
 	assert ("3.10" in version) or ("3.11" in version), "You must have python versions 3.10.X or 3.11.X. Please reinstall python."
 	status = os.system(f"{python_cmd} -m pip install --upgrade pip")
 	assert status == 0, "'pip' failed to update. Try running again."
-	status = os.system(f"{python_cmd} -m pip install pillow fastapi pydantic uvicorn websocket-client")
-	assert status == 0, "Failed to install pip packages."
 
 def main() -> None:
 	assert_path_length_limit()

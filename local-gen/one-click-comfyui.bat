@@ -49,8 +49,6 @@ echo Upgrading pip.
 %PYTHON_CMD% -m pip install --upgrade pip
 echo Installing installer.py packages.
 %PYTHON_CMD% -m pip install tqdm requests
-echo Installing proxy packages.
-%PYTHON_CMD% -m pip install pydantic pillow websocket-client aiohttp fastapi requests_toolbelt uvicorn[standard]
 
 :: Run the installer.py
 echo Running the installer.py

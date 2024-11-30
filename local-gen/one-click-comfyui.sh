@@ -44,8 +44,6 @@ fi
 # Install required Python packages
 echo "Installing required installer.py packages."
 $PYTHON_CMD -m pip install requests tqdm
-echo "Installing proxy packages."
-$PYTHON_CMD -m pip install pydantic pillow websocket-client aiohttp
 if [ $? -ne 0 ]; then
 	echo "Failed to install the required packages. Press enter to exit."
 	read -p ""
