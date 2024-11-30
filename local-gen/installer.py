@@ -36,9 +36,9 @@ import time
 import re
 
 def get_python_and_version() -> tuple[str, str]:
-	for cmd in ["py", "python", "python3", "python3.10", "python3.11"]:
+	for cmd in ["python3.10", "python3.11", "python3", "python", "py"]:
 		try:
-			result = subprocess.run([cmd, "--version"], capture_output=True, text=True, check=True)
+			result = subprocess.run([cmd, "--version"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, capture_output=True, text=True, check=True)
 			print(f"Command: {cmd}, Output: {result.stdout.strip()}")
 			version : Optional[re.Match[str]] = re.match("Python (.+)", result.stdout) # type: ignore
 			assert version and version.group(0), f"No version was output by python: {result.stdout}"
@@ -46,6 +46,7 @@ def get_python_and_version() -> tuple[str, str]:
 				continue
 			return cmd, version.group(0)
 		except Exception as e:
+			result = None
 			print(e)
 			continue
 	raise Exception("No python version is installed - please install python. Use versions 3.10.X or 3.11.X.")
