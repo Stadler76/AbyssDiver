@@ -1125,7 +1125,7 @@ setup.comfyUI_GenerateStatParameters = function(characterData) {
 			excludedBy:[]
 		},
 		"nipples":{
-			positive:["normal nipples", `${range.lactation}`],
+			positive:[`normal nipples ${range.lactation}`],
 			negative:[],
 			excludedBy:[]
 		},
