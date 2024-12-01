@@ -1085,7 +1085,7 @@ setup.comfyUI_GenerateStatParameters = function(characterData) {
 			excludedBy:[]
 		},
 		"background":{
-			positive:["(dark grey background)", "blank background", "no foreground", ],
+			positive:["(dark grey background)", "blank background", "no foreground"],
 			negative:["distorted light"],
 			excludedBy:[]
 		},
@@ -1125,7 +1125,7 @@ setup.comfyUI_GenerateStatParameters = function(characterData) {
 			excludedBy:[]
 		},
 		"nipples":{
-			positive:[`normal nipples ${range.lactation}`],
+			positive:[`normal nipples${range.lactation}`],
 			negative:[],
 			excludedBy:[]
 		},
