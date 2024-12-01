@@ -36,19 +36,22 @@ import time
 import re
 
 def get_python_and_version() -> tuple[str, str]:
-	for cmd in ["py", "python", "python3", "python3.10", "python3.11"]:
+	for cmd in ["python3.10", "python3.11", "python3", "python", "py"]:
 		try:
 			result = subprocess.run([cmd, "--version"], capture_output=True, text=True, check=True)
-			print(f"Command: {cmd}, Output: {result.stdout.strip()}")
-			version : Optional[re.Match[str]] = re.match("Python (.+)", result.stdout) # type: ignore
-			assert version and version.group(0), f"No version was output by python: {result.stdout}"
-			if ("3.10" not in version.group(0)) and ("3.11" not in version.group(0)):
-				continue
-			return cmd, version.group(0)
+			print(f"Command: {cmd}")
+			print(f"Output: {result.stdout.strip()}")
+			version = re.search(r"Python (\d+\.\d+\.\d+)", result.stdout)
+			if version:
+				print(f"Extracted Version: {version.group(1)}")
+				if version.group(1).startswith("3.10") or version.group(1).startswith("3.11"):
+					return cmd, version.group(1)
+			else:
+				print("No version match found.")
 		except Exception as e:
-			print(e)
+			print(f"Command '{cmd}' failed: {e}")
 			continue
-	raise Exception("No python version is installed - please install python. Use versions 3.10.X or 3.11.X.")
+	raise Exception("No suitable Python version is installed - please install Python 3.10.X or 3.11.X.")
 
 def get_installed_python() -> str:
 	cmd, _ = get_python_and_version()
@@ -81,8 +84,18 @@ COMFY_UI_AMD_GPU_REPOSITORY_URL : str = "https://github.com/patientx/ComfyUI-Zlu
 
 COMFYUI_CUSTOM_NODES : list[str] = ["https://github.com/ltdrdata/ComfyUI-Manager", "https://github.com/john-mnz/ComfyUI-Inspyrenet-Rembg"]
 
-HUGGINGFACE_CHECKPOINTS_TO_DOWNLOAD : dict[str, str] = {"hassakuXLPony_v13BetterEyesVersion.safetensors" : "https://huggingface.co/FloricSpacer/AbyssDiverModels/resolve/main/hassakuXLPony_v13BetterEyesVersion.safetensors?download=true"}
-HUGGINGFACE_LORAS_TO_DOWNLOAD : dict[str, str] = {"DallE3-magik.safetensors" : "https://huggingface.co/FloricSpacer/AbyssDiverModels/resolve/main/DallE3-magik.safetensors?download=true"}
+HUGGINGFACE_CHECKPOINTS_TO_DOWNLOAD : dict[str, Optional[str]] = {
+	# SD1.5
+	"hassakuHentaiModel_v13.safetensors" : None,
+	# PonyXL
+	"hassakuXLPony_v13BetterEyesVersion.safetensors" : "https://huggingface.co/FloricSpacer/AbyssDiverModels/resolve/main/hassakuXLPony_v13BetterEyesVersion.safetensors?download=true"
+}
+HUGGINGFACE_LORAS_TO_DOWNLOAD : dict[str, Optional[str]] = {
+	# SD1.5
+	"midjourneyanime.safetensors" : None,
+	# PonyXL
+	"DallE3-magik.safetensors" : "https://huggingface.co/FloricSpacer/AbyssDiverModels/resolve/main/DallE3-magik.safetensors?download=true"
+}
 
 CUSTOM_COMMAND_LINE_ARGS_FOR_COMFYUI : list[str] = [] # custom arguments to pass to comfyui
 
@@ -205,6 +218,9 @@ def comfy_ui_experimental_amd_windows(storage_directory : str) -> None:
 
 def download_checkpoints_to_subfolder(models_folder : str) -> None:
 	for filename, checkpoint_url in HUGGINGFACE_CHECKPOINTS_TO_DOWNLOAD.items():
+		if checkpoint_url is None:
+			print(filename, 'checkpoint has no download set yet.')
+			continue
 		checkpoint_filepath = Path(os.path.join(models_folder, "checkpoints", filename)).as_posix()
 		if os.path.exists(checkpoint_filepath) is True:
 			print(f"Checkpoint {filename} is already installed.")
@@ -218,6 +234,9 @@ def download_checkpoints_to_subfolder(models_folder : str) -> None:
 
 def download_loras_to_subfolder(models_folder : str) -> None:
 	for filename, lora_url in HUGGINGFACE_LORAS_TO_DOWNLOAD.items():
+		if lora_url is None:
+			print(filename, 'lora has no download set yet.')
+			continue
 		lora_filepath = Path(os.path.join(models_folder, "loras", filename)).as_posix()
 		if os.path.exists(lora_filepath) is True:
 			print(f"Checkpoint {filename} is already installed.")
@@ -261,12 +280,13 @@ def comfy_ui_windows(storage_directory : str) -> None:
 
 	# install proxy requirements
 	print('Installing proxy requirements.')
-	os.system(f"{python_filepath} -m pip install tqdm requests fastapi pydantic pillow websocket-client aiohttp uvicorn websockets")
+	packages = ["tqdm", "requests", "fastapi", "pydantic", "pillow", "websocket-client", "aiohttp", "uvicorn", "websockets"]
+	subprocess.run([python_filepath, "-m", "pip", "install"] + packages, check=True)
 
 	# install ComfyUI/requirements.txt
 	print('Installing ComfyUI requirements.')
 	requirements_file = Path(os.path.join(comfyui_directory, "requirements.txt")).as_posix()
-	os.system(f"{python_filepath} -m pip install -r \"{requirements_file}\"")
+	subprocess.run([python_filepath, "-m", "pip", "install", "-r", str(requirements_file)], check=True)
 
 	# git clone custom_nodes
 	print('Cloning all custom nodes.')
@@ -283,7 +303,7 @@ def comfy_ui_windows(storage_directory : str) -> None:
 		if os.path.exists(folder_requirements) is False:
 			continue # cannot find requirements.txt
 		print(f'Installing {folder_name} requirements.')
-		os.system(f"{python_filepath} -m pip install -r \"{folder_requirements}\"")
+		subprocess.run([python_filepath, "-m", "pip", "install", "-r", str(folder_requirements)], check=True)
 
 	# download all checkpoint models
 	models_folder = Path(os.path.join(comfyui_directory, "models")).as_posix()
@@ -301,7 +321,8 @@ def comfy_ui_windows(storage_directory : str) -> None:
 		arguments.append("--cpu")
 	elif device_n == 1:
 		try:
-			assert os.system(f'{python_filepath} -c "import torch; assert torch.cuda.is_available(), \'cuda not available\'"') == 0, "Torch failed to import."
+			process = subprocess.run([python_filepath, "-c" "import torch; assert torch.cuda.is_available(), \'cuda not available\'"], check=True)
+			assert process.returncode == 0, "Torch failed to import."
 		except:
 			print("Installing torch torchaudio and torchvision with CUDA acceleration.")
 			print("Please open a new terminal, type 'nvidia-smi' and find the CUDA Version: XX.X.")
@@ -315,10 +336,7 @@ def comfy_ui_windows(storage_directory : str) -> None:
 			else:
 				print("Unknown CUDA! Defaulting to CUDA 12.4 (latest).")
 				index_url = "https://download.pytorch.org/whl/cu124"
-			command = f"{python_filepath} -m pip install --upgrade torch torchaudio torchvision --index-url {index_url}"
-			print(f"Install command for torch: {command}")
-			_ = os.system(command)
-			print(f"Failed to install torch packages with cuda acceleration of url {index_url}.")
+			_ = subprocess.run([python_filepath, "-m", "pip", "install", "--upgrade", "torch", "torchaudio", "torchvision", "--index-url", index_url], check=True)
 			print(f"Installed {index_url} cuda acceleration for torch.")
 		arguments.append("--lowvram") # for the sake of compatability across all devices
 

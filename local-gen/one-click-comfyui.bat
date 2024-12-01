@@ -46,13 +46,13 @@ if %errorlevel% neq 0 (
 
 :: Install required Python packages
 echo Upgrading pip.
-%PYTHON_CMD% -m pip install --upgrade pip
+"%PYTHON_CMD%" -m pip install --upgrade pip
 echo Installing installer.py packages.
-%PYTHON_CMD% -m pip install tqdm requests
+"%PYTHON_CMD%" -m pip install tqdm requests
 
 :: Run the installer.py
 echo Running the installer.py
-call %PYTHON_CMD% installer.py
+call "%PYTHON_CMD%" installer.py
 
 echo Press enter to exit...
 pause
