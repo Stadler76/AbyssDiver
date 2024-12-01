@@ -94,8 +94,8 @@ const SIMPLE_T2I_PORTRAIT_WORKFLOW = {
 	"11": {
 		"inputs": {
 			"seed": 0,
-			"steps": 35,
-			"cfg": 7,
+			"steps": 30,
+			"cfg": 9,
 			"sampler_name": "euler",
 			"scheduler": "normal",
 			"denoise": 1,
@@ -164,7 +164,7 @@ const SIMPLE_T2I_PORTRAIT_WORKFLOW_REMOVE_BACKGROUND = {
 		"inputs": {
 			"seed": -1,
 			"steps": 35,
-			"cfg": 7,
+			"cfg": 9,
 			"sampler_name": "euler",
 			"scheduler": "normal",
 			"denoise": 1,
@@ -219,7 +219,7 @@ const SIMPLE_T2I_PORTRAIT_WORKFLOW_REMOVE_BACKGROUND = {
 	},
 	"17": {
 		"inputs": {
-			"threshold": 0.8,
+			"threshold": 0.9,
 			"torchscript_jit": "default",
 			"image": [
 				"15",
@@ -243,6 +243,165 @@ const SIMPLE_T2I_PORTRAIT_WORKFLOW_REMOVE_BACKGROUND = {
 		"_meta": {
 			"title": "Save Image"
 		}
+	}
+}
+
+const SCENE_GENERATION_WITH_MIDAS_WORKFLOW = {
+	"1": {
+		"inputs": {"image": "00007-4032934194.png","upload": "image"},
+		"class_type": "LoadImage",
+		"_meta": {"title": "Load Image"}
+	},
+	"2": {
+		"inputs": {"a": 6.2832,"bg_threshold": 0.1,"resolution": 512,"image": ["1",0]},
+		"class_type": "MiDaS-DepthMapPreprocessor",
+		"_meta": {"title": "MiDaS Depth Map"}
+	},
+	"3": {
+		"inputs": {"images": ["2",0]},
+		"class_type": "PreviewImage",
+		"_meta": {"title": "Preview Image"}
+	},
+	"5": {
+		"inputs": {"ckpt_name": "ThinkDiffusionXL.safetensors"},
+		"class_type": "CheckpointLoaderSimple",
+		"_meta": {"title": "Load Checkpoint"}
+	},
+	"7": {
+		"inputs": {"control_net_name": "control-lora-depth-rank256.safetensors"},
+		"class_type": "ControlNetLoader",
+		"_meta": {"title": "Load ControlNet Model"}
+	},
+	"8": {
+		"inputs": {
+			"strength": 1,
+			"start_percent": 0,
+			"end_percent": 1,
+			"positive": ["9",0],
+			"negative": ["10",0],
+			"control_net": ["7",0],
+			"image": ["2",0]
+		},
+		"class_type": "ControlNetApplyAdvanced",
+		"_meta": {"title": "Apply ControlNet (Advanced)"}
+	},
+	"9": {
+		"inputs": {"text": "a futuristic cyborg on an alien spaceship","clip": ["5",1]},
+		"class_type": "CLIPTextEncode",
+		"_meta": {"title": "Positive Prompt"}
+	},
+	"10": {
+		"inputs": {"text": "","clip": ["5",1]},
+		"class_type": "CLIPTextEncode",
+		"_meta": {"title": "Negative Prompt"}
+	},
+	"11": {
+		"inputs": {
+			"seed": 961176784184834,
+			"steps": 35,
+			"cfg": 7,
+			"sampler_name": "dpmpp_3m_sde_gpu",
+			"scheduler": "exponential",
+			"denoise": 1,
+			"model": ["5",0],
+			"positive": ["8",0],
+			"negative": ["8",1],
+			"latent_image": ["12",0]
+		},
+		"class_type": "KSampler",
+		"_meta": {"title": "KSampler"}
+	},
+	"12": {
+		"inputs": {"width": 1024,"height": 1024,"batch_size": 1},
+		"class_type": "EmptyLatentImage",
+		"_meta": {"title": "Empty Latent Image"}
+	},
+	"15": {
+		"inputs": {"samples": ["11",0], "vae": ["5",2]},
+		"class_type": "VAEDecode",
+		"_meta": {"title": "VAE Decode"}
+	},
+	"16": {
+		"inputs": {"filename_prefix": "ComfyUI", "images": ["15",0]},
+		"class_type": "SaveImage",
+		"_meta": {"title": "Save Image"}
+	}
+}
+
+const SCENE_GENERATION_WITHOUT_MIDAS_WORKFLOW = {
+	"1": {
+		"inputs": {"image": "00007-4032934194.png","upload": "image"},
+		"class_type": "LoadImage",
+		"_meta": {"title": "Load Image"}
+	},
+	"3": {
+		"inputs": {"images": ["1",0]},
+		"class_type": "PreviewImage",
+		"_meta": {"title": "Preview Image"}
+	},
+	"5": {
+		"inputs": {"ckpt_name": "ThinkDiffusionXL.safetensors"},
+		"class_type": "CheckpointLoaderSimple",
+		"_meta": {"title": "Load Checkpoint"}
+	},
+	"7": {
+		"inputs": {"control_net_name": "control-lora-depth-rank256.safetensors"},
+		"class_type": "ControlNetLoader",
+		"_meta": {"title": "Load ControlNet Model"}
+	},
+	"8": {
+		"inputs": {
+			"strength": 1,
+			"start_percent": 0,
+			"end_percent": 1,
+			"positive": ["9",0],
+			"negative": ["10",0],
+			"control_net": ["7",0],
+			"image": ["1",0]
+		},
+		"class_type": "ControlNetApplyAdvanced",
+		"_meta": {"title": "Apply ControlNet (Advanced)"}
+	},
+	"9": {
+		"inputs": {"text": "a futuristic cyborg on an alien spaceship","clip": ["5",1]},
+		"class_type": "CLIPTextEncode",
+		"_meta": {"title": "Positive Prompt"}
+	},
+	"10": {
+		"inputs": {"text": "","clip": ["5",1]},
+		"class_type": "CLIPTextEncode",
+		"_meta": {"title": "Negative Prompt"}
+	},
+	"11": {
+		"inputs": {
+			"seed": 961176784184834,
+			"steps": 35,
+			"cfg": 7,
+			"sampler_name": "dpmpp_3m_sde_gpu",
+			"scheduler": "exponential",
+			"denoise": 1,
+			"model": ["5",0],
+			"positive": ["8",0],
+			"negative": ["8",1],
+			"latent_image": ["12",0]
+		},
+		"class_type": "KSampler",
+		"_meta": {"title": "KSampler"}
+	},
+	"12": {
+		"inputs": {"width": 1024,"height": 1024,"batch_size": 1},
+		"class_type": "EmptyLatentImage",
+		"_meta": {"title": "Empty Latent Image"}
+	},
+	"15": {
+		"inputs": {"samples": ["11",0], "vae": ["5",2]},
+		"class_type": "VAEDecode",
+		"_meta": {"title": "VAE Decode"}
+	},
+	"16": {
+		"inputs": {"filename_prefix": "ComfyUI", "images": ["15",0]},
+		"class_type": "SaveImage",
+		"_meta": {"title": "Save Image"}
 	}
 }
 
@@ -483,7 +642,7 @@ setup.POSITIVE_CATEGORICAL_TAGGING = {
 	],
 
 	"Pony Source" : [
-		"source_anime", "source_cartoon", "source_pony", "source_furry"
+		"source_anime", "source_cartoon", "source_pony", "source_fluffy"
 	],
 
 	"Ratings" : [
@@ -658,10 +817,8 @@ setup.ComfyUI_GenerateAdvancedHTMLPage = function() {
 	return html_text;
 }
 
-const PROXY_BASE_URL = "http://127.0.0.1:12500";
-
 setup.updateComfyUIStatus = async function() {
-	const url = PROXY_BASE_URL + "/echo";
+	const url = "http://127.0.0.1:12500/echo";
 
 	var is_running = false;
 
@@ -671,9 +828,7 @@ setup.updateComfyUIStatus = async function() {
 		// try display any image if any are available
 		// setup.displaySavedImage().catch(() => null)
 		setup.displayRecentGeneratedImage().catch(() => null)
-	} catch (error) {
-		console.error(error);
-	}
+	} catch (error) {}
 
 	const notificationElement = document.getElementById('comfyui-enabled');
 	notificationElement.textContent = is_running ? "ComfyUI is currently running." : "ComfyUI is NOT currently running."
@@ -731,57 +886,57 @@ function processClothingState(mc_state, mc_curses) {
 				switch (currentThreshold) {
 					case 0:
 						console.log('Initial state - No restrictions');
-						return["Modestly Dressed, Fully Clothed","modestClothing"];
+						return["fully clothed, modest","modestClothing"];
 					case 4:
 						console.log('Clothing passed 4 - No restrictions');
-						return["Fulled Clothed","normalClothing"];
+						return["normal","normalClothing"];
 					case 6:
 						console.log('Clothing passed 6 - No restrictions');
-						return["","immodestClothing"];
+						return["immodest","immodestClothing"];
 					case 8:
 						console.log('Clothing passed 8 - No restrictions');
-						return["","skimpyClothing"];
+						return["skimpy","skimpyClothing"];
 					case 10:
 						console.log('Clothing passed 10 - No restrictions');
-						return["","sluttyClothing"];
+						return["slutty","sluttyClothing"];
 				}
 				break;
 			case hasCRB && hasCRC:
 				switch (currentThreshold) {
 					case 0:
 						console.log('Initial state - Both B and C restrictions active');
-						return["","nude"];
+						return["no","nude"];
 					case 4:
 						console.log('Clothing passed 4 - Both B and C restrictions active');
-						return["","nude"];
+						return["no","nude"];
 					case 6:
 						console.log('Clothing passed 6 - Both B and C restrictions active');
-						return["","nude"];
+						return["no","nude"];
 					case 8:
 						console.log('Clothing passed 8 - Both B and C restrictions active');
-						return["","nude"];
+						return["no","nude"];
 					case 10:
 						console.log('Clothing passed 10 - Both B and C restrictions active');
-						return["","nude"];
+						return["no","nude"];
 				}
 				break;
 			case hasCRB && !hasCRC:
 				switch (currentThreshold) {
 					case 0:
 						console.log('Initial state - ClothingRestrictionB active');
-						return["Modestly Dressed, Fully Clothed","modestClothing"];
+						return["fully clothed, modest","modestClothing"];
 					case 4:
 						console.log('Clothing passed 4 - ClothingRestrictionB active');
-						return["Fulled Clothed","normalClothing"];
+						return["normal","normalClothing"];
 					case 6:
 	 					console.log('Clothing passed 6 - ClothingRestrictionB active');
-						return["","skimpyClothing"];
+						return["skimpy","skimpyClothing"];
 					case 8:
 						console.log('Clothing passed 8 - ClothingRestrictionB active');
-						return["","sluttyClothing"];
+						return["slutty","sluttyClothing"];
 					case 10:
 						console.log('Clothing passed 10 - ClothingRestrictionB active');
-						return["","sluttyClothing"];
+						return["slutty","sluttyClothing"];
 				}
 				break;
 
@@ -789,19 +944,19 @@ function processClothingState(mc_state, mc_curses) {
 				switch (currentThreshold) {
 					case 0:
 						console.log('Initial state - ClothingRestrictionC active');
-						return["","skimpyClothing"];
+						return["skimpy","skimpyClothing"];
 					case 4:
 						console.log('Clothing passed 4 - ClothingRestrictionC active');
-						return["","sluttyClothing"];
+						return["slutty","sluttyClothing"];
 					case 6:
 						console.log('Clothing passed 6 - ClothingRestrictionC active');
-						return["","sluttyClothing"];
+						return["slutty","sluttyClothing"];
 					case 8:
 						console.log('Clothing passed 8 - ClothingRestrictionC active');
-						return["","sluttyClothing"];
+						return["slutty","sluttyClothing"];
 					case 10:
 						console.log('Clothing passed 10 - ClothingRestrictionC active');
-						return["","sluttyClothing"];
+						return["slutty","sluttyClothing"];
 				}
 				break;
 		}
@@ -825,7 +980,6 @@ function processRanges(ranges) {
 }
 
 setup.comfyUI_PrepareCharacterData = function() {
-	// reset booleans
 	const mc_booleans = {
 		//clothing
 		modestClothing: false,
@@ -845,12 +999,12 @@ setup.comfyUI_PrepareCharacterData = function() {
 
 	// get the character curses
 	const mc_curses = State.variables.mc.curses;
-	// get special character data
+
 	const mc_state = {
 		'age' : State.variables.mc.appAge, //years, final calculated age
 		'gender' : State.variables.mc.gender, //0 guy, 3.5 androgynous, 7 girl
 		// 'apparent_gender' : State.variables.mc.appGender, //counts things like smell and voice, much worse metric to use 
-		'penis_size' : State.variables.mc.penisCor, //0 means none,  measured in inches
+		'penis' : State.variables.mc.penisCor, //0 means none,  measured in inches
 		// 'vagina_count' : State.variables.mc.vagina, //avoiding this for now, not enough prompt testing
 		// 'double_penis' : State.variables.mc.doublePenis, //avoiding this for now, not enough prompt testing
 		'sex' : State.variables.mc.sex, // female, male, futa
@@ -883,38 +1037,197 @@ setup.comfyUI_PrepareCharacterData = function() {
 		// 'extraMouths' : State.variables.mc.extraMouths // Not using for now, too intrusive on prompt
 		'fitness' : State.variables.mc.fit, //-2 is out of shape, 0 is normal, 2 is very fit
 	};
+	console.log(mc_state);
 
 	const mc_ranges = {
-		"sex": [mc_state.gender, [["1boy", 0],["1girl", 3.5]]],
+		"sex": [mc_state.gender, [["1guy", 0],["1girl", 3.5]]],
 		"height": [mc_state.height, [["Pixie Sized", 0], ["extremely short", 120], ["very short", 140], ["short", 150], ["below average height", 160], ["average height", 170], ["above average height", 180], ["tall", 190], ["very tall", 200], ["extremely tall", 210], ["titanic height", 300]]],
-		"penis": [mc_state.penis_size, [[["", 0]["micro penis", 0.1],["tiny penis", 2],["small penis", 3] ["below average penis", 4], ["medium penis", 5], ["above average penis", 7], ["large penis", 9], ["huge penis", 11], ["gigantic penis", 13], ["hyper penis", 15]]]],
+		"penis": [mc_state.penis, [["", 0],["micro penis", 0.1],["tiny penis", 2],["small penis", 3], ["below average penis", 4], ["medium penis", 5], ["above average penis", 7], ["large penis", 9], ["huge penis", 11], ["gigantic penis", 13], ["hyper penis", 20]]],
 		"clothing": [mc_state.libido, [["modestly dressed, fully clothed", 0], ["normal clothing" , 4], ["immodest clothing", 6], ["skimpy clothing", 8], ["slutty slothing", 10]]],
-		"fitness": [mc_state.fitness, [["fragile body", -2], ["weak body", -1], ["average body", 0], ["fit body", 1], ["very fit body", 2]]],
-		"breasts": [mc_state.breasts, [["flat chest", 0], ["flat breasts", 1], ["small breasts", 2], ["medium breasts", 3], ["large breasts", 5], ["huge breasts", 7], ["gigantic breasts", 9], ["hyper breasts", 11]]],
+		"fitness": [mc_state.fitness, [["fragile body", -2], ["weak body", -1], ["average fitness", 0], ["fit body", 1], ["very fit body", 2]]],
+		"breasts": [mc_state.breasts, [["flat chest", 0], ["flat breasts:1.7", 1], ["small breasts", 2], ["medium breasts", 3], ["large breasts", 5], ["huge breasts", 7], ["gigantic breasts", 9], ["hyper breasts", 18]]],
 		"gender": [mc_state.gender, [["hyper masculine man", 0], ["masculine man", 1], ["twink", 2], ["femboy", 3], ["tomboy", 4], ["androgynous woman", 5], ["feminine woman", 6], ["hyper feminine woman", 7]]],
-		"age": [mc_state.age, [["(elder:3), (old:3)", 0], ["young adult", 13], ["adult", 30], ["adult", 40], ["(old:1.1)", 50], ["(old:1.5), senior citizen", 60], ["(old:2), senior citizen", 70]]],
+		"age": [mc_state.age, [["(elder:3), (old:3)", 0], ["young adult", 13], ["adult", 25], [`adult ${mc_state.gender < 4 ? "Dilf" : "Milf"}`, 40], ["(old:1.1)", 50], ["(old:1.5), senior citizen", 60], ["(old:2), senior citizen", 70]]],
+		"subdom": [mc_state.subdom, [["dominant", -2], ["confident", -1], ["relaxed", 0], ["timid", 1], ["submissive", 2]]],
+		"lactation": [mc_state.lactation, [["", 0], [", lactation", 1], [", (lactation:1.3)", 2]]],
 	};
 
-	console.log(mc_ranges);
+	// console.log(mc_ranges);
 	const mc_range = processRanges(mc_ranges);
 	console.log(mc_range);
 
 	let [clothingString, clothingTrue] = processClothingState(mc_state, mc_curses);
 	mc_booleans[clothingTrue] = true;
 	mc_state.clothing = clothingString;
-	console.log(mc_state.clothing+" "+mc_booleans.modestClothing);
+	// console.log(mc_state.clothing+" "+mc_booleans.modestClothing);
 
 	// payload to send to proxy/comfyui
 	const payload = {'booleans' : mc_booleans, 'curses' : mc_curses, 'state' : mc_state, 'range' : mc_range};
 	return payload;
 }
-
-setup.comfyUI_GenerateCurseParameters = function() {
-	const characterData = setup.comfyUI_PrepareCharacterData();
+setup.comfyUI_GenerateStatParameters = function(characterData) {
+	const state = characterData.state;
+	const range = characterData.range;
+	characterData.statPrompts = {
+		"misprints":{
+			positive:[],
+			negative:["artist name","patreon", "text", "watermark", "jpeg artifacts", "signature", "username"],
+			excludedBy:[]
+		},
+		"quality":{
+			positive:["score_9", "score_8_up", "score_7_up"],
+			negative:["easynegative", "score_5_up", "score_4_up", "score_3_up", "blurry", "sd", "lowres", "worst quality", "bad art"],
+			excludedBy:[]
+		},
+		"framing":{
+			positive:["(medium close shot:1.3)", "(medium close up:1.3)", "solo", `${range.sex}`],
+			negative:["full shot", "(full body:0.3)", "(cowboy shot:0.3)", "(medium full shot:0.1)", "(hand on another's head:1.5)"],
+			excludedBy:[]
+		},
+		"background":{
+			positive:["(dark grey background)", "blank background", "no foreground", ],
+			negative:["distorted light"],
+			excludedBy:[]
+		},
+		"style":{
+			positive:["source anime", "(human body:0.5)"],
+			negative:["(3d)", "realistic", "super deformed", "(pony:1.5)", "ugly", "flat color", "abnormal", "malformed", "disfigured", "bad anatomy", "censored", "blurry"],
+			excludedBy:[]
+		},
+		"age":{
+			positive:[`(${range.age}:1.2)`],
+			negative:["toddler", "kindergartener", "(child:1.3)", "(underage:1.3)", "early teen", "shota", "loli"],
+			excludedBy:[]
+		},
+		"gender":{
+			positive:[`${range.gender}`],
+			negative:[],
+			excludedBy:[]
+		},
+		"fitness":{
+			positive:[],
+			negative:[],
+			excludedBy:[]
+		},
+		"libido":{
+			positive:[],
+			negative:[],
+			excludedBy:[]
+		},
+		"behaviour":{
+			positive:[`${range.subdom} attitude`, "standing straight"],
+			negative:[],
+			excludedBy:[]
+		},
+		"breasts":{
+			positive:[`(${range.breasts})`],
+			negative:[],
+			excludedBy:[]
+		},
+		// "nipples":{
+		// 	positive:["normal nipples", `${range.lactation}`],
+		// 	negative:[],
+		// 	excludedBy:[]
+		// },
+		"clothing":{
+			positive:[`(${state.clothing} clothing:1.2)`],
+			negative:[],
+			excludedBy:[]
+		},
+		"ears":{
+			positive:[`${state.ears} ears`],
+			negative:["(animal ears:1.2)", "(four ears:1.2)", "(extra ears:1.2)", "pointed ears", "elf ears"],
+			excludedBy:[]
+		},
+		"eyes":{
+			positive:[`${state.eyeColor} eyes`],
+			negative:["blurry eyes", "poorly drawn eyes", "asymmetrical eyes"],
+			excludedBy:[]
+		},
+		"face":{
+			positive:[],
+			negative:["blurry face", "ugly face", "poorly drawn face", "(pencil neck)", "long neck", "mutated face"],
+			excludedBy:[]
+		},
+		"hair":{
+			positive:[`${state.hair} hair`],
+			negative:[],
+			excludedBy:[]
+		},
+		"limbs":{
+			positive:["(human hands:0.5)", "(human fingers:0.5)"],
+			negative:["extra limbs", "inaccurate limb", "bad hands", "bad fingers", "missing fingers", "extra digit", "fewer digits", "wrong hand", "wrong fingers", "floating limbs", "disconnected limbs", "paws", "animal hands"],
+			excludedBy:[]
+		},
+		"mouth":{
+			positive:[],
+			negative:[],
+			excludedBy:[]
+		},
+		"penis":{
+			positive:[`${range.penis}`],
+			negative:[],
+			excludedBy:[!range.penis]
+		},
+		"pregnancy":{
+			positive:[],
+			negative:[],
+			excludedBy:[]
+		},
+		"skin":{
+			positive:[`(${state.skinColor} skin:1.2)`],
+			negative:[],
+			excludedBy:[]
+		},
+		"tail":{
+			positive:[`${state.tail} tail`],
+			negative:["Multiple tails", "2 tails", "extra tails"],
+			excludedBy:[!(state.tail)]
+		},
+		"torso":{
+			positive:[`${range.height}`, `${range.fitness}`],
+			negative:["animal body","(floating body)", "(floating torso:1.5)","long torso", "mutated skeleton", "long skeleton", "bad proportions"],
+			excludedBy:[]
+		},
+		"vulva":{
+			positive:[],
+			negative:[],
+			excludedBy:[]
+		},
+	};
+	//console.log(characterData.statPrompts);
+	Object.entries(characterData.statPrompts || {})
+		.forEach(([category, categoryData]) => {
+			characterData.statPromptArray = characterData.statPromptArray || {};
+			characterData.excluded = characterData.excluded || {};
+			
+			characterData.statPromptArray[category] = characterData.statPromptArray[category] || { positive: [], negative: [] };
+			characterData.excluded[category] = characterData.excluded[category] || { positive: [], negative: [] };
+			
+			const excludedReasons = (categoryData.excludedBy || [])
+				.map(condition => condition ? condition : null).filter(Boolean);
+			
+			['positive', 'negative'].forEach(type => {
+				(categoryData[type] || []).forEach(tag => {
+					excludedReasons.length === 0
+					? characterData.statPromptArray[category][type].push(tag)
+					: characterData.excluded[category][type].push({
+						tag: tag
+					});
+				});
+			});
+		});
+		console.log(characterData.statPromptArray);
+	return characterData;
+}
+setup.comfyUI_GenerateCurseParameters = function(characterData) {
 	const hasCurse = (curseName) => {
 		return characterData.curses.some(curse => curse.constructor.name === curseName);
 	};
-	characterData.cursePrompts = {
+	const state = characterData.state;
+	const range = characterData.range;
+	const bool = characterData.booleans;
+	characterData.cursePrompts ={
 		"ClothingRestrictionA": {
 			"affects" : {
 				"clothing":{
@@ -927,9 +1240,9 @@ setup.comfyUI_GenerateCurseParameters = function() {
 		"HairRemoval": {
 			"affects": {
 				"skin": {
-					"positive": ["waxed body", "smooth"],
-					"negative": ["(female pubic hair:2)","(male pubic hair:2)", "(facial hair:2)"],
-					"excludedBy": [],
+					"positive": ["waxed body", "smooth skin"],
+					"negative": ["(female pubic hair:1.5)","(male pubic hair:1.5)", "(facial hair:1.5)"],
+					"excludedBy": [hasCurse("MaximumFluff")],
 				},
 				"eyes": {
 					"positive": ["trimmed eyebrows"],
@@ -938,19 +1251,19 @@ setup.comfyUI_GenerateCurseParameters = function() {
 				}
 			}
 		},
-			"FreckleSpeckle": {
+		"FreckleSpeckle": {
 				"affects": {
 					"skin": {
-						"positive": ["(freckles)","(Body freckles)"],
+						"positive": ["(freckles)","(body freckles:1.1)", "(freckles on face:1.1)", "(freckles on chest:1.1)", "(freckles on arms:1.1)"],
 						"negative": [],
 						"excludedBy": [],
 					}
 			}
 		},
-		"Knife-ear": {
+		"KnifeEar": {
 			"affects": {
 				"ears": {
-					"positive": ["elf ears", "((pointed)) ears"],
+					"positive": [`pointed ${state.ears} ears`],
 					"negative": [],
 					"excludedBy": [],
 				}
@@ -968,12 +1281,12 @@ setup.comfyUI_GenerateCurseParameters = function() {
 		"FluffyEars": {
 			"affects": {
 				"ears": {
-					"positive": ["animal ears"],
-					"negative": ["normal human ears", "4 ears"],
+					"positive": ["(animal ears:1.2)", "(animal ears only)"],
+					"negative": ["(human ears:1.5)", "normal human ears", "4 ears"],
 					"excludedBy": [],
 				},
 				"hair": {
-					"positive": ["animal ears sticking out of hair"],
+					"positive": [`${state.ears} ears in hair`],
 					"negative": [],
 					"excludedBy": [],
 				}
@@ -982,8 +1295,8 @@ setup.comfyUI_GenerateCurseParameters = function() {
 		"FluffyTail": {
 			"affects": {
 				"tail": {
-					"positive": ["Furry tail"],
-					"negative": [],
+					"positive": [`${state.hair} tail fur`],
+					"negative": ["multiple tails"],
 					"excludedBy": [],
 				}
 			}
@@ -991,7 +1304,7 @@ setup.comfyUI_GenerateCurseParameters = function() {
 		"MaximumFluff": {
 			"affects": {
 				"skin": {
-					"positive": ["skin covered in fur"],
+					"positive": [`(fluffy ${state.hair} fur cover body:1.2)`],
 					"negative": [],
 					"excludedBy": [],
 				},
@@ -999,15 +1312,25 @@ setup.comfyUI_GenerateCurseParameters = function() {
 					"positive": ["fur like hair on head"],
 					"negative": [],
 					"excludedBy": [],
+				},
+				"limbs": {
+					"positive": [`fluffy ${state.hair} arms`],
+					"negative": [],
+					"excludedBy": [],
 				}
 			}
 		},
-		"Heat/Rut": {
+		"HeatRut": {
 			"affects": {
 				"behaviour": {
-					"positive": ["(heavy_breathing:1.3)","(full-face blush:1.6)","(chest blush:1.2)"],
+					"positive": ["(heavy_breathing:1.4)","(full-face blush:1.2)"],
 					"negative": [],
 					"excludedBy": [],
+				},
+				"breast":{
+					"positive": ["(chest blush:1.3)"],
+					"negative": [],
+					"excludedBy": [bool.modestClothing, bool.normalClothing],
 				},
 				"pregnancy": {
 					"positive": [],
@@ -1028,7 +1351,7 @@ setup.comfyUI_GenerateCurseParameters = function() {
 		"BlushingVirgin": {
 			"affects": {
 				"behaviour": {
-					"positive": ["blushing","shy"],
+					"positive": ["shy"],
 					"negative": [],
 					"excludedBy": [],
 				}
@@ -1048,20 +1371,25 @@ setup.comfyUI_GenerateCurseParameters = function() {
 				"clothing": {
 					"positive": ["No undergarments"],
 					"negative": ["underwear", "boxers", "briefs", "panties", "thongs", "socks", "stockings", "bra"],
-					"excludedBy": [characterData.booleans.modestClothing, characterData.booleans.normalClothing],
+					"excludedBy": [bool.modestClothing, bool.normalClothing],
 				}
 			}
 		},
-		// "PowerDom": {
-		// 	"affects": {
+		"PowerDom": {
+			"affects": {
 		// 		"behaviour": {
 		// 			"positive": ["confident", "dominatrix"],
 		// 			"negative": [],
 		// 			"excludedBy": [],
 		// 		}
-		// 	}
-		// },
-		"20/20000000": {
+				"clothing": {
+					"positive": ["dominatrix attire", "leather clothing"],
+					"negative": [],
+					"excludedBy": [hasCurse("ClothingRestrictionC")],
+				}
+			}
+		},
+		"Curse2020": {
 			"affects": {
 				"clothing": {
 					"positive": ["(large glasses)", "(glasses:1.2)"],
@@ -1126,49 +1454,64 @@ setup.comfyUI_GenerateCurseParameters = function() {
 		},
 		"Gooey": {
 			"affects": {
-				"skin": {
-					"positive": ["transparent skin", "see-through skin", "sticky skin", "slimly skin", "gooey skin"],
+				"gender": {
+					"positive": ["(slime girl:1.4)"],
 					"negative": [],
-					"excludedBy": [],
+					"excludedBy": []
+				},
+				"skin": {
+					"positive": ["(slime girl skin:1.3)", "gooey skin"],
+					"negative": [],
+					"excludedBy": []
 				},
 				"hair": {
-					"positive": ["transparent hair", "see-through hair", "sticky hair", "slimly hair", "gooey hair"],
+					"positive": ["slime girl hair", "gooey hair"],
 					"negative": [],
 					"excludedBy": [],
 				},
 				"eyes": {
-					"positive": ["transparent eyes", "see-through eyes", "sticky eyes", "slimly eyes", "gooey eyes"],
+					"positive": ["gooey eyes"],
 					"negative": [],
 					"excludedBy": [],
 				},
 				"ears": {
-					"positive": ["transparent ears", "see-through ears", "sticky ears", "slimly ears", "gooey ears"],
+					"positive": ["gooey ears"],
 					"negative": [],
 					"excludedBy": [],
 				},
+				"mouth":{
+					"positive": ["(slime girl tongue:1.1)"],
+					"negative": [],
+					"excludedBy": [bool.closedMouth]
+				},
 				"breasts": {
-					"positive": ["transparent breasts", "see-through breasts", "sticky breasts", "slimly breasts", "gooey breasts"],
+					"positive": ["slime girl breasts", "gooey breasts"],
+					"negative": [],
+					"excludedBy": [],
+				},
+				"torso": {
+					"positive": ["slime girl torso", "slime torso", "gooey torso"],
 					"negative": [],
 					"excludedBy": [],
 				},
 				"penis": {
-					"positive": ["transparent penis", "see-through penis", "sticky penis", "slimly penis", "gooey penis"],
+					"positive": ["slimly penis", "gooey penis"],
 					"negative": [],
-					"excludedBy": [],
+					"excludedBy": [!range.penis],
 				},
-				"vulva": {
-					"positive": ["transparent penis", "see-through penis", "sticky penis", "slimly penis", "gooey penis"],
-					"negative": [],
-					"excludedBy": [],
-				}
+				// "vulva": {
+				// 	"positive": ["slime girl pussy", "gooey pussy"],
+				// 	"negative": [],
+				// 	"excludedBy": [],
+				// }
 			}
 		},
 		"DoublePepperoni": {
 			"affects": {
-				"breasts": {
-					"positive": ["(puffy_nipples:2)","(large areolae:2)","(long nipples:2)"],
-					"negative": [],
-					"excludedBy": [characterData.booleans.modestClothing, characterData.booleans.normalClothing],
+				"nipples": {
+					"positive": ["(puffy_nipples:1.4)","(large areolae:1.4)","(long nipples:1.4)"],
+					"negative": ["normal nipples"],
+					"excludedBy": [bool.modestClothing, bool.normalClothing],
 				}
 			}
 		},
@@ -1184,12 +1527,12 @@ setup.comfyUI_GenerateCurseParameters = function() {
 		"HypnoHappytime": {
 			"affects": {
 				"behaviour": {
-					"positive": ["hypnotised", "(relaxed:1.4)"],
-					"negative": ["(pendulum)", "(coin)"],
+					"positive": ["(hypnotised eyes:1.3)", "(relaxed:1.3)"],
+					"negative": ["(pendulum:2)", "(coin:2)"],
 					"excludedBy": [],
 				},
 				"mouth": {
-					"positive": ["(drooling:0.8)"],
+					"positive": ["drooling"],
 					"negative": [],
 					"excludedBy": [],
 				}
@@ -1218,7 +1561,7 @@ setup.comfyUI_GenerateCurseParameters = function() {
 				"mouth": {
 					"positive": ["(fangs:1.2)", "(sharp teeth:1.2)"],
 					"negative": [],
-					"excludedBy": [characterData.booleans.closedMouth],
+					"excludedBy": [bool.closedMouth],
 				}
 			}
 		},
@@ -1229,10 +1572,10 @@ setup.comfyUI_GenerateCurseParameters = function() {
 					"negative": [],
 					"excludedBy": [],
 				},
-				"breasts": {
+				"nipples": {
 					"positive": ["inverted nipples"],
 					"negative": [],
-					"excludedBy": [characterData.booleans.modestClothing, characterData.booleans.normalClothing],
+					"excludedBy": [],
 				}
 			}
 		},
@@ -1241,12 +1584,12 @@ setup.comfyUI_GenerateCurseParameters = function() {
 				"penis": {
 					"positive": ["veiny penis", "(erection:1.2)"],
 					"negative": [],
-					"excludedBy": [characterData.booleans.modestClothing],
+					"excludedBy": [!range.penis],
 				},
-				"breasts": {
-					"positive": ["(long nipples:2)"],
-					"negative": [],
-					"excludedBy": [characterData.booleans.modestClothing],
+				"nipples": {
+					"positive": ["(long nipples:1.5)", "hard nipples:1.5"],
+					"negative": ["normal nipples"],
+					"excludedBy": [],
 				}
 			}
 		},
@@ -1254,8 +1597,8 @@ setup.comfyUI_GenerateCurseParameters = function() {
 			"affects": {
 				"mouth": {
 				"positive": ["(long tongue:1.3)", "(flexible tongue)", "frog tongue"],
-				"negative": [],
-				"excludedBy": [characterData.booleans.closedMouth],
+				"negative": ["(multiple tongues:1.3", "detached tongue:1.3"],
+				"excludedBy": [bool.closedMouth],
 				}
 			}
 		},
@@ -1303,7 +1646,7 @@ setup.comfyUI_GenerateCurseParameters = function() {
 		"MassacreManicure": {
 			"affects": {
 				"limbs": {
-					"positive": ["sharp fingernails", "dangerous fingernails", "long fingernails", "knife fingernails", "scalpel fingernails", "monstrous fingernails"],
+					"positive": ["sharp fingernails", "dangerous fingernails", "long fingernails", "(claws:1.3)"],
 					"negative": [],
 					"excludedBy": [],
 				}
@@ -1312,7 +1655,7 @@ setup.comfyUI_GenerateCurseParameters = function() {
 		"DoM": {
 			"affects": {
 				"skin": {
-					"positive": ["bruised","bleeding"],
+					"positive": ["(Masochist)","(bruised", "(beaten:1.3)", "(bleeding:1.3)", `(bleeding ${characterData.state.blood} blood:1.3)`],
 					"negative": [],
 					"excludedBy": [],
 				}
@@ -1321,17 +1664,17 @@ setup.comfyUI_GenerateCurseParameters = function() {
 		"FlowerPower": {
 		"affects": {
 			"skin": {
-				"positive": ["vines", "flowers", "exotic flower", "hibiscus", "fantasy flower", "climbing foliage"],
+				"positive": ["(vines sprouting)", "flowers", "(exotic flower)", "hibiscus", "(dryad:1.3)", "climbing foliage"],
 				"negative": [],
 				"excludedBy": [],
 			},
 			"limbs": {
-				"positive": ["vines", "flowers", "fantasy flower"],
+				"positive": ["vines", "flowers", "fantasy flower", "(leaves wrapping wrists:1.3)"],
 				"negative": [],
 				"excludedBy": [],
 			},
 			"hair": {
-				"positive": ["flowers", "leaves", "fantasy flower", "ornamental flower", "flower crown"],
+				"positive": ["(flowers in hair)","fantasy flower", "sprouts in hair", "(vines in hair:1.5)", "flower crown"],
 				"negative": [],
 				"excludedBy": [],
 			}
@@ -1339,11 +1682,11 @@ setup.comfyUI_GenerateCurseParameters = function() {
 		},
 		"Cellulose": {
 			"affects": {
-				"skin": {
-				"positive": ["(alruane:1.3)","(plant girl:1.3)"],
-				"negative": [],
-				"excludedBy": [],
-				}
+				"gender": {
+					"positive": ["(dryad:1.3)","(plant girl:1.3)"],
+					"negative": [],
+					"excludedBy": [],
+					}
 			}
 		},
 		"Carapacian": {
@@ -1354,7 +1697,7 @@ setup.comfyUI_GenerateCurseParameters = function() {
 				"excludedBy": [],
 				},
 				"limbs": {
-				"positive": ["armour", "keratin", "chitin", "bone"],
+				"positive": ["armour arms", "keratin arms", "chitin arms", "bone arms"],
 				"negative": [],
 				"excludedBy": [],
 				},
@@ -1363,19 +1706,21 @@ setup.comfyUI_GenerateCurseParameters = function() {
 		"WrigglyAntennae": {
 			"affects": {
 				"hair": {
-					"positive": ["(antennae:1.3)", "antennae coming from hair", "antennae on head", "2 antennae"],
+					"positive": ["(two antennae:1.3)", "two antennae coming from hair", "two antennae on head", "2 antennae"],
 					"negative": [],
 					"excludedBy": [],
 				}
 			}
 		},
-		// "SubmissivenessRectificationB": {
-		// 	"affects": {
-		// 		"clothing": {
-		// 			"positive": [submissive apparel],
-		// 			"negative": [],
-		// 			"excludedBy": [naked],
-		// 		},
+		"SubmissivenessRectificationB": {
+			"affects": {
+				"clothing": {
+					"positive": ["submissive apparel"],
+					"negative": [],
+					"excludedBy": [bool.nude],
+				},
+			}
+		},
 		// 		"behaviour": {
 		// 			"positive": [blushing, timid look],
 		// 			"negative": [],
@@ -1396,7 +1741,6 @@ setup.comfyUI_GenerateCurseParameters = function() {
 		// 			"excludedBy": [],
 		// 		}
 		// 	}
-		// },
 		"Horny": {
 			"affects": {
 				"hair": {
@@ -1415,38 +1759,38 @@ setup.comfyUI_GenerateCurseParameters = function() {
 				}
 			}
 		},
-		// "Leaky": {
-		// 	"affects": {
-		// 		"penis": {
-		// 		"positive": [viscous liquid, sticky liquid, falling liquid, Overflow, Leakage, dripping],
-		// 		"negative": [],
-		// 		"excludedBy": [],
-		// 		},
-		// 		"vulva": {
-		// 		"positive": [viscous liquid, sticky liquid, falling liquid, Overflow, Leakage, dripping],
-		// 		"negative": [],
-		// 		"excludedBy": [],
-		// 		}
-		// 	}
-		// },
+		"Leaky": {
+			"affects": {
+				"penis": {
+					"positive": ["viscous liquid", "sticky liquid", "falling liquid", "Overflow", "Leakage", "dripping penis"],
+					"negative": [],
+					"excludedBy": [bool.modestClothing, bool.normalClothing],
+				},
+				"vulva": {
+					"positive": ["viscous liquid", "sticky liquid", "falling liquid", "", "dripping"],
+					"negative": [],
+					"excludedBy": [bool.modestClothing, bool.normalClothing],
+				}
+			}
+		},
 		// "WanderingHands": {
 		// 	"affects": {
 		// 		"behaviour": {
-		// 		"positive": [],
-		// 		"negative": [],
-		// 		"excludedBy": [],
+		//	 		"positive": [],
+		// 			"negative": [],
+		// 			"excludedBy": [],
 		// 		}
 		// 	}
 		// },
 		"SemenDemon": {
 			"affects": {
-				"behaviour": {
-					"positive": ["smug"],
+				"mouth": {
+					"positive": ["(smug:0.7)"],
 					"negative": [],
 					"excludedBy": [],
 				},
 				"mouth": {
-					"positive": ["(cum in mouth)","facial"],
+					"positive": ["(cum in mouth:1.2)","facial"],
 					"negative": [],
 					"excludedBy": [],
 				}
@@ -1538,15 +1882,15 @@ setup.comfyUI_GenerateCurseParameters = function() {
 		// 		}
 		// 	}
 		// },
-		"TaciturnTurnaround": {
-			"affects": {
-				"mouth": {
-					"positive": ["mutilated tongue", "ripped off tongue", "scarred tongue", "removed tongue"],
-					"negative": [],
-					"excludedBy": [],
-				}
-			}
-		},
+		// "TaciturnTurnaround": {
+		// 	"affects": {
+		// 		"mouth": {
+		// 			"positive": ["mutilated tongue", "ripped off tongue", "scarred tongue", "removed tongue"],
+		// 			"negative": [],
+		// 			"excludedBy": [],
+		// 		}
+		// 	}
+		// },
 		// "Ampu-Q-tie": {
 		// 	"affects": {
 		// 		"limbs": {
@@ -1558,7 +1902,6 @@ setup.comfyUI_GenerateCurseParameters = function() {
 		// },
 		// "NoseGoes": {
 		// 	"affects": {
-
 		// 	}
 		// },
 		// "ArmArmy": {
@@ -1593,12 +1936,12 @@ setup.comfyUI_GenerateCurseParameters = function() {
 				// },
 				// "vulva": {
 				// 	"positive": [],
-				// 	"negative": [],
-				// 	"excludedBy": [genitalia],
+				// 	"negative": [genitalia],
+				// 	"excludedBy": [],
 				// },
 					"breasts": {
-						"positive": ["smooth breasts", "No nipples"],
-						"negative": ["nipples"],
+						"positive": ["smooth breasts", "(nippleless breasts:1.2)", "(blank breasts)", "(no nipples)", "(athelia)", "(removed nipples)"],
+						"negative": ["(nipples:1.3)"],
 						"excludedBy": [],
 					}
 			}
@@ -1612,15 +1955,15 @@ setup.comfyUI_GenerateCurseParameters = function() {
 		// 		}
 		// 	}
 		// },
-		"TakenforGranite": {
-			"affects": {
-				"skin": {
-					"positive": ["stone skin", "granite", "igneous", "Basalt"],
-					"negative": [],
-					"excludedBy": [],
-				}
-			}
-		},
+		// "TakenforGranite": {
+		// 	"affects": {
+		// 		"skin": {
+		// 			"positive": ["stone skin", "granite", "igneous", "Basalt"],
+		// 			"negative": [],
+		// 			"excludedBy": [],
+		// 		}
+		// 	}
+		// },
 		// "DoubleTrouble": {
 		// 	"affects": {}
 		// },
@@ -1635,7 +1978,7 @@ setup.comfyUI_GenerateCurseParameters = function() {
 					"excludedBy": [],
 				},
 				"eyes": {
-					"positive": ["glowing eyes", "red eyes", "evil eyes", "demonic eyes"],
+					"positive": ["(glowing eyes:1.3)", "evil eyes", "demonic eyes"],
 					"negative": [],
 					"excludedBy": [],
 				}
@@ -1668,9 +2011,9 @@ setup.comfyUI_GenerateCurseParameters = function() {
 		// 		}
 		// 	}
 		// },
-		"BelowtheVeil": {
+		"BelowTheVeil": {
 			"affects": {
-				"environment": {
+				"background": {
 					"positive": ["fog", "mist", "enlightened", "lovecraftian"],
 					"negative": [],
 					"excludedBy": [],
@@ -1687,7 +2030,7 @@ setup.comfyUI_GenerateCurseParameters = function() {
 				"clothing": {
 					"positive": ["Princess Attire", "dress", "crown", "jewelery", "frilly clothing"],
 					"negative": [],
-					"excludedBy": [hasCurse("Clothing Restriction C"), hasCurse("Clothing Restriction A")],
+					"excludedBy": [hasCurse("ClothingRestrictionC"), hasCurse("ClothingRestrictionA")],
 				}
 			}
 		},
@@ -1714,48 +2057,218 @@ setup.comfyUI_GenerateCurseParameters = function() {
 				}
 			}
 		}
-	};
+	}
 	characterData.cursePromptArray = [];
-
-	let positive = ["score_9, score_8_up, score_7_up, (portrait), ratingsafe, (cowboy shot), solo, source_anime, front view, (normal human ears) <lora:Dalle3_AnimeStyle_PONY_Lora:1>"];
-	let negative = ["toddler", "kindergartener", "child", "underage", "early teen", "shota", "loli", "flat color", "lowres", "bad hands", "bad fingers", "missing fingers", "extra digit", "fewer digits",
-	"worst quality", "normal quality", "jpeg artifacts", "signature", "watermark", "username", "bad feet",
-	"three legs", "wrong hand", "wrong feet", "wrong fingers", "deformed leg", "abnormal", "malformed",
-	"bad art", "deformed", "disfigured", "mutation", "mutated", "extra limbs", "inaccurate limb",
-	"missing limb", "floating limbs", "disconnected limbs", "(pencil neck)", "long neck", "long body", "mutated skeleton",
-	"long skeleton", "bad proportions", "mutated hands and fingers", "poorly drawn hands", "malformed hands",
-	"poorly drawn face", "poorly drawn asymmetrical eyes", "mutated face", "low quality", "distorted light",
-	"low quality illustration", "blurry", "bad anatomy", "(animal ears:2)", "four ears:2"];
-	positive = positive.concat(Object.values(characterData.range));
-	Object.entries(characterData.cursePrompts).forEach(([curseName, curseData]) => {
-		if (hasCurse(curseName)) {
-			Object.entries(curseData.affects || {}).forEach(([category, categoryData]) => {
-				const hasExcludedBy = categoryData.excludedBy.some(exclusion =>
-					hasCurse(exclusion)
-				);
-				if (!hasExcludedBy) {
-					characterData.cursePromptArray.push({
-						category: category,
-						positive: categoryData.positive || [],
-						negative: categoryData.negative || []
+	characterData.excluded = [];
+	Object.entries(characterData.cursePrompts).filter(([curseName]) => hasCurse(curseName))
+		.forEach(([curseName, curseData]) => {
+			Object.entries(curseData.affects || {})
+			.forEach(([category, categoryData]) => {
+				characterData.cursePromptArray[category] = characterData.cursePromptArray[category] || { positive: [], negative: [] };
+				characterData.excluded[category] = characterData.excluded[category] || { positive: [], negative: [] };
+				const excludedReasons = (categoryData.excludedBy || [])
+				.map(condition => {return condition ? condition : null;}).filter(Boolean);
+				['positive', 'negative'].forEach(type => {
+					(categoryData[type] || []).forEach(tag => {
+						excludedReasons.length === 0
+						? characterData.cursePromptArray[category][type].push(tag)
+						: characterData.excluded[category][type].push({
+							curse: curseName,
+							tag: tag,
+						});
 					});
-
-					positive = positive.concat(categoryData.positive || []);
-					negative = negative.concat(categoryData.negative || []);
-				}
+				});
 			});
+		});
+	// console.log(positive+",\n henlo \n"+negative);
+	console.log(characterData.cursePromptArray, "Preserved");
+	console.log(characterData.excluded, "Excluded");
+	return characterData;
+	};
+setup.compileCombinedPrompts = function(characterData) {
+	const hasCurse = (curseName) => {
+		return characterData.curses.some(curse => curse.constructor.name === curseName);
+	};
+	const bool = characterData.booleans;
+	const range = characterData.range;
+	const CATEGORY_ORDER = [
+		'quality',
+		'framing',
+		'style',
+		'misprints',
+		'gender',
+		'age',
+		'skin',
+		'face',
+		'eyes',
+		'nose',
+		'ears',
+		'mouth',
+		'hair',
+		'torso',
+		'fitness',
+		'limbs',
+		'pregnancy',
+		'breasts',
+		'nipples',
+		'penis',
+		'vulva',
+		'tail',
+		'clothing',
+		'behaviour',
+		'libido',
+		'background',
+		'special',
+	];
+
+	const INTERMEDIATE_CONTENT = {
+		'framing': ', <lora:Dalle3_AnimeStyle_PONY_Lora:1>,',
+		'skin': 'BREAK',
+		'limbs': 'BREAK',
+		'vulva': 'BREAK',
+		'libido': 'BREAK',
+	};
+
+	const SKIP_CATEGORIES = {
+		"nipples": [
+			() => bool.modestClothing,
+			() => bool.normalClothing,
+			() => bool.immodestClothing,
+			() => hasCurse("Null")
+		],
+		"penis": [
+			() => bool.modestClothing,
+			() => bool.normalClothing,
+			() => bool.immodestClothing,
+			() => bool.skimpyClothing,
+			() => !range.penis
+		],
+		"vulva": [
+			() => bool.modestClothing,
+			() => bool.normalClothing,
+			() => bool.immodestClothing,
+			() => bool.skimpyClothing,
+			() => hasCurse("Null")
+		],
+	};
+
+	const shouldSkipCategory = (category) => {
+		if (!SKIP_CATEGORIES[category]) return false;
+		return SKIP_CATEGORIES[category].some(condition => condition());
+	};
+
+	const categoryPositivePrompts = {};
+	const categoryNegativePrompts = {};
+	const cursePromptArray = characterData.cursePromptArray || {};
+	const statPromptArray = characterData.statPromptArray || {};
+
+	const removeConflictingPrompts = (sourceArray, targetArray) => {
+		const cleanedTargetArray = { ...targetArray };
+		Object.entries(sourceArray).forEach(([sourceCategory, sourcePrompts]) => {
+			const oppositeType = sourcePrompts.positive ? 'negative' : 'positive';
+			if (cleanedTargetArray[sourceCategory]) {
+				const sourcePromptsToCheck = sourcePrompts.positive || sourcePrompts.negative;
+				const targetPromptsToCheck = cleanedTargetArray[sourceCategory][oppositeType];
+				if (sourcePromptsToCheck && targetPromptsToCheck) {
+					cleanedTargetArray[sourceCategory][oppositeType] = targetPromptsToCheck.filter(
+						targetPrompt => !sourcePromptsToCheck.includes(targetPrompt)
+					);
+				}
+			}
+		});
+		return cleanedTargetArray;
+	};
+
+	const cleanedStatPromptArray = removeConflictingPrompts(cursePromptArray, statPromptArray);
+
+	const processPromptArray = (sourceArray, targetPositive, targetNegative) => {
+		Object.entries(sourceArray).forEach(([category, prompts]) => {
+			if (CATEGORY_ORDER.includes(category) && !shouldSkipCategory(category)) {
+				if (!targetPositive[category]) targetPositive[category] = [];
+				if (!targetNegative[category]) targetNegative[category] = [];
+				
+				if (prompts.positive && Array.isArray(prompts.positive)) {
+					targetPositive[category].push(...prompts.positive);
+				}
+				if (prompts.negative && Array.isArray(prompts.negative)) {
+					targetNegative[category].push(...prompts.negative);
+				}
+			}
+		});
+	};
+
+	processPromptArray(cursePromptArray, categoryPositivePrompts, categoryNegativePrompts);
+	processPromptArray(cleanedStatPromptArray, categoryPositivePrompts, categoryNegativePrompts);
+
+	const combinedPositivePrompts = [];
+	const combinedNegativePrompts = [];
+
+	CATEGORY_ORDER.forEach(category => {
+		if (shouldSkipCategory(category)) {
+			console.log(`Skipping category: ${category}`);
+			return;
+		}
+
+		const positiveCategoryPrompts = [];
+		const negativeCategoryPrompts = [];
+
+		if (categoryPositivePrompts[category]) {
+			const uniquePositive = [...new Set(categoryPositivePrompts[category])];
+			positiveCategoryPrompts.push(uniquePositive.join(", "));
+		}
+
+		if (INTERMEDIATE_CONTENT[category] && positiveCategoryPrompts.length > 0) {
+			positiveCategoryPrompts.push(INTERMEDIATE_CONTENT[category]);
+		} else if (positiveCategoryPrompts.length > 0) {
+			positiveCategoryPrompts[positiveCategoryPrompts.length - 1] += ",";
+		}
+
+		if (positiveCategoryPrompts.length > 0) {
+			combinedPositivePrompts.push(positiveCategoryPrompts.join(" "));
+		}
+
+		if (categoryNegativePrompts[category]) {
+			const uniqueNegative = [...new Set(categoryNegativePrompts[category])];
+			negativeCategoryPrompts.push(uniqueNegative.join(", "));
+		}
+
+		if (negativeCategoryPrompts.length > 0) {
+			negativeCategoryPrompts[negativeCategoryPrompts.length - 1] += ",";
+		}
+
+		if (negativeCategoryPrompts.length > 0) {
+			combinedNegativePrompts.push(negativeCategoryPrompts.join(" "));
 		}
 	});
-	positive = positive.join(", ");
-	negative = negative.join(", ");
-	// console.log(positive+", henlo"+negative);
+
+	// Clean up repeated commas
+	const cleanCommas = (str) => {
+		return str
+			.replace(/,\s*,+/g, ", ")
+			.replace(/\s*,\s*$/, "");
+	};
+
+	const positive = cleanCommas(combinedPositivePrompts.join(" "));
+	const negative = cleanCommas(combinedNegativePrompts.join(" "));
+
+	console.log("Compiled Prompts:");
+	console.log("Positive:", positive);
+	console.log("Negative:", negative);
+
 	return [positive, negative];
 };
+	
+	
+
+
 setup.comfyUI_GenerateStandardParameters = function() {
-	let [positive, negative] = setup.comfyUI_GenerateCurseParameters();
+	let characterData = setup.comfyUI_PrepareCharacterData();
+	characterData = setup.comfyUI_GenerateStatParameters(characterData);
+	characterData = setup.comfyUI_GenerateCurseParameters(characterData);
+	let [positive, negative] = setup.compileCombinedPrompts(characterData);
 	let checkpoint = "hassakuXLPony_v13BetterEyesVersion.safetensors";
-	let steps = 20;
-	let cfg = 7.0;
+	let steps = 30;
+	let cfg = 10.0;
 	let seed = (SugarCube.State.variables.seed || Math.round(Math.random() * 10_000));
 	let width = 1024;
 	let height = 1024;
@@ -1799,7 +2312,7 @@ setup.comfyUI_GeneratePortraitWorkflow = async function() {
 	return workflow;
 }
 
-// PROXY_BASE_URL/generate_image
+// http://127.0.0.1:12500/generate_image
 var is_generation_busy = false;
 var last_workflow = null;
 setup.comfyUI_GeneratePortrait = async function() {
@@ -1816,7 +2329,7 @@ setup.comfyUI_GeneratePortrait = async function() {
 	notificationElement.style.display = "none";
 
 	// data to be sent to comfyui
-	const url = PROXY_BASE_URL + "/generate_workflow"
+	const url = "http://127.0.0.1:12500/generate_workflow"
 
 	// log outputted workflow
 	// console.log(workflow);
@@ -1866,3 +2379,59 @@ setup.comfyUI_GeneratePortrait = async function() {
 		throw new Error('Failed to store image due to error: ' + error);
 	}
 }
+
+/*
+	// TODO: future update (also edit return to be the raise Error)
+
+	setup.comfyUI_PrepareSceneData = async function(scene_id, scene_params) {
+		return {'scene_id' : scene_id, 'scene_params' : scene_params}
+	}
+
+	// http://127.0.0.1:12500/generate_scene
+	setup.comfyUI_GenerateCharacterScene = async function(scene_id, scene_params) {
+		if (is_generation_busy) {
+			return;
+		}
+		is_generation_busy = true;
+
+		// notification element
+		const notificationElement = document.getElementById('notification');
+
+		// data to be sent to comfyui
+		const url = "http://127.0.0.1:12500/generate_scene";
+
+		// prepare Payload
+		const payload = {'character' : setup.comfyUI_PrepareCharacterData(), 'scene' : setup.comfyUI_PrepareSceneData(scene_id, scene_params)}
+
+		// inspect payload
+		console.log(payload);
+
+		// request to the proxy to generate the portrait
+		let data = null;
+		try {
+			data = await setup.comfyUI_InvokeGenerator(url, {'character' : payload});
+		} catch (error) {
+			console.error('Unable to invoke ComfyUI generator.');
+			is_generation_busy = false;
+			return;
+		}
+
+		// check if we actually received any images
+		if (data.images == null || data.images.length == 0) {
+			console.error('No images returned from server. This might be due to an issue with the proxy server or ComfyUI!');
+			notificationElement.textContent = 'Error generating image: ' + error.message + (error.response ? (await error.response.json()).error : 'No additional error information from OpenAI.');
+			notificationElement.style.display = 'block';
+			is_generation_busy = false;
+			return;
+		}
+
+		// once we receive the images, save it under the key
+		const storeKey = scene_id;
+		const b64Images = data.images; // Assuming the images are returned as base64 strings
+		console.log("Base64 Data Length: ", b64Images.reduce((sum, str) => sum + str.length, 0));
+		setup.storeImage(storeKey, b64Images)
+			.then(() => console.log('Image successfully stored.'))
+			.finally(() => is_generation_busy)
+			.catch((error) => console.error('Failed to store image:', error));
+	}
+*/
