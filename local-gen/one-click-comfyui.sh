@@ -23,12 +23,53 @@ if [[ -n "$PYTHON_CMD" ]]; then
 else
 	echo "Python is not installed. Please install Python 3.10.X/3.11.X with pip."
 	if [[ "$(uname -s)" == "Linux" ]]; then
-		echo "You will be prompted to install it now."
-		sudo apt install python3
-		sudo apt install python3-pip
-		sudo apt install python3-venv
+		echo "You are required to install python."
+		echo "Please head to the page https://git-scm.com/download/linux and follow the instructions to install for your linux distribution."
+		echo "Once you have installed it, please restart the one-click-comfyui.sh."
+	elif [[ "$(uname -s)" == "Darwin" ]]; then
+		echo "Python is not installed. Proceeding to download the installer for MacOS..."
+		INSTALLER_URL="https://www.python.org/ftp/python/3.11.8/python-3.11.8-macos11.pkg"
+		INSTALLER_PATH="/tmp/python-3.11.8-macos11.pkg"
+
+		echo "Downloading Python 3.11.8 installer..."
+		curl -o "$INSTALLER_PATH" "$INSTALLER_URL"
+
+		if [[ $? -eq 0 ]]; then
+			echo "Download complete. Opening the installer..."
+			echo "Follow the on-screen instructions to complete the installation."
+			open "$INSTALLER_PATH"
+		else
+			echo "Failed to download the installer. Please try again or visit:"
+			echo "$INSTALLER_URL"
+			echo "and install manually."
+			exit 1
+		fi
 	fi
-	echo "Press enter to exit the terminal and restart it."
+	echo "Press enter to exit the terminal then restart it by opening it again."
+	read -p ""
+	exit 1
+fi
+
+# Check if Git is installed
+GIT_CMD=$(command -v git)
+
+if [[ -n "$GIT_CMD" ]]; then
+	echo "Git is already installed."
+	git --version
+else
+	echo "Git is not installed."
+
+	if [[ "$(uname -s)" == "Linux" ]]; then
+		echo "You are required to install Git."
+		echo "Please head to https://git-scm.com/download/linux for instructions specific to your Linux distribution."
+		echo "Once installed, restart this script."
+	elif [[ "$(uname -s)" == "Darwin" ]]; then
+		echo "Git is not installed on your Mac."
+		echo "Please visit https://git-scm.com/download/mac to download and install Git."
+		echo "Follow the instructions on the website to complete the installation."
+	fi
+
+	echo "Press Enter to exit the terminal, then restart it by opening it again after installation."
 	read -p ""
 	exit 1
 fi

@@ -23,12 +23,7 @@ if %errorlevel% equ 0 (
 
 :: If Python command is still not set, install Python
 if "%PYTHON_CMD%"=="" (
-	echo Python not found.
-	echo Please head to https://www.python.org/downloads/release/python-311/ and install python with the "Windows x86-64 MSI installer".
-	echo Make sure to install in the AppData directory
-	echo and have "Add to PATH" selected.\
-	echo Once you have done so, close the terminal and run the batch file again.
-	echo Press enter to exit...
+	call install_git_python.bat
 	pause
 	exit /b 1
 )
@@ -36,10 +31,7 @@ if "%PYTHON_CMD%"=="" (
 :: Check for the git command
 where git >nul 2>&1
 if %errorlevel% neq 0 (
-	echo You are required to install git.
-	echo Please head to https://git-scm.com/downloads/win and install the "64-bit Git for Windows Setup".
-	echo Once you have done so, close the terminal and run the batch file again.
-	echo Press enter to exit...
+	call install_git_python.bat
 	pause
 	exit /b 1
 )
