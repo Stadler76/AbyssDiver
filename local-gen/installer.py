@@ -38,13 +38,22 @@ import re
 def get_python_and_version() -> tuple[str, str]:
 	for cmd in ["python3.10", "python3.11", "python3", "python", "py"]:
 		try:
-			result = subprocess.run([cmd, "--version"], capture_output=True, text=True, check=True)
+			# check if the python command returns a version
+			result = subprocess.run([cmd, "--version"], capture_output=True, text=True, check=True, shell=True)
 			print(f"Command: {cmd}")
 			print(f"Output: {result.stdout.strip()}")
+			assert result.returncode == 0, f"Python {cmd} is not available."
+			# check the python version
 			version = re.search(r"Python (\d+\.\d+\.\d+)", result.stdout)
 			if version:
 				print(f"Extracted Version: {version.group(1)}")
+				# if its 3.10.X/3.11.X
 				if version.group(1).startswith("3.10") or version.group(1).startswith("3.11"):
+					# try run the python command (windows store one successfully returns versions but doesn't actually run.)
+					test_result = subprocess.run([cmd, "-c", 'print("Hello Python!")'], capture_output=True, text=True, check=True, shell=True)
+					print(f"Test Command Output: {test_result.stdout.strip()}")
+					assert "Hello Python!" in test_result.stdout.strip(), "Python command did not execute properly."
+					print(f'Got python command {cmd} with version {version.group(1)}')
 					return cmd, version.group(1)
 			else:
 				print("No version match found.")
@@ -52,6 +61,7 @@ def get_python_and_version() -> tuple[str, str]:
 			print(f"Command '{cmd}' failed: {e}")
 			continue
 	raise Exception("No suitable Python version is installed - please install Python 3.10.X or 3.11.X.")
+
 
 def get_installed_python() -> str:
 	cmd, _ = get_python_and_version()

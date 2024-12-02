@@ -38,6 +38,10 @@ if %errorlevel% neq 0 (
 	exit /b 1
 )
 
+:: Attempt ensurepip
+echo Ensure pip (ignore if error)
+"%PYTHON_CMD%" -m ensurepip
+
 :: Install required Python packages
 echo Upgrading pip.
 "%PYTHON_CMD%" -m pip install --upgrade pip

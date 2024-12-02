@@ -26,6 +26,7 @@ else
 		echo "You are required to install python."
 		echo "Please head to the page https://git-scm.com/download/linux and follow the instructions to install for your linux distribution."
 		echo "Once you have installed it, please restart the one-click-comfyui.sh."
+		echo "Install all python, python-venv and python-pip."
 	elif [[ "$(uname -s)" == "Darwin" ]]; then
 		echo "Python is not installed. Proceeding to download the installer for MacOS..."
 		INSTALLER_URL="https://www.python.org/ftp/python/3.11.8/python-3.11.8-macos11.pkg"
