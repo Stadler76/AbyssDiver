@@ -16,6 +16,8 @@ import traceback
 import uvicorn
 import websockets
 
+OUTPUT_COMFY_UI_INPUT_WORKFLOW : bool = False
+
 COMFYUI_IMAGE_TYPE = Literal["input", "output", "temp"]
 
 COMFYUI_SAMPLERS = Literal[
@@ -86,7 +88,7 @@ class ComfyUI_API:
 		self.client_id = uuid4().hex
 		self._active_ids = dict()
 
-		print(self.client_id)
+		# print(self.client_id)
 
 	async def is_available(self) -> None:
 		try:
@@ -108,7 +110,7 @@ class ComfyUI_API:
 		assert response, "ComfyUI is not currently running."
 		prompt_id : Optional[str] = response.get('prompt_id')
 		assert prompt_id, "Failed to get prompt_id from ComfyUI response."
-		print(prompt_id)
+		# print(prompt_id)
 		self._active_ids[prompt_id] = False
 		return prompt_id
 
@@ -207,7 +209,7 @@ class ComfyUI_API:
 		await self.track_progress(prompt_id, list(prompt.keys()))
 		print('Fetching images from ComfyUI')
 		images_spookexe : list[dict] = await self.fetch_prompt_id_images(prompt_id, include_previews=include_previews)
-		print('Cleaming up prompt id')
+		print('Cleaning up prompt id')
 		await self.cleanup_prompt_id(prompt_id)
 		return images_spookexe
 
@@ -262,7 +264,8 @@ async def echo() -> bool:
 
 @app.post('/generate_workflow', description='Generate a image given the generation workflow.')
 async def generate_worflow(workflow : dict) -> Optional[GenerateImagesResponse]:
-	print(workflow)
+	if OUTPUT_COMFY_UI_INPUT_WORKFLOW:
+		print(workflow)
 	try:
 		image_bs4 : Optional[str] = await generate_worflow_image(workflow)
 		assert image_bs4, "Could not get the generated image from ComfyUI."
