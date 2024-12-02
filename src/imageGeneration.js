@@ -556,12 +556,12 @@ setup.openAI_InvokeDalleGenerator = async function(prompt) {
 	// once we receive the image, save it as the player portrait
 	const storeKey = "generatedImage";
 	const b64Image = data.data[0].b64_json;
-	console.log("Base64 Data Length: ", b64Image.length);
+	// console.log("Base64 Data Length: ", b64Image.length);
 
 	// now save it in the local storage
 	try {
 		setup.storeImage(storeKey, b64Image);
-		console.log('Image successfully stored.');
+		// console.log('Image successfully stored.');
 	} catch(error) {
 		console.error('Failed to store image due to error:', error);
 	}
@@ -1037,7 +1037,7 @@ setup.comfyUI_PrepareCharacterData = function() {
 		// 'extraMouths' : State.variables.mc.extraMouths // Not using for now, too intrusive on prompt
 		'fitness' : State.variables.mc.fit, //-2 is out of shape, 0 is normal, 2 is very fit
 	};
-	console.log(mc_state);
+	// console.log(mc_state);
 
 	const mc_ranges = {
 		"sex": [mc_state.gender, [["1guy", 0],["1girl", 3.5]]],
@@ -1054,7 +1054,7 @@ setup.comfyUI_PrepareCharacterData = function() {
 
 	// console.log(mc_ranges);
 	const mc_range = processRanges(mc_ranges);
-	console.log(mc_range);
+	// console.log(mc_range);
 
 	let [clothingString, clothingTrue] = processClothingState(mc_state, mc_curses);
 	mc_booleans[clothingTrue] = true;
@@ -1217,7 +1217,7 @@ setup.comfyUI_GenerateStatParameters = function(characterData) {
 				});
 			});
 		});
-		console.log(characterData.statPromptArray);
+		// console.log(characterData.statPromptArray);
 	return characterData;
 }
 setup.comfyUI_GenerateCurseParameters = function(characterData) {
@@ -2369,10 +2369,10 @@ setup.comfyUI_GeneratePortrait = async function() {
 
 	var storeKey = "generatedImage";
 	var b64Image = data.images[0];
-	console.log("Base64 Data Length: ", b64Image.length);
+	// console.log("Base64 Data Length: ", b64Image.length);
 	try {
 		setup.storeImage(storeKey, b64Image);
-		console.log('Image successfully stored.');
+		// console.log('Image successfully stored.');
 	} catch(error) {
 		console.error('Failed to store image due to error:', error);
 		notificationElement.style.display = "block";
