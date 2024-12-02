@@ -885,57 +885,57 @@ function processClothingState(mc_state, mc_curses) {
 			case !hasCRB && !hasCRC:
 				switch (currentThreshold) {
 					case 0:
-						console.log('Initial state - No restrictions');
+						// console.log('Initial state - No restrictions');
 						return["fully clothed, modest","modestClothing"];
-					case 4:
-						console.log('Clothing passed 4 - No restrictions');
+					// case 4:
+					// 	console.log('Clothing passed 4 - No restrictions');
 						return["normal","normalClothing"];
 					case 6:
-						console.log('Clothing passed 6 - No restrictions');
+						// console.log('Clothing passed 6 - No restrictions');
 						return["immodest","immodestClothing"];
 					case 8:
-						console.log('Clothing passed 8 - No restrictions');
+						// console.log('Clothing passed 8 - No restrictions');
 						return["skimpy","skimpyClothing"];
 					case 10:
-						console.log('Clothing passed 10 - No restrictions');
+						// console.log('Clothing passed 10 - No restrictions');
 						return["slutty","sluttyClothing"];
 				}
 				break;
 			case hasCRB && hasCRC:
 				switch (currentThreshold) {
 					case 0:
-						console.log('Initial state - Both B and C restrictions active');
+						// console.log('Initial state - Both B and C restrictions active');
 						return["no","nude"];
 					case 4:
-						console.log('Clothing passed 4 - Both B and C restrictions active');
+						// console.log('Clothing passed 4 - Both B and C restrictions active');
 						return["no","nude"];
 					case 6:
-						console.log('Clothing passed 6 - Both B and C restrictions active');
+						// console.log('Clothing passed 6 - Both B and C restrictions active');
 						return["no","nude"];
 					case 8:
-						console.log('Clothing passed 8 - Both B and C restrictions active');
+						// console.log('Clothing passed 8 - Both B and C restrictions active');
 						return["no","nude"];
 					case 10:
-						console.log('Clothing passed 10 - Both B and C restrictions active');
+						// console.log('Clothing passed 10 - Both B and C restrictions active');
 						return["no","nude"];
 				}
 				break;
 			case hasCRB && !hasCRC:
 				switch (currentThreshold) {
 					case 0:
-						console.log('Initial state - ClothingRestrictionB active');
+						// console.log('Initial state - ClothingRestrictionB active');
 						return["fully clothed, modest","modestClothing"];
 					case 4:
-						console.log('Clothing passed 4 - ClothingRestrictionB active');
+						// console.log('Clothing passed 4 - ClothingRestrictionB active');
 						return["normal","normalClothing"];
 					case 6:
-	 					console.log('Clothing passed 6 - ClothingRestrictionB active');
+	 					// console.log('Clothing passed 6 - ClothingRestrictionB active');
 						return["skimpy","skimpyClothing"];
 					case 8:
-						console.log('Clothing passed 8 - ClothingRestrictionB active');
+						// console.log('Clothing passed 8 - ClothingRestrictionB active');
 						return["slutty","sluttyClothing"];
 					case 10:
-						console.log('Clothing passed 10 - ClothingRestrictionB active');
+						// console.log('Clothing passed 10 - ClothingRestrictionB active');
 						return["slutty","sluttyClothing"];
 				}
 				break;
@@ -943,19 +943,19 @@ function processClothingState(mc_state, mc_curses) {
 			case !hasCRB && hasCRC:
 				switch (currentThreshold) {
 					case 0:
-						console.log('Initial state - ClothingRestrictionC active');
+						// console.log('Initial state - ClothingRestrictionC active');
 						return["skimpy","skimpyClothing"];
 					case 4:
-						console.log('Clothing passed 4 - ClothingRestrictionC active');
+						// console.log('Clothing passed 4 - ClothingRestrictionC active');
 						return["slutty","sluttyClothing"];
 					case 6:
-						console.log('Clothing passed 6 - ClothingRestrictionC active');
+						// console.log('Clothing passed 6 - ClothingRestrictionC active');
 						return["slutty","sluttyClothing"];
 					case 8:
-						console.log('Clothing passed 8 - ClothingRestrictionC active');
+						// console.log('Clothing passed 8 - ClothingRestrictionC active');
 						return["slutty","sluttyClothing"];
 					case 10:
-						console.log('Clothing passed 10 - ClothingRestrictionC active');
+						// console.log('Clothing passed 10 - ClothingRestrictionC active');
 						return["slutty","sluttyClothing"];
 				}
 				break;
@@ -2081,8 +2081,8 @@ setup.comfyUI_GenerateCurseParameters = function(characterData) {
 			});
 		});
 	// console.log(positive+",\n henlo \n"+negative);
-	console.log(characterData.cursePromptArray, "Preserved");
-	console.log(characterData.excluded, "Excluded");
+	// console.log(characterData.cursePromptArray, "Preserved");
+	// console.log(characterData.excluded, "Excluded");
 	return characterData;
 	};
 setup.compileCombinedPrompts = function(characterData) {
@@ -2205,7 +2205,7 @@ setup.compileCombinedPrompts = function(characterData) {
 
 	CATEGORY_ORDER.forEach(category => {
 		if (shouldSkipCategory(category)) {
-			console.log(`Skipping category: ${category}`);
+			// console.log(`Skipping category: ${category}`);
 			return;
 		}
 
@@ -2251,9 +2251,9 @@ setup.compileCombinedPrompts = function(characterData) {
 	const positive = cleanCommas(combinedPositivePrompts.join(" "));
 	const negative = cleanCommas(combinedNegativePrompts.join(" "));
 
-	console.log("Compiled Prompts:");
-	console.log("Positive:", positive);
-	console.log("Negative:", negative);
+	// console.log("Compiled Prompts:");
+	// console.log("Positive:", positive);
+	// console.log("Negative:", negative);
 
 	return [positive, negative];
 };

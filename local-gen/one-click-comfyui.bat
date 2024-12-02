@@ -23,6 +23,7 @@ if %errorlevel% equ 0 (
 
 :: If Python command is still not set, install Python
 if "%PYTHON_CMD%"=="" (
+	echo Python is not installed, installing now silently.
 	call install_git_python.bat
 	pause
 	exit /b 1
@@ -31,6 +32,7 @@ if "%PYTHON_CMD%"=="" (
 :: Check for the git command
 where git >nul 2>&1
 if %errorlevel% neq 0 (
+	echo Git is not installed, installing now silently.
 	call install_git_python.bat
 	pause
 	exit /b 1
