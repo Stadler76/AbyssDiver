@@ -887,7 +887,7 @@ function processClothingState(mc_state, mc_curses) {
 					case 0:
 						// console.log('Initial state - No restrictions');
 						return["fully clothed, modest","modestClothing"];
-					// case 4:
+					case 4:
 					// 	console.log('Clothing passed 4 - No restrictions');
 						return["normal","normalClothing"];
 					case 6:
