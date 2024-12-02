@@ -264,7 +264,7 @@ async def echo() -> bool:
 
 @app.post('/generate_workflow', description='Generate a image given the generation workflow.')
 async def generate_worflow(workflow : dict) -> Optional[GenerateImagesResponse]:
-	if OUTPUT_COMFY_UI_INPUT_WORKFLOW:
+	if PRINT_COMFYUI_INPUT_WORKFLOW:
 		print(workflow)
 	try:
 		image_bs4 : Optional[str] = await generate_worflow_image(workflow)
