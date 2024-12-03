@@ -38,13 +38,22 @@ import re
 def get_python_and_version() -> tuple[str, str]:
 	for cmd in ["python3.10", "python3.11", "python3", "python", "py"]:
 		try:
-			result = subprocess.run([cmd, "--version"], capture_output=True, text=True, check=True)
+			# check if the python command returns a version
+			result = subprocess.run([cmd, "--version"], capture_output=True, text=True, check=True, shell=True)
 			print(f"Command: {cmd}")
 			print(f"Output: {result.stdout.strip()}")
+			assert result.returncode == 0, f"Python {cmd} is not available."
+			# check the python version
 			version = re.search(r"Python (\d+\.\d+\.\d+)", result.stdout)
 			if version:
 				print(f"Extracted Version: {version.group(1)}")
+				# if its 3.10.X/3.11.X
 				if version.group(1).startswith("3.10") or version.group(1).startswith("3.11"):
+					# try run the python command (windows store one successfully returns versions but doesn't actually run.)
+					test_result = subprocess.run([cmd, "-c", 'print("Hello Python!")'], capture_output=True, text=True, check=True, shell=True)
+					print(f"Test Command Output: {test_result.stdout.strip()}")
+					assert "Hello Python!" in test_result.stdout.strip(), "Python command did not execute properly."
+					print(f'Got python command {cmd} with version {version.group(1)}')
 					return cmd, version.group(1)
 			else:
 				print("No version match found.")
@@ -53,9 +62,17 @@ def get_python_and_version() -> tuple[str, str]:
 			continue
 	raise Exception("No suitable Python version is installed - please install Python 3.10.X or 3.11.X.")
 
+
 def get_installed_python() -> str:
 	cmd, _ = get_python_and_version()
 	return cmd
+
+def run_subprocess_cmd(arguments : list[str]) -> Optional[subprocess.CompletedProcess]:
+	try:
+		return subprocess.run(arguments, capture_output=True, text=True, check=True, shell=True)
+	except Exception as e:
+		print(e)
+		return None
 
 restart_script : bool = False
 
@@ -63,14 +80,14 @@ try:
 	import requests
 except:
 	print("requests is not installed!")
-	os.system(f"{get_installed_python()} -m pip install requests")
+	run_subprocess_cmd([get_installed_python(), "-m", "pip", "install", "requests"])
 	restart_script = True
 
 try:
 	from tqdm import tqdm
 except:
 	print("tqdm is not installed!")
-	os.system(f"{get_installed_python()} -m pip install tqdm")
+	run_subprocess_cmd([get_installed_python(), "-m", "pip", "install", "tqdm"])
 	restart_script = True
 
 if restart_script is True:
@@ -210,7 +227,7 @@ def clone_custom_nodes_to_folder(custom_nodes_folder : str) -> None:
 	os.chdir(custom_nodes_folder)
 	for node_repository_url in COMFYUI_CUSTOM_NODES:
 		print(f'Cloning: {node_repository_url}')
-		_ = os.system(f"git clone {node_repository_url}")
+		run_subprocess_cmd(["git", "clone", node_repository_url])
 	os.chdir(previous_directory)
 
 def comfy_ui_experimental_amd_windows(storage_directory : str) -> None:
@@ -259,7 +276,7 @@ def comfy_ui_windows(storage_directory : str) -> None:
 		repository_url = COMFY_UI_DEFAULT_REPOSITORY_URL
 		previous_directory = os.getcwd()
 		os.chdir(storage_directory)
-		status = os.system(f"git clone {repository_url}") # ignore: type
+		status = run_subprocess_cmd(["git", "clone", repository_url]).returncode
 		assert status == 0, "git clone has failed - check if you have git installed."
 		os.chdir(previous_directory)
 
@@ -271,11 +288,11 @@ def comfy_ui_windows(storage_directory : str) -> None:
 	if os.path.exists(python_filepath) is False:
 		print(f'No virtual enviornment python located at: {python_filepath}')
 		print(f"{get_installed_python()} -m venv \"{venv_directory}\"")
-		status = os.system(f"{get_installed_python()} -m venv \"{venv_directory}\"")
+		status = run_subprocess_cmd([get_installed_python(), "-m", "venv", venv_directory]).returncode
 		assert status == 0, "Failed to create a virtual environment in the ComfyUI folder."
 
 	# Activate the venv enviornment once for a test
-	status = os.system(f"\"{python_filepath}\" --version")
+	status = run_subprocess_cmd([python_filepath, "--version"]).returncode
 	assert status == 0, "Failed to activate the virtual environment."
 
 	# install proxy requirements
@@ -375,7 +392,7 @@ def comfyui_download_mac_linux_shared(storage_directory : str) -> None:
 		repository_url = COMFY_UI_DEFAULT_REPOSITORY_URL
 		previous_directory = os.getcwd()
 		os.chdir(storage_directory)
-		status = os.system(f"git clone {repository_url}")
+		status = run_subprocess_cmd(["git", "clone", repository_url]).returncode
 		assert status == 0, "git clone has failed - check if you have git installed."
 		os.chdir(previous_directory)
 
@@ -385,23 +402,23 @@ def comfyui_download_mac_linux_shared(storage_directory : str) -> None:
 	venv_directory : str = Path(os.path.join(comfyui_directory, "venv")).as_posix()
 	python_filepath : str = Path(os.path.join(venv_directory, "bin", "python")).as_posix()
 	if os.path.exists(python_filepath) is False:
-		status = os.system(f"{get_installed_python()} -m venv \"{venv_directory}\"")
+		status = subprocess.run([get_installed_python(), "-m", "venv", venv_directory], check=True)
 		assert status == 0, "Failed to create a virtual environment in the ComfyUI folder."
 
 		print('Giving the venv python file the permissions needed to execute.')
-		os.system(f'chmod +x \"{python_filepath}\"')
+		subprocess.run(["chmod", "-x", python_filepath], check=True)
 
 	# Activate the venv enviornment once for a test
-	status = os.system(f"{python_filepath} --version")
+	status = subprocess.run([python_filepath, "--version"])
 	assert status == 0, "Failed to activate the virtual environment (permission error)."
 
 	# install proxy requirements
-	os.system(f"{python_filepath} -m pip install tqdm requests fastapi pydantic pillow websocket-client aiohttp uvicorn websockets")
+	status = subprocess.run([python_filepath, "-m", "pip", "install", "tqdm", "requests", "fastapi", "pydantic", "pillow", "websocket-client", "aiohttp", "uvicorn", "websockets"], check=True)
 
 	# install ComfyUI/requirements.txt
 	print('Installing ComfyUI requirements')
 	requirements_file = Path(os.path.join(comfyui_directory, "requirements.txt")).as_posix()
-	os.system(f"{python_filepath} -m pip install -r \"{requirements_file}\"")
+	subprocess.run([python_filepath, "-m", "pip", "install", "-r", requirements_file])
 
 	# git clone custom_nodes
 	custom_nodes_folder = Path(os.path.join(comfyui_directory, "custom_nodes")).as_posix()
@@ -416,7 +433,7 @@ def comfyui_download_mac_linux_shared(storage_directory : str) -> None:
 		if os.path.exists(folder_requirements) is False:
 			continue # cannot find requirements.txt
 		print(f'Installing {folder_name} custom_node requirements')
-		os.system(f"{python_filepath} -m pip install -r \"{folder_requirements}\"")
+		subprocess.run([python_filepath, "-m", "pip", "install", "-r", folder_requirements])
 
 	# download all checkpoint models
 	models_folder = Path(os.path.join(comfyui_directory, "models")).as_posix()
@@ -483,7 +500,7 @@ def comfy_ui_mac(storage_directory : str) -> None:
 def update_python_pip() -> None:
 	python_cmd, version = get_python_and_version()
 	assert ("3.10" in version) or ("3.11" in version), "You must have python versions 3.10.X or 3.11.X. Please reinstall python."
-	status = os.system(f"{python_cmd} -m pip install --upgrade pip")
+	status = subprocess.run([python_cmd, "-m", "pip", "install", "--upgrade", "pip"]).returncode
 	assert status == 0, "'pip' failed to update. Try running again."
 
 def main() -> None:
