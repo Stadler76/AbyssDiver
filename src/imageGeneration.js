@@ -395,7 +395,7 @@ setup.openAI_InvokeDalleGenerator = async function(prompt) {
 	}
 
 	// once we receive the image, save it as the player portrait
-	const storeKey = "generatedImage";
+	const storeKey = "dalleImage";
 	const b64Image = data.data[0].b64_json;
 	console.log("Base64 Data Length: ", b64Image.length);
 
@@ -1854,7 +1854,7 @@ setup.comfyUI_GeneratePortrait = async function() {
 	// once we receive the image, save it as the player portrait
 	is_generation_busy = false;
 
-	var storeKey = "generatedImage";
+	var storeKey = "dalleImage";
 	var b64Image = data.images[0];
 	console.log("Base64 Data Length: ", b64Image.length);
 	try {
