@@ -219,7 +219,7 @@ const SIMPLE_T2I_PORTRAIT_WORKFLOW_REMOVE_BACKGROUND = {
 	},
 	"17": {
 		"inputs": {
-			"threshold": 0.9,
+			"threshold": 0.8,
 			"torchscript_jit": "default",
 			"image": [
 				"15",
@@ -887,7 +887,7 @@ function processClothingState(mc_state, mc_curses) {
 					case 0:
 						// console.log('Initial state - No restrictions');
 						return["fully clothed, modest","modestClothing"];
-					// case 4:
+					case 4:
 					// 	console.log('Clothing passed 4 - No restrictions');
 						return["normal","normalClothing"];
 					case 6:
@@ -1045,9 +1045,9 @@ setup.comfyUI_PrepareCharacterData = function() {
 		"penis": [mc_state.penis, [["", 0],["micro penis", 0.1],["tiny penis", 2],["small penis", 3], ["below average penis", 4], ["medium penis", 5], ["above average penis", 7], ["large penis", 9], ["huge penis", 11], ["gigantic penis", 13], ["hyper penis", 20]]],
 		"clothing": [mc_state.libido, [["modestly dressed, fully clothed", 0], ["normal clothing" , 4], ["immodest clothing", 6], ["skimpy clothing", 8], ["slutty slothing", 10]]],
 		"fitness": [mc_state.fitness, [["fragile body", -2], ["weak body", -1], ["average fitness", 0], ["fit body", 1], ["very fit body", 2]]],
-		"breasts": [mc_state.breasts, [["flat chest", 0], ["flat breasts:1.7", 1], ["small breasts", 2], ["medium breasts", 3], ["large breasts", 5], ["huge breasts", 7], ["gigantic breasts", 9], ["hyper breasts", 18]]],
-		"gender": [mc_state.gender, [["hyper masculine man", 0], ["masculine man", 1], ["twink", 2], ["femboy", 3], ["tomboy", 4], ["androgynous woman", 5], ["feminine woman", 6], ["hyper feminine woman", 7]]],
-		"age": [mc_state.age, [["(elder:3), (old:3)", 0], ["young adult", 13], ["adult", 25], [`adult ${mc_state.gender < 4 ? "Dilf" : "Milf"}`, 40], ["(old:1.1)", 50], ["(old:1.5), senior citizen", 60], ["(old:2), senior citizen", 70]]],
+		"breasts": [mc_state.breasts, [[`${mc_state.gender < 4 ? "male body:1.2" : "flat chest:1.3"}`, 0], ["flat breasts:1.3", 1], ["small breasts:1.2", 3], ["medium breasts:1.2", 4], ["large breasts", 6], ["huge breasts", 8], ["gigantic breasts", 10], ["hyper breasts", 20]]],
+		"gender": [mc_state.gender, [["hyper masculine, man", 0], ["masculine, man", 1], ["twink", 2], ["femboy", 3], ["tomboy", 4], ["androgynous woman", 5], ["feminine, woman", 6], ["hyper feminine, woman", 7]]],
+		"age": [mc_state.age, [["(elder:3) (old:3)", 0], ["young adult", 14], ["adult", 25], [`adult, older, ${mc_state.gender < 4 ? "Dilf" : "Milf"}`, 35], [`(old ${mc_state.gender < 4 ? "man" : "woman"})`, 50], ["(old:1.5), senior citizen", 60], ["(old:2), senior citizen", 70]]],
 		"subdom": [mc_state.subdom, [["dominant", -2], ["confident", -1], ["relaxed", 0], ["timid", 1], ["submissive", 2]]],
 		"lactation": [mc_state.lactation, [["", 0], [", lactation", 1], [", (lactation:1.3)", 2]]],
 	};
@@ -1080,12 +1080,12 @@ setup.comfyUI_GenerateStatParameters = function(characterData) {
 			excludedBy:[]
 		},
 		"framing":{
-			positive:["(medium close shot:1.3)", "(medium close up:1.3)", "solo", `${range.sex}`],
+			positive:["(medium close up:1.3)", "solo", `${range.sex}`],
 			negative:["full shot", "(full body:0.3)", "(cowboy shot:0.3)", "(medium full shot:0.1)", "(hand on another's head:1.5)"],
 			excludedBy:[]
 		},
 		"background":{
-			positive:["(dark grey background)", "blank background", "no foreground"],
+			positive:["green background", "blank background", "no foreground"],
 			negative:["distorted light"],
 			excludedBy:[]
 		},
@@ -1095,8 +1095,8 @@ setup.comfyUI_GenerateStatParameters = function(characterData) {
 			excludedBy:[]
 		},
 		"age":{
-			positive:[`(${range.age}:1.2)`],
-			negative:["toddler", "kindergartener", "(child:1.3)", "(underage:1.3)", "early teen", "shota", "loli"],
+			positive:[`(${range.age}:1.4)`],
+			negative:["(toddler:1.3)", "(kindergartener:1.3)", "(child:1.3)", "(underage:1.3)", "early teen", "(shota:1.3)", "(loli:1.3)"],
 			excludedBy:[]
 		},
 		"gender":{
@@ -1141,7 +1141,7 @@ setup.comfyUI_GenerateStatParameters = function(characterData) {
 		},
 		"eyes":{
 			positive:[`${state.eyeColor} eyes`],
-			negative:["blurry eyes", "poorly drawn eyes", "asymmetrical eyes"],
+			negative:["(blurry eyes:1.3)", "(poorly drawn eyes:1.3)", "(asymmetrical eyes:1.3)"],
 			excludedBy:[]
 		},
 		"face":{
@@ -1150,7 +1150,7 @@ setup.comfyUI_GenerateStatParameters = function(characterData) {
 			excludedBy:[]
 		},
 		"hair":{
-			positive:[`${state.hair} hair`],
+			positive:[`(${state.hair} hair:1.2)`],
 			negative:[],
 			excludedBy:[]
 		},
@@ -1232,7 +1232,7 @@ setup.comfyUI_GenerateCurseParameters = function(characterData) {
 			"affects" : {
 				"clothing":{
 					"positive": ["no accessories"],
-					"negative": ["scarves", "hats", "piercings", "pasties", "jewellery", "rings", "necklaces", "gloves", "bracelets", "hair clips", "hair ornaments"],
+					"negative": ["scarves", "hats", "earrings", "piercings", "pasties", "jewellery", "rings", "necklaces", "gloves", "bracelets", "hair clips", "hair ornaments"],
 					"excludedBy": [],
 				}
 			}
@@ -1674,7 +1674,7 @@ setup.comfyUI_GenerateCurseParameters = function(characterData) {
 				"excludedBy": [],
 			},
 			"hair": {
-				"positive": ["(flowers in hair)","fantasy flower", "sprouts in hair", "(vines in hair:1.5)", "flower crown"],
+				"positive": ["(flowers in hair)","fantasy flower", "sprouts in hair", "(vines in hair:1.3)", "flower crown"],
 				"negative": [],
 				"excludedBy": [],
 			}
