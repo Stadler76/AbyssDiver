@@ -276,7 +276,10 @@ def comfy_ui_windows(storage_directory : str) -> None:
 		repository_url = COMFY_UI_DEFAULT_REPOSITORY_URL
 		previous_directory = os.getcwd()
 		os.chdir(storage_directory)
-		status = run_subprocess_cmd(["git", "clone", repository_url]).returncode
+		try:
+			status = run_subprocess_cmd(["git", "clone", repository_url]).returncode
+		except:
+			status = None
 		assert status == 0, "git clone has failed - check if you have git installed."
 		os.chdir(previous_directory)
 
@@ -287,12 +290,19 @@ def comfy_ui_windows(storage_directory : str) -> None:
 	python_filepath : str = Path(os.path.join(venv_directory, "Scripts", "python.exe")).as_posix()
 	if os.path.exists(python_filepath) is False:
 		print(f'No virtual enviornment python located at: {python_filepath}')
-		print(f"{get_installed_python()} -m venv \"{venv_directory}\"")
-		status = run_subprocess_cmd([get_installed_python(), "-m", "venv", venv_directory]).returncode
+		try:
+			status = run_subprocess_cmd([get_installed_python(), "-m", "venv", venv_directory]).returncode
+		except:
+			status = None
 		assert status == 0, "Failed to create a virtual environment in the ComfyUI folder."
 
 	# Activate the venv enviornment once for a test
-	status = run_subprocess_cmd([python_filepath, "--version"]).returncode
+	try:
+		status = run_subprocess_cmd([python_filepath, "--version"]).returncode
+	except:
+		status = None
+
+	print("Venv python.exe does exist." if os.path.exists(python_filepath) else "Venv python.exe does NOT exist!")
 	assert status == 0, "Failed to activate the virtual environment."
 
 	# install proxy requirements
@@ -392,7 +402,10 @@ def comfyui_download_mac_linux_shared(storage_directory : str) -> None:
 		repository_url = COMFY_UI_DEFAULT_REPOSITORY_URL
 		previous_directory = os.getcwd()
 		os.chdir(storage_directory)
-		status = run_subprocess_cmd(["git", "clone", repository_url]).returncode
+		try:
+			status = run_subprocess_cmd(["git", "clone", repository_url]).returncode
+		except:
+			status = None
 		assert status == 0, "git clone has failed - check if you have git installed."
 		os.chdir(previous_directory)
 
@@ -500,7 +513,10 @@ def comfy_ui_mac(storage_directory : str) -> None:
 def update_python_pip() -> None:
 	python_cmd, version = get_python_and_version()
 	assert ("3.10" in version) or ("3.11" in version), "You must have python versions 3.10.X or 3.11.X. Please reinstall python."
-	status = subprocess.run([python_cmd, "-m", "pip", "install", "--upgrade", "pip"]).returncode
+	try:
+		status = subprocess.run([python_cmd, "-m", "pip", "install", "--upgrade", "pip"]).returncode
+	except:
+		status = None
 	assert status == 0, "'pip' failed to update. Try running again."
 
 def main() -> None:
