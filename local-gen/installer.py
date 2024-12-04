@@ -543,7 +543,12 @@ def comfy_ui_linux(storage_directory : str) -> None:
 		_ = subprocess.run([python_filepath, "-m", "pip", "install", "--upgrade", "torch", "torchaudio", "torchvision", "--index-url", index_url], check=True)
 		print(f"Installed {index_url} AMD ROCM acceleration for torch.")
 	elif compute_device == 3:
-		pass # intel
+		if input("Have you setup the ComfyUI Intel ARC Install? (y/n) ") == "n":
+			print("Due to the complexities of setting up Intel GPUs manually, please do so yourself by following the ComfyUI guide at:")
+			print("https://github.com/comfyanonymous/ComfyUI?tab=readme-ov-file#intel-gpus")
+			print("When you have installed it, press enter to close one-click-comfyui to restart the terminal.")
+			input("")
+			exit(1)
 
 	start_comfyui_linux_mac_shared(comfyui_directory, arguments)
 
@@ -563,12 +568,18 @@ def comfy_ui_mac(storage_directory : str) -> None:
 	if input("Are you going to use Metal for acceleration? (y/n) "):
 		print('Installing Metal CPU')
 
+		print("If you get stuck at any point, please refer to the apple guide on setting up metal pytorch.")
+		print("https://developer.apple.com/metal/pytorch/")
+		print("Note: if you use any python 'pip' commands, please enable the VENV environment via the ComfyUI directory.")
+		print("source venv/bin/activate")
+		print("Press enter to continue...")
+
 		print("Building PyTorch with MPS support requires Xcode 13.3.1 or later.")
 		print("You can download the latest public Xcode release on the Mac App Store OR the latest beta release on the Mac App Store / Apple Developer website.")
 		print("App Store: https://apps.apple.com/us/app/xcode/id497799835?mt=12")
 		print("Developer Website: https://developer.apple.com/download/applications/")
 		print("Once you have done so, you may need to restart the terminal if continuing does not work.")
-		print("BEWARE THAT XCODE CAN TAKE UP TO 20GB OF DISK SPACE!")
+		print("BEWARE THAT XCODE CAN TAKE UP TO 40GB OF DISK SPACE!!")
 		print("Press enter to continue...")
 		input("")
 
