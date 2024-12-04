@@ -59,3 +59,6 @@ Steps:
 1. Close any running one-click-comfyui terminals
 2. Delete the "venv" folder in "local-gen/tools/ComfyUI"
 3. Restart the one-click-comfyui file.
+
+#### "'Unable to connect to ComfyUI' even when the terminal says you should be able to"
+1. Disable any adblocks OR whitelist the file.
