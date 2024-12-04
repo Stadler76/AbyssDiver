@@ -277,7 +277,9 @@ def comfy_ui_windows(storage_directory : str) -> None:
 		previous_directory = os.getcwd()
 		os.chdir(storage_directory)
 		try:
-			status = run_subprocess_cmd(["git", "clone", repository_url]).returncode
+			completed_process = run_subprocess_cmd(["git", "clone", repository_url])
+			assert completed_process, "Failed to run the command."
+			status = completed_process.returncode
 		except:
 			status = None
 		assert status == 0, "git clone has failed - check if you have git installed."
@@ -291,14 +293,18 @@ def comfy_ui_windows(storage_directory : str) -> None:
 	if os.path.exists(python_filepath) is False:
 		print(f'No virtual enviornment python located at: {python_filepath}')
 		try:
-			status = run_subprocess_cmd([get_installed_python(), "-m", "venv", venv_directory]).returncode
+			completed_process = run_subprocess_cmd([get_installed_python(), "-m", "venv", venv_directory])
+			assert completed_process, "Failed to run the command."
+			status = completed_process.returncode
 		except:
 			status = None
 		assert status == 0, "Failed to create a virtual environment in the ComfyUI folder."
 
 	# Activate the venv enviornment once for a test
 	try:
-		status = run_subprocess_cmd([python_filepath, "--version"]).returncode
+		completed_process = run_subprocess_cmd([python_filepath, "--version"])
+		assert completed_process, "Failed to run the command."
+		status = completed_process.returncode
 	except:
 		status = None
 
@@ -403,7 +409,9 @@ def comfyui_download_mac_linux_shared(storage_directory : str) -> None:
 		previous_directory = os.getcwd()
 		os.chdir(storage_directory)
 		try:
-			status = run_subprocess_cmd(["git", "clone", repository_url]).returncode
+			completed_process = run_subprocess_cmd(["git", "clone", repository_url])
+			assert completed_process, "Failed to run the command."
+			status = completed_process.returncode
 		except:
 			status = None
 		assert status == 0, "git clone has failed - check if you have git installed."
