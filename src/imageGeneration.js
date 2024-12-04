@@ -219,7 +219,7 @@ const SIMPLE_T2I_PORTRAIT_WORKFLOW_REMOVE_BACKGROUND = {
 	},
 	"17": {
 		"inputs": {
-			"threshold": 0.8,
+			"threshold": 0.85,
 			"torchscript_jit": "default",
 			"image": [
 				"15",
@@ -888,7 +888,7 @@ function processClothingState(mc_state, mc_curses) {
 						// console.log('Initial state - No restrictions');
 						return["fully clothed, modest","modestClothing"];
 					case 4:
-					// 	console.log('Clothing passed 4 - No restrictions');
+						// console.log('Clothing passed 4 - No restrictions');
 						return["normal","normalClothing"];
 					case 6:
 						// console.log('Clothing passed 6 - No restrictions');
@@ -1135,7 +1135,7 @@ setup.comfyUI_GenerateStatParameters = function(characterData) {
 			excludedBy:[]
 		},
 		"ears":{
-			positive:[`${state.ears} ears`],
+			positive:[`(${state.ears} ears:1.2)`],
 			negative:["(animal ears:1.2)", "(four ears:1.2)", "(extra ears:1.2)", "pointed ears", "elf ears"],
 			excludedBy:[]
 		},
@@ -1263,7 +1263,7 @@ setup.comfyUI_GenerateCurseParameters = function(characterData) {
 		"KnifeEar": {
 			"affects": {
 				"ears": {
-					"positive": [`pointed ${state.ears} ears`],
+					"positive": [`(pointed ears:1.2)`],
 					"negative": [],
 					"excludedBy": [],
 				}
@@ -1282,7 +1282,7 @@ setup.comfyUI_GenerateCurseParameters = function(characterData) {
 			"affects": {
 				"ears": {
 					"positive": ["(animal ears:1.2)", "(animal ears only)"],
-					"negative": ["(human ears:1.5)", "normal human ears", "4 ears"],
+					"negative": ["(human ears:1.5)", "(normal human ears:1.2)", "4 ears"],
 					"excludedBy": [],
 				},
 				"hair": {
