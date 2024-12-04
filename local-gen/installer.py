@@ -36,6 +36,7 @@ import time
 import re
 
 def get_python_and_version() -> tuple[str, str]:
+	"""Find a valid version of python that can be used to setup the python virtual environments."""
 	for cmd in ["python3.10", "python3.11", "python3", "python", "py"]:
 		try:
 			# check if the python command returns a version
@@ -64,10 +65,12 @@ def get_python_and_version() -> tuple[str, str]:
 
 
 def get_installed_python() -> str:
+	"""Just return the command of the installed python without the version."""
 	cmd, _ = get_python_and_version()
 	return cmd
 
 def run_subprocess_cmd(arguments : list[str]) -> Optional[subprocess.CompletedProcess]:
+	"""Run a subprocess command with the essential kwargs."""
 	try:
 		return subprocess.run(arguments, capture_output=True, text=True, check=True, shell=True)
 	except Exception as e:
@@ -76,6 +79,7 @@ def run_subprocess_cmd(arguments : list[str]) -> Optional[subprocess.CompletedPr
 
 restart_script : bool = False
 
+# see if requests is installed
 try:
 	import requests
 except:
@@ -83,6 +87,7 @@ except:
 	run_subprocess_cmd([get_installed_python(), "-m", "pip", "install", "requests"])
 	restart_script = True
 
+# see if tqdm is installed (progress bars)
 try:
 	from tqdm import tqdm
 except:
@@ -90,6 +95,7 @@ except:
 	run_subprocess_cmd([get_installed_python(), "-m", "pip", "install", "tqdm"])
 	restart_script = True
 
+# one of them wasn't installed, restart terminal so they load
 if restart_script is True:
 	print("The script needs to be restarted as new packages were installed.")
 	print("Press enter to continue...")
@@ -103,13 +109,13 @@ COMFYUI_CUSTOM_NODES : list[str] = ["https://github.com/ltdrdata/ComfyUI-Manager
 
 HUGGINGFACE_CHECKPOINTS_TO_DOWNLOAD : dict[str, Optional[str]] = {
 	# SD1.5
-	"hassakuHentaiModel_v13.safetensors" : None,
+	# "hassakuHentaiModel_v13.safetensors" : None,
 	# PonyXL
 	"hassakuXLPony_v13BetterEyesVersion.safetensors" : "https://huggingface.co/FloricSpacer/AbyssDiverModels/resolve/main/hassakuXLPony_v13BetterEyesVersion.safetensors?download=true"
 }
 HUGGINGFACE_LORAS_TO_DOWNLOAD : dict[str, Optional[str]] = {
 	# SD1.5
-	"midjourneyanime.safetensors" : None,
+	# "midjourneyanime.safetensors" : None,
 	# PonyXL
 	"DallE3-magik.safetensors" : "https://huggingface.co/FloricSpacer/AbyssDiverModels/resolve/main/DallE3-magik.safetensors?download=true"
 }
@@ -137,6 +143,7 @@ def assert_path_length_limit() -> None:
 	print("Path length is within safe limits. The installer will continue.")
 
 def download_file(url: str, filepath: str, chunk_size: int = 64) -> None:
+	"""Download file from the url to the filepath, chunk_size is how much data is downloaded at once in the stream."""
 	response = requests.get(url, stream=True) # type: ignore
 	response.raise_for_status()  # Raise an error for bad status codes
 	total_size = int(response.headers.get('content-length', 0))
@@ -149,6 +156,7 @@ def download_file(url: str, filepath: str, chunk_size: int = 64) -> None:
 	print(f"File downloaded to {filepath}")
 
 def run_command(args: list[str] | str, shell: bool = False) -> tuple[int, str]:
+	"""Run the following command using subprocess and read the output live to the user. DO NOT USE IF YOU NEED TO PROMPT THE USER."""
 	print(f'RUNNING COMMAND: {str(args)}')
 	print('=' * 10)
 	try:
@@ -188,7 +196,8 @@ def run_command(args: list[str] | str, shell: bool = False) -> tuple[int, str]:
 		print(f"Exception details: {e}")
 		return -1, str(e)
 
-def ask_user_for_gpu_device() -> int:
+def windows_gpu_device() -> int:
+	"""Ask windows users what acceleration device they want to use."""
 	if input("Are you using a NVIDIA graphics card? (y/n)") == "y":
 		return 1 # NVIDIA cuda
 
@@ -196,6 +205,7 @@ def ask_user_for_gpu_device() -> int:
 	return 0
 
 def check_for_proxy_and_comfyui_responses() -> None:
+	"""Ping the proxy on 127.0.0.1:12500 and ComfyUI on 127.0.0.1:8188 to see if both are available to the user."""
 	try:
 		import requests
 	except:
@@ -223,6 +233,7 @@ def check_for_proxy_and_comfyui_responses() -> None:
 	print("")
 
 def clone_custom_nodes_to_folder(custom_nodes_folder : str) -> None:
+	"""Download all the stored comfyui custom nodes to the given folder"""
 	previous_directory = os.getcwd()
 	os.chdir(custom_nodes_folder)
 	for node_repository_url in COMFYUI_CUSTOM_NODES:
@@ -231,9 +242,11 @@ def clone_custom_nodes_to_folder(custom_nodes_folder : str) -> None:
 	os.chdir(previous_directory)
 
 def comfy_ui_experimental_amd_windows(storage_directory : str) -> None:
+	"""Custom install step for AMD support on Windows (using a different ComfyUI implementation)."""
 	raise NotImplementedError
 
 def download_checkpoints_to_subfolder(models_folder : str) -> None:
+	"""Download the checkpoints to the sub-folder checkpoints"""
 	for filename, checkpoint_url in HUGGINGFACE_CHECKPOINTS_TO_DOWNLOAD.items():
 		if checkpoint_url is None:
 			print(filename, 'checkpoint has no download set yet.')
@@ -250,6 +263,7 @@ def download_checkpoints_to_subfolder(models_folder : str) -> None:
 			assert False, f"Failed to download the {filename} checkpoint file."
 
 def download_loras_to_subfolder(models_folder : str) -> None:
+	"""Download the checkpoints to the sub-folder loras"""
 	for filename, lora_url in HUGGINGFACE_LORAS_TO_DOWNLOAD.items():
 		if lora_url is None:
 			print(filename, 'lora has no download set yet.')
@@ -267,7 +281,6 @@ def download_loras_to_subfolder(models_folder : str) -> None:
 
 def comfy_ui_windows(storage_directory : str) -> None:
 	"""Install ComfyUI on Windows"""
-
 	# clone ComfyUI
 	comfyui_directory = Path(os.path.join(storage_directory, "ComfyUI")).as_posix()
 	print(f'ComfyUI install directory: {comfyui_directory}')
@@ -349,7 +362,7 @@ def comfy_ui_windows(storage_directory : str) -> None:
 	arguments = ["--windows-standalone-build", "--disable-auto-launch"]
 
 	print('Asking user for GPU device.')
-	device_n = ask_user_for_gpu_device()
+	device_n = windows_gpu_device()
 	if device_n == 0:
 		arguments.append("--cpu")
 	elif device_n == 1:
@@ -399,7 +412,6 @@ def comfy_ui_windows(storage_directory : str) -> None:
 
 def comfyui_download_mac_linux_shared(storage_directory : str) -> None:
 	"""Shared code between Linux and Mac for downloading ComfyUI"""
-
 	# clone ComfyUI
 	comfyui_directory = Path(os.path.join(storage_directory, "ComfyUI")).as_posix()
 	print(f'ComfyUI install directory: {comfyui_directory}')
@@ -465,6 +477,7 @@ def comfyui_download_mac_linux_shared(storage_directory : str) -> None:
 	download_loras_to_subfolder(models_folder)
 
 def start_comfyui_linux_mac_shared(comfyui_directory : str, arguments : list[str]) -> None:
+	"""Start the Linux/Mac Version of ComfyUI"""
 	# start comfyui
 	venv_directory : str = Path(os.path.join(comfyui_directory, "venv")).as_posix()
 	python_filepath : str = Path(os.path.join(venv_directory, "bin", "python")).as_posix()
@@ -560,9 +573,6 @@ def comfy_ui_linux(storage_directory : str) -> None:
 
 	start_comfyui_linux_mac_shared(comfyui_directory, arguments)
 
-def ask_mac_device() -> int:
-	return 0
-
 def comfy_ui_mac(storage_directory : str) -> None:
 	"""Install ComfyUI on Mac"""
 	comfyui_download_mac_linux_shared(storage_directory)
@@ -604,6 +614,7 @@ def comfy_ui_mac(storage_directory : str) -> None:
 	start_comfyui_linux_mac_shared(comfyui_directory, arguments)
 
 def update_python_pip() -> None:
+	"""Run `pip install --upgrade pip` on whichever python version is found."""
 	python_cmd, version = get_python_and_version()
 	assert ("3.10" in version) or ("3.11" in version), "You must have python versions 3.10.X or 3.11.X. Please reinstall python."
 	try:
@@ -613,6 +624,7 @@ def update_python_pip() -> None:
 	assert status == 0, "'pip' failed to update. Try running again."
 
 def main() -> None:
+	"""Main function for the code - this runs immediately on launch."""
 	assert_path_length_limit()
 	update_python_pip()
 
