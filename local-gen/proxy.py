@@ -16,7 +16,7 @@ import traceback
 import uvicorn
 import websockets
 
-PRINT_COMFYUI_INPUT_WORKFLOW : bool = False
+PRINT_COMFYUI_INPUT_WORKFLOW : bool = True
 
 COMFYUI_IMAGE_TYPE = Literal["input", "output", "temp"]
 
