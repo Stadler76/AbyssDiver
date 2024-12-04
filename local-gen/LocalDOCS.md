@@ -33,29 +33,29 @@ Steps:
 4. `python3.10 --version`
 
 ### Essentials
-i. *DO NOT USE THE WINDOWS STORE PYTHON*
-ii. *DO NOT INSTALL PYTHON IN PROGRAM FILES / PROGRAM FILES (x86)*
-iii. *USE THE MOST UP-TO-DATE VERSION OF THE GAME*
+1. *DO NOT USE THE WINDOWS STORE PYTHON*
+2. *DO NOT INSTALL PYTHON IN PROGRAM FILES / PROGRAM FILES (x86)*
+3. *USE THE MOST UP-TO-DATE VERSION OF THE GAME*
 
 ### Terminal Errors:
 
 #### "Command failed with code XXXXXXXXXX ... venv/Scripts/python.exe ... --lowvram"
-a. Close any running one-click-comfyui terminals
-b. Delete the "venv" folder in "local-gen/tools/ComfyUI"
-c. Restart the one-click-comfyui file.
+1. Close any running one-click-comfyui terminals
+2. Delete the "venv" folder in "local-gen/tools/ComfyUI"
+3. Restart the one-click-comfyui file.
 
 #### "WARNING: Ignoring invalid distribution ~~p (PATH_TO_PYTHON\Lib\site-packages)"
-a. Uninstall the version of python that is throwing this error
-b. Reinstall the python version if you need it (use either 3.10.X or 3.11.X).
-c. Restart the one-click-comfyui file.
+1. Uninstall the version of python that is throwing this error
+2. Reinstall the python version if you need it (use either 3.10.X or 3.11.X).
+3. Restart the one-click-comfyui file.
 
 #### "Error while deserializing header: MetadataIncompleteBuffer"
-a. Head to "local-gen/tools/ComfyUI"
-b. In the models/checkpoints, delete the hassakuXL model
-c. In the models/loras, delete the dalle magik model
-d. Restart the one-click-comfyui file and let it download the files again.
+1. Head to "local-gen/tools/ComfyUI"
+2. In the models/checkpoints, delete the hassakuXL model
+3. In the models/loras, delete the dalle magik model
+4. Restart the one-click-comfyui file and let it download the files again.
 
 #### "Failed to activate virtual environment"
-a. Close any running one-click-comfyui terminals
-b. Delete the "venv" folder in "local-gen/tools/ComfyUI"
-c. Restart the one-click-comfyui file.
+1. Close any running one-click-comfyui terminals
+2. Delete the "venv" folder in "local-gen/tools/ComfyUI"
+3. Restart the one-click-comfyui file.
