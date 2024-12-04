@@ -570,6 +570,7 @@ def comfy_ui_linux(storage_directory : str) -> None:
 			print("When you have installed it, press enter to close one-click-comfyui to restart the terminal.")
 			input("")
 			exit(1)
+		print("Assuming Intel ARC has been installed - starting ComfyUI.")
 
 	start_comfyui_linux_mac_shared(comfyui_directory, arguments)
 
