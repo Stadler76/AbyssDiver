@@ -486,27 +486,101 @@ def start_comfyui_linux_mac_shared(comfyui_directory : str, arguments : list[str
 
 	print("Both ComfyUI and Proxy scripts have finished.")
 
+def ask_linux_device() -> int:
+	# 0:cpu, 1:cuda, 2:amd, 3:intel gpu
+	if input("Are you going to generate on the CPU? (y/n) ") == "y":
+		return 0
+	if input("Are you going to generate on a NVIDIA GPU? (y/n) ") == "y":
+		return 1
+	if input("Are you going to generate on a AMD rocm GPU? (y/n) ") == "y":
+		return 2
+	if input("Are you going to generate on a Intel GPU? (y/n) ") == "y":
+		return 3
+	print("No supported GPU was selected - defaulting to the CPU.")
+	return 0
+
 def comfy_ui_linux(storage_directory : str) -> None:
 	"""Install ComfyUI on Linux"""
 	comfyui_download_mac_linux_shared(storage_directory)
 	comfyui_directory = Path(os.path.join(storage_directory, "ComfyUI")).as_posix()
 
+	venv_directory : str = Path(os.path.join(comfyui_directory, "venv")).as_posix()
+	python_filepath : str = Path(os.path.join(venv_directory, "bin", "python")).as_posix()
+
 	arguments = ["--disable-auto-launch"]
 
-	print("At the current moment, only CPU support is made for Linux.")
-	arguments.append("--cpu")
+	compute_device : int = ask_linux_device()
+	print(f"Compute device {compute_device} was selected for Linux.")
+	# 0:cpu, 1:cuda, 2:amd, 3:intel gpu
+
+	if compute_device != 0:
+		arguments.append("--lowvram")
+
+	if compute_device == 0:
+		print("CPU Generation was selected.")
+		arguments.append("--cpu --force-fp16")
+	elif compute_device == 1:
+		print("Installing torch torchaudio and torchvision with CUDA acceleration.")
+		print("Please open a new terminal, type 'nvidia-smi' and find the CUDA Version: XX.X.")
+		print("If nvidia-smi is not a valid command, please install a NVIDIA graphics driver and restart the terminal.")
+		if input("Are you using CUDA 11.8? (y/n)") == "y":
+			index_url = "https://download.pytorch.org/whl/cu118"
+		elif input("Are you using CUDA 12.1? (y/n)") == "y":
+			index_url = "https://download.pytorch.org/whl/cu121"
+		elif input("Are you using CUDA 12.4 or later? (y/n)") == "y":
+			index_url = "https://download.pytorch.org/whl/cu124"
+		else:
+			print("Unknown CUDA! Defaulting to CUDA 12.4 (latest).")
+			index_url = "https://download.pytorch.org/whl/cu124"
+		_ = subprocess.run([python_filepath, "-m", "pip", "install", "--upgrade", "torch", "torchaudio", "torchvision", "--index-url", index_url], check=True)
+		print(f"Installed {index_url} cuda acceleration for torch.")
+		if input("Are any of your currently plugged-in GPUs older than the 1060 series (but not including the 1060)? (y/n): ") == "y":
+			arguments.append("--disable-cuda-malloc")
+			arguments.append("--disable-smart-memory")
+	elif compute_device == 2:
+		print("Installing torch torchadui and torchvision with AMD ROCM acceleration.")
+		index_url = "https://download.pytorch.org/whl/rocm6.1"
+		_ = subprocess.run([python_filepath, "-m", "pip", "install", "--upgrade", "torch", "torchaudio", "torchvision", "--index-url", index_url], check=True)
+		print(f"Installed {index_url} AMD ROCM acceleration for torch.")
+	elif compute_device == 3:
+		pass # intel
 
 	start_comfyui_linux_mac_shared(comfyui_directory, arguments)
+
+def ask_mac_device() -> int:
+	return 0
 
 def comfy_ui_mac(storage_directory : str) -> None:
 	"""Install ComfyUI on Mac"""
 	comfyui_download_mac_linux_shared(storage_directory)
 	comfyui_directory = Path(os.path.join(storage_directory, "ComfyUI")).as_posix()
 
+	venv_directory : str = Path(os.path.join(comfyui_directory, "venv")).as_posix()
+	python_filepath : str = Path(os.path.join(venv_directory, "bin", "python")).as_posix()
+
 	arguments = ["--disable-auto-launch"]
 
-	print("At the current moment, only CPU support is made for Mac.")
-	arguments.append("--cpu")
+	if input("Are you going to use Metal for acceleration? (y/n) "):
+		print('Installing Metal CPU')
+
+		print("Building PyTorch with MPS support requires Xcode 13.3.1 or later.")
+		print("You can download the latest public Xcode release on the Mac App Store OR the latest beta release on the Mac App Store / Apple Developer website.")
+		print("App Store: https://apps.apple.com/us/app/xcode/id497799835?mt=12")
+		print("Developer Website: https://developer.apple.com/download/applications/")
+		print("Once you have done so, you may need to restart the terminal if continuing does not work.")
+		print("BEWARE THAT XCODE CAN TAKE UP TO 20GB OF DISK SPACE!")
+		print("Press enter to continue...")
+		input("")
+
+		print('Installing Torch with MPS enabled.')
+		index_url : str = "https://download.pytorch.org/whl/nightly/cpu"
+		env = os.environ.copy()  # Copy current environment
+		env["USE_MPS"] = "1"  # Set the environment variable
+		_ = subprocess.run([python_filepath, "-m", "pip", "install", "--pre", "--upgrade", "torch", "torchaudio", "torchvision", "--extra-index-url", index_url], check=True, env=env)
+		print(f"Installed Mac Metal CPU acceleration for torch.")
+		arguments.append("--lowvram")
+	else:
+		arguments.append("--cpu")
 
 	start_comfyui_linux_mac_shared(comfyui_directory, arguments)
 
