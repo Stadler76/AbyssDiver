@@ -1,12 +1,12 @@
 
-# Models And Nodes
+## Models And Nodes
 
 - (PonyXL Checkpoint) https://civitai.com/models/376031/hassaku-xl-pony
 - (PonyXL LORA) https://civitai.com/models/481529/dall-e-3-anime-style-pony
 
 - (RemBG ComfyUI Node) https://github.com/john-mnz/ComfyUI-Inspyrenet-Rembg
 
-# Using Custom ComfyUI
+## Using Custom ComfyUI
 
 To use a custom instance of ComfyUI (for those that manually setup different version of ComfyUI with other support), simply run your custom comfyui instance, then run the proxy.py seperately using a command prompt or such.
 
@@ -24,7 +24,7 @@ Steps:
 7. Run `pip install tqdm requests fastapi pydantic pillow websocket-client aiohttp uvicorn websockets`
 8. Run `python proxy.py` in the local-gen folder
 
-# Troubleshoot
+## Troubleshoot
 
 *You can check what python commands are working using the following individual commands:*
 1. `py --version`
@@ -62,3 +62,22 @@ Steps:
 
 #### "'Unable to connect to ComfyUI' even when the terminal says you should be able to"
 1. Disable any adblocks OR whitelist the file.
+
+
+## Forcing Specific Python Versions / Filepaths
+
+![Force Python Command or Filepath](force_python_replacement.png)
+
+You can replace the `def get_python_and_version() -> tuple[str, str]:`
+function with the following in the `installer.py`:
+```py
+def get_python_and_version() -> tuple[str, str]:
+	return "python", "3.11.9"
+```
+
+or if you want to specify a filepath (such as a custom conda environment)
+
+```py
+def get_python_and_version() -> tuple[str, str]:
+	return "C:/Users/USERNAME/miniconda3/envs/python_3_11/Scripts/python.exe", "3.11.9"
+```

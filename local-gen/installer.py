@@ -63,7 +63,6 @@ def get_python_and_version() -> tuple[str, str]:
 			continue
 	raise Exception("No suitable Python version is installed - please install Python 3.10.X or 3.11.X.")
 
-
 def get_installed_python() -> str:
 	"""Just return the command of the installed python without the version."""
 	cmd, _ = get_python_and_version()
