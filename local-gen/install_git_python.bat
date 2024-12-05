@@ -1,4 +1,3 @@
-
 @echo off
 setlocal enabledelayedexpansion
 
@@ -11,7 +10,7 @@ mkdir "%TEMP_DIR%" >nul 2>&1
 git --version >nul 2>&1
 if %errorlevel% neq 0 (
 	echo Git is not installed. Downloading and installing...
-	powershell -Command "Invoke-WebRequest -Uri !GIT_URL! -OutFile '%TEMP_DIR%\git-installer.exe'"
+	curl -L -o "%TEMP_DIR%\git-installer.exe" !GIT_URL!
 	"%TEMP_DIR%\git-installer.exe" /VERYSILENT /NORESTART
 ) else (
 	echo Git is already installed.
@@ -36,12 +35,11 @@ if %errorlevel% equ 0 (
 
 if "%PYTHON_CMD%"=="" (
 	echo Python is not installed. Downloading and installing...
-	powershell -Command "Invoke-WebRequest -Uri !PYTHON_URL! -OutFile '%TEMP_DIR%\python-installer.exe'"
+	curl -L -o "%TEMP_DIR%\python-installer.exe" !PYTHON_URL!
 	"%TEMP_DIR%\python-installer.exe" /quiet InstallAllUsers=1 PrependPath=1
 ) else (
 	echo Python is already installed.
 )
 
 rd /s /q "%TEMP_DIR%"
-
 echo Installation complete.
