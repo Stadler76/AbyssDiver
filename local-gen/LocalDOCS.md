@@ -39,6 +39,10 @@ Steps:
 
 ### Terminal Errors:
 
+### "'Python is not installed, installing now silently.' keeps failing over and over with 'curl not found'"
+1. You can manually install python at https://www.python.org/downloads/release/python-3119/
+2. OR Install curl manually then re-open the file.
+
 #### "Exception No suitable Python version is installed..."
 1. Uninstall any versions of python that are not Python 3.11.X or 3.10.X (use the commands above in a terminal)
 2. Install Python 3.11.X on the webpage https://www.python.org/downloads/release/python-3119/ if either 3.11.X or 3.10.X is not already installed
