@@ -68,6 +68,17 @@ Steps:
 #### "'Unable to connect to ComfyUI' even when the terminal says you should be able to"
 1. Disable any adblocks OR whitelist the file.
 
+### "Torch not build with CUDA enabled"
+1. When the prompt asks you if you have a NVIDIA gpu, enter YES
+2. When the prompt asks you what version of cuda do you have, follow the instructions to find the version.
+3. When the prompt asks if you have a older GPU, and you have a GPU older than the 1060, enter YES.
+4. If the above steps do not work, delete the "venv" folder and repeat, otherwise join the discord and head to #local-image-gen-help.
+
+#### "'Cuda Error' of any type"
+1. If you are using an OLDER gpu than the 1060, make sure to put YES for the "older gpu" prompt when opening the one-click-comfyui.bat.
+2. You may need to install or upgrade your CUDA toolkit found on the page https://developer.nvidia.com/cuda-downloads
+3. Try uninstall and reinstall cuda.
+4. If none of the above work, please join the discord and head to #local-image-gen-help.
 
 ## Forcing Specific Python Versions / Filepaths
 
