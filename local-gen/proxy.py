@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from io import BytesIO
 from pydantic import BaseModel
-from typing import Any, Literal, Optional, Union, List
+from typing import Any, Literal, Optional
 from urllib.parse import urlencode
 from uuid import uuid4
 
@@ -16,7 +16,7 @@ import traceback
 import uvicorn
 import websockets
 
-PRINT_COMFYUI_INPUT_WORKFLOW : bool = False
+PRINT_COMFYUI_INPUT_WORKFLOW : bool = True
 
 COMFYUI_IMAGE_TYPE = Literal["input", "output", "temp"]
 
@@ -32,22 +32,25 @@ COMFYUI_SCHEDULERS= Literal[
 ]
 
 def image_to_base64(image : Image.Image) -> str:
+	"""Convert the PIL image back to a base64 image."""
 	buffered = BytesIO()
 	image.save(buffered, format="PNG")
 	return base64.b64encode(buffered.getvalue()).decode("utf-8")
 
 def base64_to_image(b64 : str) -> Image.Image:
+	"""Convert the base64 image back to a PIL image."""
 	buffer = BytesIO(base64.b64decode(b64))
 	return Image.open(buffer).convert('RGB')
 
 async def async_post(url : str, headers : Optional[dict] = None, cookies : Optional[dict] = None, json : Optional[dict] = None, data : Optional[str] = None) -> bytes:
-	'''Asynchronously POST to the given url with the parameters.'''
+	"""Asynchronously POST to the url and expect a json body response to return."""
 	client : aiohttp.ClientSession
 	async with aiohttp.ClientSession(headers=headers, cookies=cookies) as client:
 		response : aiohttp.ClientResponse = await client.post(url, data=data, json=json)
 		return await response.read()
 
 async def post_json_response(url : str, data : Optional[dict]) -> Optional[dict]:
+	"""POST to the url and expect a json body response to return."""
 	try:
 		response : bytes = await async_post(url, json=data)
 		return json.loads(response.decode('utf-8'))
@@ -56,13 +59,14 @@ async def post_json_response(url : str, data : Optional[dict]) -> Optional[dict]
 		return None
 
 async def async_get(url : str, headers : Optional[dict] = None, cookies : Optional[dict] = None, json : Optional[dict] = None, data : Optional[str] = None) -> bytes:
-	'''Asynchronously POST to the given url with the parameters.'''
+	"""Asynchronously GET to the url and expect a json body response to return."""
 	client : aiohttp.ClientSession
 	async with aiohttp.ClientSession(headers=headers, cookies=cookies) as client:
 		response : aiohttp.ClientResponse = await client.get(url, data=data, json=json)
 		return await response.read()
 
 async def get_json_response(url : str) -> Optional[dict]:
+	"""GET to the url and expect a json body response to return."""
 	try:
 		response : bytes = await async_get(url)
 		return json.loads(response.decode('utf-8'))
@@ -241,19 +245,17 @@ class ComfyUI_API:
 COMFYUI_NODE_URL : str = '127.0.0.1:8188' # change this to redirect
 
 class GenerateImagesResponse(BaseModel):
-	images : List[str]
+	"""What is returned from the proxy /generate_workflow api."""
+	images : list[str]
 
-async def generate_worflow_image(workflow : dict) -> Optional[str]:
+async def generate_workflow_image(workflow : dict) -> list[Image.Image]:
+	"""Process a workflow and return the first image."""
 	COMFYUI_NODE = ComfyUI_API(COMFYUI_NODE_URL)
 	await COMFYUI_NODE.is_available()
 	await COMFYUI_NODE.open_websocket()
 	image_array : list[dict] = await COMFYUI_NODE.generate_images_using_workflow_prompt(workflow)
 	await COMFYUI_NODE.close_websocket()
-	if len(image_array) == 0: return None
-	raw_image : bytes = image_array[0]['image_data']
-	image = Image.open(BytesIO(raw_image))
-	b64_image : str = image_to_base64(image)
-	return b64_image
+	return [Image.open(BytesIO(image_data["image_data"])) for image_data in image_array]
 
 app = FastAPI(title='Local Image Generation', description='This api allows local image generation with ComfyUI. Coded by @SPOOKEXE on GitHub', version="0.1.0")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
@@ -267,10 +269,11 @@ async def generate_worflow(workflow : dict) -> Optional[GenerateImagesResponse]:
 	if PRINT_COMFYUI_INPUT_WORKFLOW:
 		print(workflow)
 	try:
-		image_bs4 : Optional[str] = await generate_worflow_image(workflow)
-		assert image_bs4, "Could not get the generated image from ComfyUI."
-		print('Image was generated - sending result to Abyss Diver')
-		return GenerateImagesResponse(images=[image_bs4])
+		image_pil : list[Image.Image] = await generate_workflow_image(workflow)
+		image_bs4 : list[str] = [image_to_base64(pil_image) for pil_image in image_pil]
+		assert len(image_bs4) != 0, "ComfyUI failed to generate any image."
+		print('Images were generated, sending results to Abyss Diver')
+		return GenerateImagesResponse(images=image_bs4)
 	except Exception as e:
 		print(e)
 	return None

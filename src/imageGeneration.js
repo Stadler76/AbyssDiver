@@ -708,7 +708,13 @@ setup.comfyUI_GenerateAdvancedParameters = function() {
 	var cfg = 7.0;
 	var width = 1024;
 	var height = 1024;
-	var seed = (SugarCube.State.prng.seed | Math.round(Math.random() * 10_000));
+
+	var seed = null;
+	if (setup.customSeedInput == null || setup.customSeedInput == "" || !Number.isInteger(parseInt(setup.customSeedInput))) {
+		seed = SugarCube.State.prng.seed | Math.round(Math.random() * 10_000);
+	} else {
+		seed = parseInt(setup.customSeedInput);
+	}
 
 	// positive
 	let positive = "";
@@ -1200,13 +1206,13 @@ setup.comfyUI_GenerateStatParameters = function(characterData) {
 		.forEach(([category, categoryData]) => {
 			characterData.statPromptArray = characterData.statPromptArray || {};
 			characterData.excluded = characterData.excluded || {};
-			
+
 			characterData.statPromptArray[category] = characterData.statPromptArray[category] || { positive: [], negative: [] };
 			characterData.excluded[category] = characterData.excluded[category] || { positive: [], negative: [] };
-			
+
 			const excludedReasons = (categoryData.excludedBy || [])
 				.map(condition => condition ? condition : null).filter(Boolean);
-			
+
 			['positive', 'negative'].forEach(type => {
 				(categoryData[type] || []).forEach(tag => {
 					excludedReasons.length === 0
@@ -1815,7 +1821,7 @@ setup.comfyUI_GenerateCurseParameters = function(characterData) {
 		// 	}
 		// },
 		// "RandomOrgasms": {
-		// 	"affects": { 
+		// 	"affects": {
 		// 		"behaviour": {
 		// 		"positive": ["spasm", "leg spasm", "squirting"],
 		// 		"negative": [],
@@ -2186,7 +2192,7 @@ setup.compileCombinedPrompts = function(characterData) {
 			if (CATEGORY_ORDER.includes(category) && !shouldSkipCategory(category)) {
 				if (!targetPositive[category]) targetPositive[category] = [];
 				if (!targetNegative[category]) targetNegative[category] = [];
-				
+
 				if (prompts.positive && Array.isArray(prompts.positive)) {
 					targetPositive[category].push(...prompts.positive);
 				}
@@ -2257,9 +2263,6 @@ setup.compileCombinedPrompts = function(characterData) {
 
 	return [positive, negative];
 };
-	
-	
-
 
 setup.comfyUI_GenerateStandardParameters = function() {
 	let characterData = setup.comfyUI_PrepareCharacterData();
@@ -2269,9 +2272,14 @@ setup.comfyUI_GenerateStandardParameters = function() {
 	let checkpoint = "hassakuXLPony_v13BetterEyesVersion.safetensors";
 	let steps = 30;
 	let cfg = 10.0;
-	let seed = (SugarCube.State.variables.seed || Math.round(Math.random() * 10_000));
 	let width = 1024;
 	let height = 1024;
+	var seed = null;
+	if (setup.customSeedInput == null || setup.customSeedInput == "" || !Number.isInteger(parseInt(setup.customSeedInput))) {
+		seed = SugarCube.State.prng.seed | Math.round(Math.random() * 10_000);
+	} else {
+		seed = parseInt(setup.customSeedInput);
+	}
 	return [positive, negative, checkpoint, steps, cfg, seed, width, height];
 }
 
