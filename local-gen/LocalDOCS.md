@@ -39,6 +39,11 @@ Steps:
 
 ### Terminal Errors:
 
+#### "Exception No suitable Python version is installed..."
+1. Uninstall any versions of python that are not Python 3.11.X or 3.10.X (use the commands above in a terminal)
+2. Install Python 3.11.X on the webpage https://www.python.org/downloads/release/python-3119/ if either 3.11.X or 3.10.X is not already installed
+3. Restart the one-click-comfyui file.
+
 #### "Command failed with code XXXXXXXXXX ... venv/Scripts/python.exe ... --lowvram"
 1. Close any running one-click-comfyui terminals
 2. Delete the "venv" folder in "local-gen/tools/ComfyUI"
