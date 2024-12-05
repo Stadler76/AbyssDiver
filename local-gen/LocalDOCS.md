@@ -68,7 +68,7 @@ Steps:
 #### "'Unable to connect to ComfyUI' even when the terminal says you should be able to"
 1. Disable any adblocks OR whitelist the file.
 
-### "Torch not build with CUDA enabled"
+#### "Torch not build with CUDA enabled"
 1. When the prompt asks you if you have a NVIDIA gpu, enter YES
 2. When the prompt asks you what version of cuda do you have, follow the instructions to find the version.
 3. When the prompt asks if you have a older GPU, and you have a GPU older than the 1060, enter YES.
