@@ -121,8 +121,6 @@ HUGGINGFACE_LORAS_TO_DOWNLOAD : dict[str, Optional[str]] = {
 
 CUSTOM_COMMAND_LINE_ARGS_FOR_COMFYUI : list[str] = [] # custom arguments to pass to comfyui
 
-# IS_AMD_WINDOWS_MODE : bool = False
-
 def assert_path_length_limit() -> None:
 	"""Check how long the path is for the local-gen folder."""
 	current_path : str = Path(os.path.abspath(os.getcwd())).as_posix()
@@ -242,6 +240,59 @@ def clone_custom_nodes_to_folder(custom_nodes_folder : str) -> None:
 
 def comfy_ui_experimental_amd_windows(storage_directory : str) -> None:
 	"""Custom install step for AMD support on Windows (using a different ComfyUI implementation)."""
+
+	# clone ComfyUI
+	comfyui_directory = Path(os.path.join(storage_directory, "ComfyUI")).as_posix()
+	print(f'ComfyUI install directory: {comfyui_directory}')
+	if os.path.exists(comfyui_directory) is False:
+		print("Attempting to clone ComfyUI to the directory.")
+		repository_url = COMFY_UI_AMD_GPU_REPOSITORY_URL
+		previous_directory = os.getcwd()
+		os.chdir(storage_directory)
+		try:
+			completed_process = run_subprocess_cmd(["git", "clone", repository_url])
+			assert completed_process, "Failed to run the command."
+			status = completed_process.returncode
+		except:
+			status = None
+		assert status == 0, "git clone has failed - check if you have git installed."
+		os.chdir(previous_directory)
+
+	print("Due to how the AMD GPU version needs to be support, you will have to do some manual dependency installation following the repository's guide.")
+	if input("Have you installed the dependencies needed already? (y/n) ") == "n":
+		print(COMFY_UI_AMD_GPU_REPOSITORY_URL + "?tab=readme-ov-file#dependencies")
+		print("Open this repository and follow the guide to install the dependencies.")
+		print("Press enter to restart the one-click...")
+		input("")
+		exit(1)
+
+	print("Dependencies have been installed.")
+
+	print("Running install.bat")
+	setup_batch = Path(os.path.join(comfyui_directory, "install.bat")).as_posix()
+	subprocess.run([setup_batch], check=True)
+
+	print("Running comfyui.bat")
+	comfyui_batch = Path(os.path.join(comfyui_directory, "comfyui.bat")).as_posix()
+	subprocess.run([comfyui_batch], check=True)
+
+	with open(comfyui_batch, "w") as file:
+		file.write("""@echo off
+
+set PYTHON="%~dp0/venv/Scripts/python.exe"
+set GIT=
+set VENV_DIR=./venv
+set COMMANDLINE_ARGS=--use-quad-cross-attention --lowvram --windows-standalone-build --disable-auto-launch
+
+set ZLUDA_COMGR_LOG_LEVEL=1
+
+echo *** Checking and updating to new version if possible 
+git pull
+echo.
+.\zluda\zluda.exe -- %PYTHON% main.py %COMMANDLINE_ARGS%
+pause""")
+
+
 	raise NotImplementedError
 
 def download_checkpoints_to_subfolder(models_folder : str) -> None:
@@ -358,7 +409,7 @@ def comfy_ui_windows(storage_directory : str) -> None:
 	models_folder = Path(os.path.join(comfyui_directory, "models")).as_posix()
 	download_loras_to_subfolder(models_folder)
 
-	arguments = ["--windows-standalone-build", "--disable-auto-launch"]
+	arguments = ["--windows-standalone-build", "--disable-auto-launch"] + CUSTOM_COMMAND_LINE_ARGS_FOR_COMFYUI
 
 	print('Asking user for GPU device.')
 	device_n = windows_gpu_device()
@@ -483,7 +534,7 @@ def start_comfyui_linux_mac_shared(comfyui_directory : str, arguments : list[str
 
 	main_py = Path(os.path.join(comfyui_directory, "main.py")).as_posix()
 
-	command1_args = [python_filepath, main_py] + arguments
+	command1_args = [python_filepath, main_py] + arguments + CUSTOM_COMMAND_LINE_ARGS_FOR_COMFYUI
 	print("Running ComfyUI with the following commands:")
 	print(command1_args)
 
@@ -633,10 +684,10 @@ def main() -> None:
 
 	if platform.system() == "Windows":
 		print('Running Windows.')
-		# if input("Do you have an AMD GPU and want to try the experimental AMD-Accelerated ComfyUI version? (y/n)") == "y":
-		# 	comfy_ui_experimental_amd_windows(tools_directory)
-		# else:
-		comfy_ui_windows(tools_directory)
+		if input("Do you have an AMD GPU and want to try the experimental AMD-Accelerated ComfyUI version? (y/n)") == "y":
+			comfy_ui_experimental_amd_windows(tools_directory)
+		else:
+			comfy_ui_windows(tools_directory)
 	elif platform.system() == "Linux":
 		print('Running Linux.')
 		comfy_ui_linux(tools_directory)
