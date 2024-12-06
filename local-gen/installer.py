@@ -272,10 +272,9 @@ def comfy_ui_experimental_amd_windows(storage_directory : str) -> None:
 	setup_batch = Path(os.path.join(comfyui_directory, "install.bat")).as_posix()
 	subprocess.run([setup_batch], check=True)
 
-	print("Running comfyui.bat")
-	comfyui_batch = Path(os.path.join(comfyui_directory, "comfyui.bat")).as_posix()
-	subprocess.run([comfyui_batch], check=True)
 
+	comfyui_batch = Path(os.path.join(comfyui_directory, "comfyui.bat")).as_posix()
+	print('Editing the ComfyUI batch file with custom command line args.')
 	with open(comfyui_batch, "w") as file:
 		file.write("""@echo off
 
@@ -286,14 +285,14 @@ set COMMANDLINE_ARGS=--use-quad-cross-attention --lowvram --windows-standalone-b
 
 set ZLUDA_COMGR_LOG_LEVEL=1
 
-echo *** Checking and updating to new version if possible 
+echo *** Checking and updating to new version if possible
 git pull
 echo.
-.\zluda\zluda.exe -- %PYTHON% main.py %COMMANDLINE_ARGS%
+./zluda/zluda.exe -- %PYTHON% main.py %COMMANDLINE_ARGS%
 pause""")
 
-
-	raise NotImplementedError
+	print("Running comfyui.bat")
+	subprocess.run([comfyui_batch], check=True)
 
 def download_checkpoints_to_subfolder(models_folder : str) -> None:
 	"""Download the checkpoints to the sub-folder checkpoints"""
