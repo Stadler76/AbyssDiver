@@ -270,10 +270,7 @@ def comfy_ui_experimental_amd_windows(storage_directory : str) -> None:
 
 	print("Running install.bat")
 	setup_batch = Path(os.path.join(comfyui_directory, "install.bat")).as_posix()
-	if os.path.exists(setup_batch):
-		subprocess.run([setup_batch], check=True)
-	else:
-		print("Warning: no install.bat found")
+	subprocess.run(["call", setup_batch], check=True)
 
 	comfyui_batch = Path(os.path.join(comfyui_directory, "comfyui.bat")).as_posix()
 	print('Editing the ComfyUI batch file with custom command line args.')
@@ -293,8 +290,33 @@ echo.
 ./zluda/zluda.exe -- %PYTHON% main.py %COMMANDLINE_ARGS%
 pause""")
 
-	print("Running comfyui.bat")
-	subprocess.run([comfyui_batch], check=True)
+	# install proxy requirements
+	print('Installing proxy requirements.')
+	packages = ["tqdm", "requests", "fastapi", "pydantic", "pillow", "websocket-client", "aiohttp", "uvicorn", "websockets"]
+	subprocess.run(["python", "-m", "pip", "install"] + packages, check=True)
+
+	# start comfyui
+	command1_args = ["call", comfyui_batch]
+	print("Running ComfyUI with the following commands:")
+	print(command1_args)
+
+	proxy_py : str = Path(os.path.join(os.path.dirname(os.path.abspath(__file__)), "proxy.py")).as_posix()
+	command2_args = ["python", proxy_py]
+	print("Running Proxy with the following commands:")
+	print(command2_args)
+
+	print("Starting both ComfyUI and Proxy scripts.")
+
+	thread1 = threading.Thread(target=lambda : run_command(command1_args))
+	thread2 = threading.Thread(target=lambda : run_command(command2_args))
+	thread3 = threading.Thread(target=check_for_proxy_and_comfyui_responses)
+	thread1.start()
+	thread2.start()
+	thread3.start()
+	thread1.join()
+	thread2.join()
+	thread3.join()
+	print("Both ComfyUI and Proxy scripts have finished.")
 
 def download_checkpoints_to_subfolder(models_folder : str) -> None:
 	"""Download the checkpoints to the sub-folder checkpoints"""
