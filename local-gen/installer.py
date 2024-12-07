@@ -339,16 +339,14 @@ echo .....................................................
 	with open(setup_batch, 'w') as file:
 		file.write(custom_install_script)
 
-	if os.path.exists(setup_batch):
-		print("Running custom_install.bat")
-		print(setup_batch)
-		subprocess.run([setup_batch], check=True, cwd=comfyui_directory)
+	print("Running custom_install.bat")
+	print(setup_batch)
+	subprocess.run([setup_batch], check=True, cwd=comfyui_directory)
 
 	patchzluda_batch = Path(os.path.join(comfyui_directory, "patchzluda.bat")).as_posix()
-	if os.path.exists(patchzluda_batch):
-		print("Running patchzluda.bat")
-		print(patchzluda_batch)
-		subprocess.run([patchzluda_batch], check=True, cwd=comfyui_directory)
+	print("Running patchzluda.bat")
+	print(patchzluda_batch)
+	subprocess.run([patchzluda_batch], check=True, cwd=comfyui_directory)
 
 	# install custom_nodes and requirements
 	print('Cloning all custom nodes.')
@@ -386,7 +384,6 @@ echo .....................................................
 	arguments = ["--use-quad-cross-attention"]
 
 	env = dict(os.environ, ZLUDA_COMGR_LOG_LEVEL="1", VENV_DIR=f"{comfyui_directory}/venv")
-	hsa_override = None
 	print("Only certain AMD gpus are actually supported and can be viewed at https://rocm.docs.amd.com/projects/install-on-linux/en/latest/reference/system-requirements.html")
 	print("Do you have an older or unsupported AMD card? (y/n)? ")
 	if input("Note: this is a experimental workaround and if this fails your device is not supported. ").lower() == "y":
