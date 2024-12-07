@@ -270,8 +270,10 @@ def comfy_ui_experimental_amd_windows(storage_directory : str) -> None:
 
 	print("Running install.bat")
 	setup_batch = Path(os.path.join(comfyui_directory, "install.bat")).as_posix()
-	subprocess.run([setup_batch], check=True)
-
+	if os.path.exists(setup_batch):
+		subprocess.run([setup_batch], check=True)
+	else:
+		print("Warning: no install.bat found")
 
 	comfyui_batch = Path(os.path.join(comfyui_directory, "comfyui.bat")).as_posix()
 	print('Editing the ComfyUI batch file with custom command line args.')
