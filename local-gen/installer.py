@@ -355,7 +355,6 @@ echo .....................................................
 	custom_nodes_folder = Path(os.path.join(comfyui_directory, "custom_nodes")).as_posix()
 	clone_custom_nodes_to_folder(custom_nodes_folder)
 
-
 	# pip install custom_nodes requirements.txt
 	print('Installing custom nodes requirements.')
 	for folder_name in os.listdir(custom_nodes_folder):
@@ -399,7 +398,7 @@ echo .....................................................
 
 	print("Starting both ComfyUI and Proxy scripts.")
 
-	thread1 = threading.Thread(target=lambda : run_command(command1_args, cwd=comfyui_directory, env=env, shell=True))
+	thread1 = threading.Thread(target=lambda : subprocess.run(command1_args, cwd=comfyui_directory, env=env))
 	thread2 = threading.Thread(target=lambda : run_command(command2_args))
 	thread3 = threading.Thread(target=check_for_proxy_and_comfyui_responses)
 	thread1.start()
