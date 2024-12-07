@@ -152,7 +152,7 @@ def download_file(url: str, filepath: str, chunk_size: int = 64) -> None:
 	progress_bar.close()
 	print(f"File downloaded to {filepath}")
 
-def run_command(args: list[str] | str, shell: bool = False) -> tuple[int, str]:
+def run_command(args: list[str] | str, shell: bool = False, cwd : Optional[str] = None) -> tuple[int, str]:
 	"""Run the following command using subprocess and read the output live to the user. DO NOT USE IF YOU NEED TO PROMPT THE USER."""
 	print(f'RUNNING COMMAND: {str(args)}')
 	print('=' * 10)
@@ -163,7 +163,8 @@ def run_command(args: list[str] | str, shell: bool = False) -> tuple[int, str]:
 			stdout=subprocess.PIPE,
 			stderr=subprocess.PIPE,
 			text=True,
-			bufsize=1
+			bufsize=1,
+			cwd=cwd
 		)
 		stdout_var : str = ""
 		def stream_reader(pipe, log_level):
@@ -268,9 +269,11 @@ def comfy_ui_experimental_amd_windows(storage_directory : str) -> None:
 
 	print("Dependencies have been installed.")
 
-	print("Running install.bat")
 	setup_batch = Path(os.path.join(comfyui_directory, "install.bat")).as_posix()
-	subprocess.run(["call", setup_batch], check=True)
+	if os.path.exists(setup_batch):
+		print("Running install.bat")
+		print(setup_batch)
+		subprocess.run([setup_batch], check=True, cwd=comfyui_directory)
 
 	comfyui_batch = Path(os.path.join(comfyui_directory, "comfyui.bat")).as_posix()
 	print('Editing the ComfyUI batch file with custom command line args.')
@@ -296,7 +299,7 @@ pause""")
 	subprocess.run([get_installed_python(), "-m", "pip", "install"] + packages, check=True)
 
 	# start comfyui
-	command1_args = ["call", comfyui_batch]
+	command1_args = [comfyui_batch]
 	print("Running ComfyUI with the following commands:")
 	print(command1_args)
 
@@ -307,7 +310,7 @@ pause""")
 
 	print("Starting both ComfyUI and Proxy scripts.")
 
-	thread1 = threading.Thread(target=lambda : run_command(command1_args))
+	thread1 = threading.Thread(target=lambda : run_command(command1_args, cwd=comfyui_directory))
 	thread2 = threading.Thread(target=lambda : run_command(command2_args))
 	thread3 = threading.Thread(target=check_for_proxy_and_comfyui_responses)
 	thread1.start()
