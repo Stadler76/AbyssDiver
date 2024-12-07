@@ -350,6 +350,23 @@ echo .....................................................
 		print(patchzluda_batch)
 		subprocess.run([patchzluda_batch], check=True, cwd=comfyui_directory)
 
+	# install custom_nodes and requirements
+	print('Cloning all custom nodes.')
+	custom_nodes_folder = Path(os.path.join(comfyui_directory, "custom_nodes")).as_posix()
+	clone_custom_nodes_to_folder(custom_nodes_folder)
+
+	# pip install custom_nodes requirements.txt
+	print('Installing custom nodes requirements.')
+	for folder_name in os.listdir(custom_nodes_folder):
+		if os.path.isdir(Path(os.path.join(custom_nodes_folder, folder_name)).as_posix()) is False:
+			continue # not a folder
+		folder_requirements = Path(os.path.join(custom_nodes_folder, folder_name, "requirements.txt")).as_posix()
+		print(folder_requirements)
+		if os.path.exists(folder_requirements) is False:
+			continue # cannot find requirements.txt
+		print(f'Installing {folder_name} requirements.')
+		subprocess.run([f"{comfyui_directory}/venv/Scripts/python.exe", "-m", "pip", "install", "-r", str(folder_requirements)], check=True)
+
 	# install proxy requirements
 	print('Installing proxy requirements.')
 	packages = ["tqdm", "requests", "fastapi", "pydantic", "pillow", "websocket-client", "aiohttp", "uvicorn", "websockets"]
@@ -371,7 +388,7 @@ echo .....................................................
 
 	print("Starting both ComfyUI and Proxy scripts.")
 
-	thread1 = threading.Thread(target=lambda : run_command(command1_args, cwd=comfyui_directory, env=env))
+	thread1 = threading.Thread(target=lambda : run_command(command1_args, cwd=comfyui_directory, env=env, shell=True))
 	thread2 = threading.Thread(target=lambda : run_command(command2_args))
 	thread3 = threading.Thread(target=check_for_proxy_and_comfyui_responses)
 	thread1.start()
