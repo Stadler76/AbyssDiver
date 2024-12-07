@@ -339,34 +339,16 @@ echo .....................................................
 	with open(setup_batch, 'w') as file:
 		file.write(custom_install_script)
 
-	# if os.path.exists(setup_batch):
-	# 	print("Running custom_install.bat")
-	# 	print(setup_batch)
-	# 	subprocess.run([setup_batch], check=True, cwd=comfyui_directory)
+	if os.path.exists(setup_batch):
+		print("Running custom_install.bat")
+		print(setup_batch)
+		subprocess.run([setup_batch], check=True, cwd=comfyui_directory)
 
-	# patchzluda_batch = Path(os.path.join(comfyui_directory, "patchzluda.bat")).as_posix()
-	# if os.path.exists(patchzluda_batch):
-	# 	print("Running patchzluda.bat")
-	# 	print(patchzluda_batch)
-	# 	subprocess.run([patchzluda_batch], check=True, cwd=comfyui_directory)
-
-	comfyui_batch = Path(os.path.join(comfyui_directory, "comfyui.bat")).as_posix()
-	print('Editing the ComfyUI batch file with custom command line args.')
-	with open(comfyui_batch, "w") as file:
-		file.write("""@echo off
-
-set PYTHON="%~dp0/venv/Scripts/python.exe"
-set GIT=
-set VENV_DIR=./venv
-set COMMANDLINE_ARGS=--use-quad-cross-attention --lowvram --disable-auto-launch --disable-smart-memory --disable-cuda-malloc
-
-set ZLUDA_COMGR_LOG_LEVEL=1
-
-echo *** Checking and updating to new version if possible
-git pull
-echo.
-./zluda/zluda.exe -- %PYTHON% main.py %COMMANDLINE_ARGS%
-pause""")
+	patchzluda_batch = Path(os.path.join(comfyui_directory, "patchzluda.bat")).as_posix()
+	if os.path.exists(patchzluda_batch):
+		print("Running patchzluda.bat")
+		print(patchzluda_batch)
+		subprocess.run([patchzluda_batch], check=True, cwd=comfyui_directory)
 
 	# install proxy requirements
 	print('Installing proxy requirements.')
