@@ -37,6 +37,9 @@ https://www.virustotal.com/gui/file/eaed707ff48f1cae78c708b0c4adab7fd6294279000e
 proxy.py (PYTHON)
 https://www.virustotal.com/gui/file/a087b0c9aa7e4b610f5ade40ca4276f3f640a0428d1c2d850b9a15170233eb02
 
+all files together
+https://www.virustotal.com/gui/file/54c08e7e88ef16a10700687391b4647414de87322d212e67866fceab7deaf1ae
+
 ## Using Custom ComfyUI
 
 To use a custom instance of ComfyUI (for those that manually setup different version of ComfyUI with other support), simply run your custom comfyui instance, then run the proxy.py seperately using a command prompt or such.
