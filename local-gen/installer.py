@@ -275,6 +275,12 @@ def comfy_ui_experimental_amd_windows(storage_directory : str) -> None:
 		print(setup_batch)
 		subprocess.run([setup_batch], check=True, cwd=comfyui_directory)
 
+	patchzluda_batch = Path(os.path.join(comfyui_directory, "patchzluda.bat")).as_posix()
+	if os.path.exists(patchzluda_batch):
+		print("Running patchzluda.bat")
+		print(patchzluda_batch)
+		subprocess.run([patchzluda_batch], check=True, cwd=comfyui_directory)
+
 	comfyui_batch = Path(os.path.join(comfyui_directory, "comfyui.bat")).as_posix()
 	print('Editing the ComfyUI batch file with custom command line args.')
 	with open(comfyui_batch, "w") as file:
