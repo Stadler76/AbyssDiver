@@ -383,9 +383,13 @@ echo .....................................................
 	subprocess.run([get_installed_python(), "-m", "pip", "install"] + packages, check=True)
 
 	# start comfyui
-	arguments = ["--use-quad-cross-attention --lowvram --disable-auto-launch --disable-smart-memory --disable-cuda-malloc"]
+	arguments = ["--use-quad-cross-attention"]
 
-	env = dict(os.environ, ZLUDA_COMGR_LOG_LEVEL="1", VENV_DIR=f"{comfyui_directory}/venv")
+	hsa_override = None
+	if input("Do you have an older AMD card - before and including gfx1036 (y/n)? ").lower() == "y":
+		hsa_override = "10.3.0"
+
+	env = dict(os.environ, ZLUDA_COMGR_LOG_LEVEL="1", VENV_DIR=f"{comfyui_directory}/venv", HSA_OVERRIDE_GFX_VERSION=hsa_override)
 	zluda_exe = Path(os.path.join(comfyui_directory, 'zluda', 'zluda.exe')).as_posix()
 	py_exe = Path(os.path.join(comfyui_directory, 'venv', 'Scripts', 'python.exe')).as_posix()
 	command1_args = [zluda_exe, "--", py_exe, "main.py"] + arguments
