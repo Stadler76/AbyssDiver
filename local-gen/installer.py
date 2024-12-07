@@ -293,7 +293,7 @@ pause""")
 	# install proxy requirements
 	print('Installing proxy requirements.')
 	packages = ["tqdm", "requests", "fastapi", "pydantic", "pillow", "websocket-client", "aiohttp", "uvicorn", "websockets"]
-	subprocess.run(["python", "-m", "pip", "install"] + packages, check=True)
+	subprocess.run([get_installed_python(), "-m", "pip", "install"] + packages, check=True)
 
 	# start comfyui
 	command1_args = ["call", comfyui_batch]
@@ -301,7 +301,7 @@ pause""")
 	print(command1_args)
 
 	proxy_py : str = Path(os.path.join(os.path.dirname(os.path.abspath(__file__)), "proxy.py")).as_posix()
-	command2_args = ["python", proxy_py]
+	command2_args = [get_installed_python(), proxy_py]
 	print("Running Proxy with the following commands:")
 	print(command2_args)
 
