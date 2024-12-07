@@ -61,7 +61,7 @@ def get_python_and_version() -> tuple[str, str]:
 		except Exception as e:
 			print(f"Command '{cmd}' failed: {e}")
 			continue
-	raise Exception("No suitable Python version is installed - please install Python 3.10.X or 3.11.X.")
+	raise Exception("No suitable Python version is installed - please install Python 3.10.X or 3.11.X and uninstall any other version of python - 3.11.9 can be found at https://www.python.org/downloads/release/python-3119/")
 
 def get_installed_python() -> str:
 	"""Just return the command of the installed python without the version."""
@@ -121,8 +121,6 @@ HUGGINGFACE_LORAS_TO_DOWNLOAD : dict[str, Optional[str]] = {
 
 CUSTOM_COMMAND_LINE_ARGS_FOR_COMFYUI : list[str] = [] # custom arguments to pass to comfyui
 
-# IS_AMD_WINDOWS_MODE : bool = False
-
 def assert_path_length_limit() -> None:
 	"""Check how long the path is for the local-gen folder."""
 	current_path : str = Path(os.path.abspath(os.getcwd())).as_posix()
@@ -154,7 +152,7 @@ def download_file(url: str, filepath: str, chunk_size: int = 64) -> None:
 	progress_bar.close()
 	print(f"File downloaded to {filepath}")
 
-def run_command(args: list[str] | str, shell: bool = False) -> tuple[int, str]:
+def run_command(args: list[str] | str, shell: bool = False, cwd : Optional[str] = None, env : os._Environ | dict = os.environ) -> tuple[int, str]:
 	"""Run the following command using subprocess and read the output live to the user. DO NOT USE IF YOU NEED TO PROMPT THE USER."""
 	print(f'RUNNING COMMAND: {str(args)}')
 	print('=' * 10)
@@ -165,7 +163,9 @@ def run_command(args: list[str] | str, shell: bool = False) -> tuple[int, str]:
 			stdout=subprocess.PIPE,
 			stderr=subprocess.PIPE,
 			text=True,
-			bufsize=1
+			bufsize=1,
+			cwd=cwd,
+			env=env
 		)
 		stdout_var : str = ""
 		def stream_reader(pipe, log_level):
@@ -197,7 +197,7 @@ def run_command(args: list[str] | str, shell: bool = False) -> tuple[int, str]:
 
 def windows_gpu_device() -> int:
 	"""Ask windows users what acceleration device they want to use."""
-	if input("Are you using a NVIDIA graphics card? (y/n)") == "y":
+	if input("Are you using a NVIDIA graphics card? (y/n)").lower() == "y":
 		return 1 # NVIDIA cuda
 
 	print("Due to no device being supported, CPU will automatically be selected.")
@@ -242,7 +242,187 @@ def clone_custom_nodes_to_folder(custom_nodes_folder : str) -> None:
 
 def comfy_ui_experimental_amd_windows(storage_directory : str) -> None:
 	"""Custom install step for AMD support on Windows (using a different ComfyUI implementation)."""
-	raise NotImplementedError
+
+	# clone ComfyUI
+	comfyui_directory = Path(os.path.join(storage_directory, "ComfyUI-Zluda")).as_posix()
+	print(f'ComfyUI install directory: {comfyui_directory}')
+	if os.path.exists(comfyui_directory) is False:
+		print("Attempting to clone ComfyUI to the directory.")
+		repository_url = COMFY_UI_AMD_GPU_REPOSITORY_URL
+		previous_directory = os.getcwd()
+		os.chdir(storage_directory)
+		try:
+			completed_process = run_subprocess_cmd(["git", "clone", repository_url])
+			assert completed_process, "Failed to run the command."
+			status = completed_process.returncode
+		except:
+			status = None
+		assert status == 0, "git clone has failed - check if you have git installed."
+		os.chdir(previous_directory)
+
+	print("Due to how the AMD GPU version needs to be support, you will have to do some manual dependency installation following the repository's guide.")
+	if input("Have you installed the dependencies needed already? (y/n) ").lower() == "n":
+		print(COMFY_UI_AMD_GPU_REPOSITORY_URL + "?tab=readme-ov-file#dependencies")
+		print("Open this repository and follow the guide to install the dependencies.")
+		print("Press enter to restart the one-click...")
+		input("")
+		exit(1)
+
+	print("Dependencies have been installed.")
+
+	# install custom_nodes and requirements
+	print('Cloning all custom nodes.')
+	custom_nodes_folder = Path(os.path.join(comfyui_directory, "custom_nodes")).as_posix()
+	clone_custom_nodes_to_folder(custom_nodes_folder)
+
+	# pip install custom_nodes requirements.txt
+	print('Installing custom nodes requirements.')
+	for folder_name in os.listdir(custom_nodes_folder):
+		if os.path.isdir(Path(os.path.join(custom_nodes_folder, folder_name)).as_posix()) is False:
+			continue # not a folder
+		folder_requirements = Path(os.path.join(custom_nodes_folder, folder_name, "requirements.txt")).as_posix()
+		print(folder_requirements)
+		if os.path.exists(folder_requirements) is False:
+			continue # cannot find requirements.txt
+		print(f'Installing {folder_name} requirements.')
+		subprocess.run([f"{comfyui_directory}/venv/Scripts/python.exe", "-m", "pip", "install", "-r", str(folder_requirements)], check=True)
+
+	custom_install_script : str = r"""@echo off
+title ComfyUI-Zluda Installer
+
+setlocal EnableDelayedExpansion
+set "startTime=%time: =0%"
+
+cls
+echo -------------------------------------------------------------
+Echo ******************* COMFYUI-ZLUDA INSTALL *******************
+echo -------------------------------------------------------------
+echo.
+echo  ::  %time:~0,8%  ::  - Setting up the virtual enviroment
+Set "VIRTUAL_ENV=venv"
+If Not Exist "%VIRTUAL_ENV%\Scripts\activate.bat" (
+    python.exe -m venv %VIRTUAL_ENV%
+)
+
+If Not Exist "%VIRTUAL_ENV%\Scripts\activate.bat" Exit /B 1
+
+echo  ::  %time:~0,8%  ::  - Virtual enviroment activation
+Call "%VIRTUAL_ENV%\Scripts\activate.bat"
+echo  ::  %time:~0,8%  ::  - Updating the pip package 
+python.exe -m pip install --upgrade pip --quiet
+echo.
+echo  ::  %time:~0,8%  ::  Beginning installation ...
+echo.
+echo  ::  %time:~0,8%  ::  - Installing required packages
+pip install -r requirements.txt --quiet
+echo  ::  %time:~0,8%  ::  - Installing torch for AMD GPUs (First file is 2.7 GB, please be patient)
+pip uninstall torch torchvision torchaudio -y --quiet
+pip install torch==2.3.0 torchvision==0.18.0 torchaudio==2.3.0 --index-url https://download.pytorch.org/whl/cu118 --quiet
+echo  ::  %time:~0,8%  ::  - Installing onnxruntime (required by some nodes)
+pip install onnxruntime --quiet
+echo  ::  %time:~0,8%  ::  - (temporary numpy fix)
+pip uninstall numpy -y --quiet
+pip install numpy==1.26.0 --quiet
+echo.
+echo  ::  %time:~0,8%  ::  Custom node(s) installation ...
+echo. 
+echo  ::  %time:~0,8%  ::  - Installing Comfyui Manager
+cd custom_nodes
+git clone https://github.com/ltdrdata/ComfyUI-Manager.git --quiet
+echo  ::  %time:~0,8%  ::  - Installing ComfyUI-deepcache
+git clone https://github.com/styler00dollar/ComfyUI-deepcache.git --quiet
+cd ..
+echo. 
+echo  ::  %time:~0,8%  ::  - Patching ZLUDA (Zluda 3.8.4 for HIP SDK 5.7)
+curl -s -L https://github.com/lshqqytiger/ZLUDA/releases/download/rel.c0804ca624963aab420cb418412b1c7fbae3454b/ZLUDA-windows-rocm5-amd64.zip > zluda.zip
+tar -xf zluda.zip
+del zluda.zip
+copy zluda\cublas.dll venv\Lib\site-packages\torch\lib\cublas64_11.dll /y >NUL
+copy zluda\cusparse.dll venv\Lib\site-packages\torch\lib\cusparse64_11.dll /y >NUL
+copy zluda\nvrtc.dll venv\Lib\site-packages\torch\lib\nvrtc64_112_0.dll /y >NUL
+@echo  ::  %time:~0,8%  ::  - ZLUDA is patched.
+echo. 
+set "endTime=%time: =0%"
+set "end=!endTime:%time:~8,1%=%%100)*100+1!"  &  set "start=!startTime:%time:~8,1%=%%100)*100+1!"
+set /A "elap=((((10!end:%time:~2,1%=%%100)*60+1!%%100)-((((10!start:%time:~2,1%=%%100)*60+1!%%100), elap-=(elap>>31)*24*60*60*100"
+set /A "cc=elap%%100+100,elap/=100,ss=elap%%60+100,elap/=60,mm=elap%%60+100,hh=elap/60+100"
+echo ..................................................... 
+echo *** Installation is completed in %hh:~1%%time:~2,1%%mm:~1%%time:~2,1%%ss:~1%%time:~8,1%%cc:~1% . 
+echo *** You can use "comfyui.bat" to start the app later. 
+echo ..................................................... 
+"""
+
+	setup_batch = Path(os.path.join(comfyui_directory, "custom_install.bat")).as_posix()
+	with open(setup_batch, 'w') as file:
+		file.write(custom_install_script)
+
+	print("Running custom_install.bat")
+	print(setup_batch)
+	subprocess.run([setup_batch], check=True, cwd=comfyui_directory)
+
+	patchzluda_batch = Path(os.path.join(comfyui_directory, "patchzluda.bat")).as_posix()
+	print("Running patchzluda.bat")
+	print(patchzluda_batch)
+	subprocess.run([patchzluda_batch], check=True, cwd=comfyui_directory)
+
+	print('Downloading Models')
+
+	# download all checkpoint models
+	models_folder = Path(os.path.join(comfyui_directory, "models")).as_posix()
+	download_checkpoints_to_subfolder(models_folder)
+
+	# download all lora models
+	models_folder = Path(os.path.join(comfyui_directory, "models")).as_posix()
+	download_loras_to_subfolder(models_folder)
+
+	# install proxy requirements
+	print('Installing proxy requirements.')
+	packages = ["tqdm", "requests", "fastapi", "pydantic", "pillow", "websocket-client", "aiohttp", "uvicorn", "websockets"]
+	subprocess.run([get_installed_python(), "-m", "pip", "install"] + packages, check=True)
+
+	# start comfyui
+	arguments = ["--use-quad-cross-attention"]
+
+	env = dict(os.environ, ZLUDA_COMGR_LOG_LEVEL="1", VENV_DIR=f"{comfyui_directory}/venv")
+
+	print("Only certain AMD gpus are actually supported and can be viewed at https://rocm.docs.amd.com/projects/install-on-linux/en/latest/reference/system-requirements.html")
+	print("Do you have an older or unsupported AMD card? (y/n)? ")
+	if input("Note: this is a experimental workaround and if this fails your device is not supported. ").lower() == "y":
+		env['HSA_OVERRIDE_GFX_VERSION'] = "10.3.0"
+
+	if input("Do you have built-in graphics in your CPU (y/n)? ").lower() == "y":
+		env['HIP_VISIBLE_DEVICES'] = "1"
+
+	# force all environemnts to be string
+	for key, value in env.items():
+		if not isinstance(value, str):
+			env[key] = str(value)
+
+	zluda_exe = Path(os.path.join(comfyui_directory, 'zluda', 'zluda.exe')).as_posix()
+	py_exe = Path(os.path.join(comfyui_directory, 'venv', 'Scripts', 'python.exe')).as_posix()
+	command1_args = [zluda_exe, "--", py_exe, "main.py"] + arguments
+	print("Running ComfyUI with the following commands:")
+	print(command1_args)
+
+	proxy_py : str = Path(os.path.join(os.path.dirname(os.path.abspath(__file__)), "proxy.py")).as_posix()
+	command2_args = [get_installed_python(), proxy_py]
+	print("Running Proxy with the following commands:")
+	print(command2_args)
+
+	print("Starting both ComfyUI and Proxy scripts.")
+
+	thread1 = threading.Thread(target=lambda : subprocess.run(command1_args, cwd=comfyui_directory, env=env))
+	thread2 = threading.Thread(target=lambda : run_command(command2_args))
+	thread3 = threading.Thread(target=check_for_proxy_and_comfyui_responses)
+	thread1.start()
+	thread2.start()
+	thread3.start()
+	thread1.join()
+	thread2.join()
+	thread3.join()
+
+	print("Both ComfyUI and Proxy scripts have finished.")
+	print('NOTICE: The first generation may take a bit, however, all generations after should be faster.')
 
 def download_checkpoints_to_subfolder(models_folder : str) -> None:
 	"""Download the checkpoints to the sub-folder checkpoints"""
@@ -358,7 +538,7 @@ def comfy_ui_windows(storage_directory : str) -> None:
 	models_folder = Path(os.path.join(comfyui_directory, "models")).as_posix()
 	download_loras_to_subfolder(models_folder)
 
-	arguments = ["--windows-standalone-build", "--disable-auto-launch"]
+	arguments = ["--windows-standalone-build", "--disable-auto-launch"] + CUSTOM_COMMAND_LINE_ARGS_FOR_COMFYUI
 
 	print('Asking user for GPU device.')
 	device_n = windows_gpu_device()
@@ -372,11 +552,11 @@ def comfy_ui_windows(storage_directory : str) -> None:
 			print("Installing torch torchaudio and torchvision with CUDA acceleration.")
 			print("Please open a new terminal, type 'nvidia-smi' and find the CUDA Version: XX.X.")
 			print("If nvidia-smi is not a valid command, please install a NVIDIA graphics driver and restart the terminal.")
-			if input("Are you using CUDA 11.8? (y/n)") == "y":
+			if input("Are you using CUDA 11.8? (y/n)").lower() == "y":
 				index_url = "https://download.pytorch.org/whl/cu118"
-			elif input("Are you using CUDA 12.1? (y/n)") == "y":
+			elif input("Are you using CUDA 12.1? (y/n)").lower() == "y":
 				index_url = "https://download.pytorch.org/whl/cu121"
-			elif input("Are you using CUDA 12.4? (y/n)") == "y":
+			elif input("Are you using CUDA 12.4? (y/n)").lower() == "y":
 				index_url = "https://download.pytorch.org/whl/cu124"
 			else:
 				print("Unknown CUDA! Defaulting to CUDA 12.4 (latest).")
@@ -483,7 +663,7 @@ def start_comfyui_linux_mac_shared(comfyui_directory : str, arguments : list[str
 
 	main_py = Path(os.path.join(comfyui_directory, "main.py")).as_posix()
 
-	command1_args = [python_filepath, main_py] + arguments
+	command1_args = [python_filepath, main_py] + arguments + CUSTOM_COMMAND_LINE_ARGS_FOR_COMFYUI
 	print("Running ComfyUI with the following commands:")
 	print(command1_args)
 
@@ -508,13 +688,13 @@ def start_comfyui_linux_mac_shared(comfyui_directory : str, arguments : list[str
 
 def ask_linux_device() -> int:
 	# 0:cpu, 1:cuda, 2:amd, 3:intel gpu
-	if input("Are you going to generate on the CPU? (y/n) ") == "y":
+	if input("Are you going to generate on the CPU? (y/n) ").lower() == "y":
 		return 0
-	if input("Are you going to generate on a NVIDIA GPU? (y/n) ") == "y":
+	if input("Are you going to generate on a NVIDIA GPU? (y/n) ").lower() == "y":
 		return 1
-	if input("Are you going to generate on a AMD rocm GPU? (y/n) ") == "y":
+	if input("Are you going to generate on a AMD rocm GPU? (y/n) ").lower() == "y":
 		return 2
-	if input("Are you going to generate on a Intel GPU? (y/n) ") == "y":
+	if input("Are you going to generate on a Intel GPU? (y/n) ").lower() == "y":
 		return 3
 	print("No supported GPU was selected - defaulting to the CPU.")
 	return 0
@@ -543,18 +723,18 @@ def comfy_ui_linux(storage_directory : str) -> None:
 		print("Installing torch torchaudio and torchvision with CUDA acceleration.")
 		print("Please open a new terminal, type 'nvidia-smi' and find the CUDA Version: XX.X.")
 		print("If nvidia-smi is not a valid command, please install a NVIDIA graphics driver and restart the terminal.")
-		if input("Are you using CUDA 11.8? (y/n)") == "y":
+		if input("Are you using CUDA 11.8? (y/n)").lower() == "y":
 			index_url = "https://download.pytorch.org/whl/cu118"
-		elif input("Are you using CUDA 12.1? (y/n)") == "y":
+		elif input("Are you using CUDA 12.1? (y/n)").lower() == "y":
 			index_url = "https://download.pytorch.org/whl/cu121"
-		elif input("Are you using CUDA 12.4 or later? (y/n)") == "y":
+		elif input("Are you using CUDA 12.4 or later? (y/n)").lower() == "y":
 			index_url = "https://download.pytorch.org/whl/cu124"
 		else:
 			print("Unknown CUDA! Defaulting to CUDA 12.4 (latest).")
 			index_url = "https://download.pytorch.org/whl/cu124"
 		_ = subprocess.run([python_filepath, "-m", "pip", "install", "--upgrade", "torch", "torchaudio", "torchvision", "--index-url", index_url], check=True)
 		print(f"Installed {index_url} cuda acceleration for torch.")
-		if input("Are any of your currently plugged-in GPUs older than the 1060 series (but not including the 1060)? (y/n): ") == "y":
+		if input("Are any of your currently plugged-in GPUs older than the 1060 series (but not including the 1060)? (y/n): ").lower() == "y":
 			arguments.append("--disable-cuda-malloc")
 			arguments.append("--disable-smart-memory")
 	elif compute_device == 2:
@@ -563,7 +743,7 @@ def comfy_ui_linux(storage_directory : str) -> None:
 		_ = subprocess.run([python_filepath, "-m", "pip", "install", "--upgrade", "torch", "torchaudio", "torchvision", "--index-url", index_url], check=True)
 		print(f"Installed {index_url} AMD ROCM acceleration for torch.")
 	elif compute_device == 3:
-		if input("Have you setup the ComfyUI Intel ARC Install? (y/n) ") == "n":
+		if input("Have you setup the ComfyUI Intel ARC Install? (y/n) ").lower() == "n":
 			print("Due to the complexities of setting up Intel GPUs manually, please do so yourself by following the ComfyUI guide at:")
 			print("https://github.com/comfyanonymous/ComfyUI?tab=readme-ov-file#intel-gpus")
 			print("When you have installed it, press enter to close one-click-comfyui to restart the terminal.")
@@ -583,7 +763,7 @@ def comfy_ui_mac(storage_directory : str) -> None:
 
 	arguments = ["--disable-auto-launch"]
 
-	if input("Are you going to use Metal for acceleration? (y/n) "):
+	if input("Are you going to use Metal for acceleration? (y/n) ").lower() == "y":
 		print('Installing Metal CPU')
 
 		print("If you get stuck at any point, please refer to the apple guide on setting up metal pytorch.")
@@ -633,10 +813,10 @@ def main() -> None:
 
 	if platform.system() == "Windows":
 		print('Running Windows.')
-		# if input("Do you have an AMD GPU and want to try the experimental AMD-Accelerated ComfyUI version? (y/n)") == "y":
-		# 	comfy_ui_experimental_amd_windows(tools_directory)
-		# else:
-		comfy_ui_windows(tools_directory)
+		if input("Do you have an AMD GPU and want to try the experimental AMD-Accelerated ComfyUI version? (y/n)").lower() == "y":
+			comfy_ui_experimental_amd_windows(tools_directory)
+		else:
+			comfy_ui_windows(tools_directory)
 	elif platform.system() == "Linux":
 		print('Running Linux.')
 		comfy_ui_linux(tools_directory)

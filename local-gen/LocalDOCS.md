@@ -37,7 +37,30 @@ Steps:
 2. *DO NOT INSTALL PYTHON IN PROGRAM FILES / PROGRAM FILES (x86)*
 3. *USE THE MOST UP-TO-DATE VERSION OF THE GAME*
 
+### Select a different GPU using the command line argument "--cuda-device N"
+1. Open task manager and go to the performance tab
+2. Scroll down till you see your GPUs
+3. GPU 0 = `--cuda-device 0`, GPU 1 = `--cuda-device 1`, etc
+4. Head to line ~122 in the `installer.py` and find the `CUSTOM_COMMAND_LINE_ARGS_FOR_COMFYUI`
+5. Add "--cuda-device N" where N is the device number that you want to use, into that list.
+6. Should look like `CUSTOM_COMMAND_LINE_ARGS_FOR_COMFYUI = ["--cuda-device 0"]`
+7. Start ComfyUI again
+
 ### Terminal Errors:
+
+### "OSError: [WinError 126] The specified module could not be found. ..... Lib\site-packages\torch\lib\caffe2_nvrtc.dll" or one of its dependencies."
+1. Repeat all the dependency installation steps as asked by the installer at https://github.com/patientx/ComfyUI-Zluda?tab=readme-ov-file#dependencies
+2. Make sure you have done them all correctly and reboot
+3. If still unsuccessful, ask for help in the discord server.
+
+### "'Python is not installed, installing now silently.' keeps failing over and over with 'curl not found'"
+1. You can manually install python at https://www.python.org/downloads/release/python-3119/
+2. OR Install curl manually then re-open the file.
+
+#### "Exception No suitable Python version is installed..."
+1. Uninstall any versions of python that are not Python 3.11.X or 3.10.X (use the commands above in a terminal)
+2. Install Python 3.11.X on the webpage https://www.python.org/downloads/release/python-3119/ if either 3.11.X or 3.10.X is not already installed
+3. Restart the one-click-comfyui file.
 
 #### "Command failed with code XXXXXXXXXX ... venv/Scripts/python.exe ... --lowvram"
 1. Close any running one-click-comfyui terminals
@@ -63,6 +86,17 @@ Steps:
 #### "'Unable to connect to ComfyUI' even when the terminal says you should be able to"
 1. Disable any adblocks OR whitelist the file.
 
+#### "Torch not build with CUDA enabled"
+1. When the prompt asks you if you have a NVIDIA gpu, enter YES
+2. When the prompt asks you what version of cuda do you have, follow the instructions to find the version.
+3. When the prompt asks if you have a older GPU, and you have a GPU older than the 1060, enter YES.
+4. If the above steps do not work, delete the "venv" folder and repeat, otherwise join the discord and head to #local-image-gen-help.
+
+#### "'Cuda Error' of any type"
+1. If you are using an OLDER gpu than the 1060, make sure to put YES for the "older gpu" prompt when opening the one-click-comfyui.bat.
+2. You may need to install or upgrade your CUDA toolkit found on the page https://developer.nvidia.com/cuda-downloads
+3. Try uninstall and reinstall cuda.
+4. If none of the above work, please join the discord and head to #local-image-gen-help.
 
 ## Forcing Specific Python Versions / Filepaths
 
