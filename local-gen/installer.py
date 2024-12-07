@@ -270,6 +270,23 @@ def comfy_ui_experimental_amd_windows(storage_directory : str) -> None:
 
 	print("Dependencies have been installed.")
 
+	# install custom_nodes and requirements
+	print('Cloning all custom nodes.')
+	custom_nodes_folder = Path(os.path.join(comfyui_directory, "custom_nodes")).as_posix()
+	clone_custom_nodes_to_folder(custom_nodes_folder)
+
+	# pip install custom_nodes requirements.txt
+	print('Installing custom nodes requirements.')
+	for folder_name in os.listdir(custom_nodes_folder):
+		if os.path.isdir(Path(os.path.join(custom_nodes_folder, folder_name)).as_posix()) is False:
+			continue # not a folder
+		folder_requirements = Path(os.path.join(custom_nodes_folder, folder_name, "requirements.txt")).as_posix()
+		print(folder_requirements)
+		if os.path.exists(folder_requirements) is False:
+			continue # cannot find requirements.txt
+		print(f'Installing {folder_name} requirements.')
+		subprocess.run([f"{comfyui_directory}/venv/Scripts/python.exe", "-m", "pip", "install", "-r", str(folder_requirements)], check=True)
+
 	custom_install_script : str = r"""@echo off
 title ComfyUI-Zluda Installer
 
@@ -348,22 +365,6 @@ echo .....................................................
 	print(patchzluda_batch)
 	subprocess.run([patchzluda_batch], check=True, cwd=comfyui_directory)
 
-	# install custom_nodes and requirements
-	print('Cloning all custom nodes.')
-	custom_nodes_folder = Path(os.path.join(comfyui_directory, "custom_nodes")).as_posix()
-	clone_custom_nodes_to_folder(custom_nodes_folder)
-
-	# pip install custom_nodes requirements.txt
-	print('Installing custom nodes requirements.')
-	for folder_name in os.listdir(custom_nodes_folder):
-		if os.path.isdir(Path(os.path.join(custom_nodes_folder, folder_name)).as_posix()) is False:
-			continue # not a folder
-		folder_requirements = Path(os.path.join(custom_nodes_folder, folder_name, "requirements.txt")).as_posix()
-		print(folder_requirements)
-		if os.path.exists(folder_requirements) is False:
-			continue # cannot find requirements.txt
-		print(f'Installing {folder_name} requirements.')
-		subprocess.run([f"{comfyui_directory}/venv/Scripts/python.exe", "-m", "pip", "install", "-r", str(folder_requirements)], check=True)
 
 	print('Downloading Models')
 
@@ -388,6 +389,11 @@ echo .....................................................
 	print("Do you have an older or unsupported AMD card? (y/n)? ")
 	if input("Note: this is a experimental workaround and if this fails your device is not supported. ").lower() == "y":
 		env['HSA_OVERRIDE_GFX_VERSION'] = "10.3.0"
+
+	# force all environemnts to be string
+	for key, value in env.items():
+		if not isinstance(value, str):
+			env[key] = str(value)
 
 	zluda_exe = Path(os.path.join(comfyui_directory, 'zluda', 'zluda.exe')).as_posix()
 	py_exe = Path(os.path.join(comfyui_directory, 'venv', 'Scripts', 'python.exe')).as_posix()
