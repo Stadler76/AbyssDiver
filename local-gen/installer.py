@@ -195,7 +195,7 @@ def run_command(args: list[str] | str, shell: bool = False) -> tuple[int, str]:
 
 def windows_gpu_device() -> int:
 	"""Ask windows users what acceleration device they want to use."""
-	if input("Are you using a NVIDIA graphics card? (y/n)") == "y":
+	if input("Are you using a NVIDIA graphics card? (y/n)").lower() == "y":
 		return 1 # NVIDIA cuda
 
 	print("Due to no device being supported, CPU will automatically be selected.")
@@ -259,7 +259,7 @@ def comfy_ui_experimental_amd_windows(storage_directory : str) -> None:
 		os.chdir(previous_directory)
 
 	print("Due to how the AMD GPU version needs to be support, you will have to do some manual dependency installation following the repository's guide.")
-	if input("Have you installed the dependencies needed already? (y/n) ") == "n":
+	if input("Have you installed the dependencies needed already? (y/n) ").lower() == "n":
 		print(COMFY_UI_AMD_GPU_REPOSITORY_URL + "?tab=readme-ov-file#dependencies")
 		print("Open this repository and follow the guide to install the dependencies.")
 		print("Press enter to restart the one-click...")
@@ -422,11 +422,11 @@ def comfy_ui_windows(storage_directory : str) -> None:
 			print("Installing torch torchaudio and torchvision with CUDA acceleration.")
 			print("Please open a new terminal, type 'nvidia-smi' and find the CUDA Version: XX.X.")
 			print("If nvidia-smi is not a valid command, please install a NVIDIA graphics driver and restart the terminal.")
-			if input("Are you using CUDA 11.8? (y/n)") == "y":
+			if input("Are you using CUDA 11.8? (y/n)").lower() == "y":
 				index_url = "https://download.pytorch.org/whl/cu118"
-			elif input("Are you using CUDA 12.1? (y/n)") == "y":
+			elif input("Are you using CUDA 12.1? (y/n)").lower() == "y":
 				index_url = "https://download.pytorch.org/whl/cu121"
-			elif input("Are you using CUDA 12.4? (y/n)") == "y":
+			elif input("Are you using CUDA 12.4? (y/n)").lower() == "y":
 				index_url = "https://download.pytorch.org/whl/cu124"
 			else:
 				print("Unknown CUDA! Defaulting to CUDA 12.4 (latest).")
@@ -558,13 +558,13 @@ def start_comfyui_linux_mac_shared(comfyui_directory : str, arguments : list[str
 
 def ask_linux_device() -> int:
 	# 0:cpu, 1:cuda, 2:amd, 3:intel gpu
-	if input("Are you going to generate on the CPU? (y/n) ") == "y":
+	if input("Are you going to generate on the CPU? (y/n) ").lower() == "y":
 		return 0
-	if input("Are you going to generate on a NVIDIA GPU? (y/n) ") == "y":
+	if input("Are you going to generate on a NVIDIA GPU? (y/n) ").lower() == "y":
 		return 1
-	if input("Are you going to generate on a AMD rocm GPU? (y/n) ") == "y":
+	if input("Are you going to generate on a AMD rocm GPU? (y/n) ").lower() == "y":
 		return 2
-	if input("Are you going to generate on a Intel GPU? (y/n) ") == "y":
+	if input("Are you going to generate on a Intel GPU? (y/n) ").lower() == "y":
 		return 3
 	print("No supported GPU was selected - defaulting to the CPU.")
 	return 0
@@ -593,18 +593,18 @@ def comfy_ui_linux(storage_directory : str) -> None:
 		print("Installing torch torchaudio and torchvision with CUDA acceleration.")
 		print("Please open a new terminal, type 'nvidia-smi' and find the CUDA Version: XX.X.")
 		print("If nvidia-smi is not a valid command, please install a NVIDIA graphics driver and restart the terminal.")
-		if input("Are you using CUDA 11.8? (y/n)") == "y":
+		if input("Are you using CUDA 11.8? (y/n)").lower() == "y":
 			index_url = "https://download.pytorch.org/whl/cu118"
-		elif input("Are you using CUDA 12.1? (y/n)") == "y":
+		elif input("Are you using CUDA 12.1? (y/n)").lower() == "y":
 			index_url = "https://download.pytorch.org/whl/cu121"
-		elif input("Are you using CUDA 12.4 or later? (y/n)") == "y":
+		elif input("Are you using CUDA 12.4 or later? (y/n)").lower() == "y":
 			index_url = "https://download.pytorch.org/whl/cu124"
 		else:
 			print("Unknown CUDA! Defaulting to CUDA 12.4 (latest).")
 			index_url = "https://download.pytorch.org/whl/cu124"
 		_ = subprocess.run([python_filepath, "-m", "pip", "install", "--upgrade", "torch", "torchaudio", "torchvision", "--index-url", index_url], check=True)
 		print(f"Installed {index_url} cuda acceleration for torch.")
-		if input("Are any of your currently plugged-in GPUs older than the 1060 series (but not including the 1060)? (y/n): ") == "y":
+		if input("Are any of your currently plugged-in GPUs older than the 1060 series (but not including the 1060)? (y/n): ").lower() == "y":
 			arguments.append("--disable-cuda-malloc")
 			arguments.append("--disable-smart-memory")
 	elif compute_device == 2:
@@ -613,7 +613,7 @@ def comfy_ui_linux(storage_directory : str) -> None:
 		_ = subprocess.run([python_filepath, "-m", "pip", "install", "--upgrade", "torch", "torchaudio", "torchvision", "--index-url", index_url], check=True)
 		print(f"Installed {index_url} AMD ROCM acceleration for torch.")
 	elif compute_device == 3:
-		if input("Have you setup the ComfyUI Intel ARC Install? (y/n) ") == "n":
+		if input("Have you setup the ComfyUI Intel ARC Install? (y/n) ").lower() == "n":
 			print("Due to the complexities of setting up Intel GPUs manually, please do so yourself by following the ComfyUI guide at:")
 			print("https://github.com/comfyanonymous/ComfyUI?tab=readme-ov-file#intel-gpus")
 			print("When you have installed it, press enter to close one-click-comfyui to restart the terminal.")
@@ -633,7 +633,7 @@ def comfy_ui_mac(storage_directory : str) -> None:
 
 	arguments = ["--disable-auto-launch"]
 
-	if input("Are you going to use Metal for acceleration? (y/n) "):
+	if input("Are you going to use Metal for acceleration? (y/n) ").lower() == "y":
 		print('Installing Metal CPU')
 
 		print("If you get stuck at any point, please refer to the apple guide on setting up metal pytorch.")
@@ -683,7 +683,7 @@ def main() -> None:
 
 	if platform.system() == "Windows":
 		print('Running Windows.')
-		if input("Do you have an AMD GPU and want to try the experimental AMD-Accelerated ComfyUI version? (y/n)") == "y":
+		if input("Do you have an AMD GPU and want to try the experimental AMD-Accelerated ComfyUI version? (y/n)").lower() == "y":
 			comfy_ui_experimental_amd_windows(tools_directory)
 		else:
 			comfy_ui_windows(tools_directory)
