@@ -39,6 +39,11 @@ Steps:
 
 ### Terminal Errors:
 
+### "OSError: [WinError 126] The specified module could not be found. ..... Lib\site-packages\torch\lib\caffe2_nvrtc.dll" or one of its dependencies."
+1. Repeat all the dependency installation steps as asked by the installer at https://github.com/patientx/ComfyUI-Zluda?tab=readme-ov-file#dependencies
+2. Make sure you have done them all correctly and reboot
+3. If still unsuccessful, ask for help in the discord server.
+
 ### "'Python is not installed, installing now silently.' keeps failing over and over with 'curl not found'"
 1. You can manually install python at https://www.python.org/downloads/release/python-3119/
 2. OR Install curl manually then re-open the file.
