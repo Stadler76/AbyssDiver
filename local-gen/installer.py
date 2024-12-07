@@ -385,11 +385,13 @@ echo .....................................................
 	# start comfyui
 	arguments = ["--use-quad-cross-attention"]
 
+	env = dict(os.environ, ZLUDA_COMGR_LOG_LEVEL="1", VENV_DIR=f"{comfyui_directory}/venv")
 	hsa_override = None
-	if input("Do you have an older AMD card - before and including gfx1036 (y/n)? ").lower() == "y":
-		hsa_override = "10.3.0"
+	print("Only certain AMD gpus are actually supported and can be viewed at https://rocm.docs.amd.com/projects/install-on-linux/en/latest/reference/system-requirements.html")
+	print("Do you have an older or unsupported AMD card? (y/n)? ")
+	if input("Note: this is a experimental workaround and if this fails your device is not supported. ").lower() == "y":
+		env['HSA_OVERRIDE_GFX_VERSION'] = "10.3.0"
 
-	env = dict(os.environ, ZLUDA_COMGR_LOG_LEVEL="1", VENV_DIR=f"{comfyui_directory}/venv", HSA_OVERRIDE_GFX_VERSION=hsa_override)
 	zluda_exe = Path(os.path.join(comfyui_directory, 'zluda', 'zluda.exe')).as_posix()
 	py_exe = Path(os.path.join(comfyui_directory, 'venv', 'Scripts', 'python.exe')).as_posix()
 	command1_args = [zluda_exe, "--", py_exe, "main.py"] + arguments
