@@ -242,7 +242,7 @@ def comfy_ui_experimental_amd_windows(storage_directory : str) -> None:
 	"""Custom install step for AMD support on Windows (using a different ComfyUI implementation)."""
 
 	# clone ComfyUI
-	comfyui_directory = Path(os.path.join(storage_directory, "ComfyUI")).as_posix()
+	comfyui_directory = Path(os.path.join(storage_directory, "ComfyUI-Zluda")).as_posix()
 	print(f'ComfyUI install directory: {comfyui_directory}')
 	if os.path.exists(comfyui_directory) is False:
 		print("Attempting to clone ComfyUI to the directory.")
