@@ -386,7 +386,7 @@ echo .....................................................
 	arguments = ["--use-quad-cross-attention --lowvram --disable-auto-launch --disable-smart-memory --disable-cuda-malloc"]
 
 	env = dict(os.environ, ZLUDA_COMGR_LOG_LEVEL="1", VENV_DIR=f"{comfyui_directory}/venv")
-	command1_args = ["zluda/zluda.exe", "--", f"{comfyui_directory}/venv/Scripts/python.exe", "main.py"]
+	command1_args = [r"zluda\zluda.exe", "--", f"\"{comfyui_directory}/venv/Scripts/python.exe\"", "main.py"]
 	command1_args.extend(arguments)
 	print("Running ComfyUI with the following commands:")
 	print(command1_args)
