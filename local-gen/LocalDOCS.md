@@ -1,10 +1,38 @@
 
-## Models And Nodes
+## Resources
+
+- (ComfyUI GitHub) https://github.com/comfyanonymous/ComfyUI
+- (ComfyUI-Zluda GitHub) https://github.com/patientx/ComfyUI-Zluda
 
 - (PonyXL Checkpoint) https://civitai.com/models/376031/hassaku-xl-pony
 - (PonyXL LORA) https://civitai.com/models/481529/dall-e-3-anime-style-pony
 
 - (RemBG ComfyUI Node) https://github.com/john-mnz/ComfyUI-Inspyrenet-Rembg
+
+## Virus Total
+
+8th December 2024
+
+one-click-comfyui.bat (BATCH)
+https://www.virustotal.com/gui/file/55fb632be3af05c75b9758d21402af77466c440f7d96408b3963bac03370c833
+
+one-click-comfyui.sh (BASH)
+https://www.virustotal.com/gui/file/d5f479f11f3d095e3a5678aabea3dc467e6a8d087cc0b61f4812a73818c11630
+
+install_git_python.bat (BATCH)
+https://www.virustotal.com/gui/file/55fb632be3af05c75b9758d21402af77466c440f7d96408b3963bac03370c833
+
+installer.py  (PYTHON)
+https://www.virustotal.com/gui/file/55fb632be3af05c75b9758d21402af77466c440f7d96408b3963bac03370c833
+
+uninstall-comfyui.bat (BATCH)
+https://www.virustotal.com/gui/file/eaed707ff48f1cae78c708b0c4adab7fd6294279000e35676621c9d7adf4c3ae
+
+uninstall-comfyui.sh (BASH)
+https://www.virustotal.com/gui/file/eaed707ff48f1cae78c708b0c4adab7fd6294279000e35676621c9d7adf4c3ae
+
+uninstaller.py (PYTHON)
+https://www.virustotal.com/gui/file/eaed707ff48f1cae78c708b0c4adab7fd6294279000e35676621c9d7adf4c3ae
 
 ## Using Custom ComfyUI
 
