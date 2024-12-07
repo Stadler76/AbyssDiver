@@ -37,6 +37,15 @@ Steps:
 2. *DO NOT INSTALL PYTHON IN PROGRAM FILES / PROGRAM FILES (x86)*
 3. *USE THE MOST UP-TO-DATE VERSION OF THE GAME*
 
+### Select a different GPU using the command line argument "--cuda-device N"
+1. Open task manager and go to the performance tab
+2. Scroll down till you see your GPUs
+3. GPU 0 = `--cuda-device 0`, GPU 1 = `--cuda-device 1`, etc
+4. Head to line ~122 in the `installer.py` and find the `CUSTOM_COMMAND_LINE_ARGS_FOR_COMFYUI`
+5. Add "--cuda-device N" where N is the device number that you want to use, into that list.
+6. Should look like `CUSTOM_COMMAND_LINE_ARGS_FOR_COMFYUI = ["--cuda-device 0"]`
+7. Start ComfyUI again
+
 ### Terminal Errors:
 
 ### "OSError: [WinError 126] The specified module could not be found. ..... Lib\site-packages\torch\lib\caffe2_nvrtc.dll" or one of its dependencies."
