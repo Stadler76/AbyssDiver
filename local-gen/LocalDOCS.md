@@ -34,6 +34,9 @@ https://www.virustotal.com/gui/file/eaed707ff48f1cae78c708b0c4adab7fd6294279000e
 uninstaller.py (PYTHON)
 https://www.virustotal.com/gui/file/eaed707ff48f1cae78c708b0c4adab7fd6294279000e35676621c9d7adf4c3ae
 
+proxy.py (PYTHON)
+https://www.virustotal.com/gui/file/a087b0c9aa7e4b610f5ade40ca4276f3f640a0428d1c2d850b9a15170233eb02
+
 ## Using Custom ComfyUI
 
 To use a custom instance of ComfyUI (for those that manually setup different version of ComfyUI with other support), simply run your custom comfyui instance, then run the proxy.py seperately using a command prompt or such.
