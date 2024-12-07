@@ -152,7 +152,7 @@ def download_file(url: str, filepath: str, chunk_size: int = 64) -> None:
 	progress_bar.close()
 	print(f"File downloaded to {filepath}")
 
-def run_command(args: list[str] | str, shell: bool = False, cwd : Optional[str] = None) -> tuple[int, str]:
+def run_command(args: list[str] | str, shell: bool = False, cwd : Optional[str] = None, env : os._Environ | dict = os.environ) -> tuple[int, str]:
 	"""Run the following command using subprocess and read the output live to the user. DO NOT USE IF YOU NEED TO PROMPT THE USER."""
 	print(f'RUNNING COMMAND: {str(args)}')
 	print('=' * 10)
@@ -164,7 +164,8 @@ def run_command(args: list[str] | str, shell: bool = False, cwd : Optional[str] 
 			stderr=subprocess.PIPE,
 			text=True,
 			bufsize=1,
-			cwd=cwd
+			cwd=cwd,
+			env=env
 		)
 		stdout_var : str = ""
 		def stream_reader(pipe, log_level):
@@ -338,16 +339,16 @@ echo .....................................................
 	with open(setup_batch, 'w') as file:
 		file.write(custom_install_script)
 
-	if os.path.exists(setup_batch):
-		print("Running custom_install.bat")
-		print(setup_batch)
-		subprocess.run([setup_batch], check=True, cwd=comfyui_directory)
+	# if os.path.exists(setup_batch):
+	# 	print("Running custom_install.bat")
+	# 	print(setup_batch)
+	# 	subprocess.run([setup_batch], check=True, cwd=comfyui_directory)
 
-	patchzluda_batch = Path(os.path.join(comfyui_directory, "patchzluda.bat")).as_posix()
-	if os.path.exists(patchzluda_batch):
-		print("Running patchzluda.bat")
-		print(patchzluda_batch)
-		subprocess.run([patchzluda_batch], check=True, cwd=comfyui_directory)
+	# patchzluda_batch = Path(os.path.join(comfyui_directory, "patchzluda.bat")).as_posix()
+	# if os.path.exists(patchzluda_batch):
+	# 	print("Running patchzluda.bat")
+	# 	print(patchzluda_batch)
+	# 	subprocess.run([patchzluda_batch], check=True, cwd=comfyui_directory)
 
 	comfyui_batch = Path(os.path.join(comfyui_directory, "comfyui.bat")).as_posix()
 	print('Editing the ComfyUI batch file with custom command line args.')
@@ -373,7 +374,11 @@ pause""")
 	subprocess.run([get_installed_python(), "-m", "pip", "install"] + packages, check=True)
 
 	# start comfyui
-	command1_args = [comfyui_batch]
+	arguments = ["--use-quad-cross-attention --lowvram --disable-auto-launch --disable-smart-memory --disable-cuda-malloc"]
+
+	env = dict(os.environ, ZLUDA_COMGR_LOG_LEVEL="1", VENV_DIR=f"{comfyui_directory}/venv")
+	command1_args = ["zluda/zluda.exe", "--", f"{comfyui_directory}/venv/Scripts/python.exe", "main.py"]
+	command1_args.extend(arguments)
 	print("Running ComfyUI with the following commands:")
 	print(command1_args)
 
@@ -384,7 +389,7 @@ pause""")
 
 	print("Starting both ComfyUI and Proxy scripts.")
 
-	thread1 = threading.Thread(target=lambda : run_command(command1_args, cwd=comfyui_directory))
+	thread1 = threading.Thread(target=lambda : run_command(command1_args, cwd=comfyui_directory, env=env))
 	thread2 = threading.Thread(target=lambda : run_command(command2_args))
 	thread3 = threading.Thread(target=check_for_proxy_and_comfyui_responses)
 	thread1.start()
