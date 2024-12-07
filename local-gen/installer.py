@@ -365,7 +365,6 @@ echo .....................................................
 	print(patchzluda_batch)
 	subprocess.run([patchzluda_batch], check=True, cwd=comfyui_directory)
 
-
 	print('Downloading Models')
 
 	# download all checkpoint models
@@ -385,10 +384,14 @@ echo .....................................................
 	arguments = ["--use-quad-cross-attention"]
 
 	env = dict(os.environ, ZLUDA_COMGR_LOG_LEVEL="1", VENV_DIR=f"{comfyui_directory}/venv")
+
 	print("Only certain AMD gpus are actually supported and can be viewed at https://rocm.docs.amd.com/projects/install-on-linux/en/latest/reference/system-requirements.html")
 	print("Do you have an older or unsupported AMD card? (y/n)? ")
 	if input("Note: this is a experimental workaround and if this fails your device is not supported. ").lower() == "y":
 		env['HSA_OVERRIDE_GFX_VERSION'] = "10.3.0"
+
+	if input("Do you have built-in graphics in your CPU (y/n)? ").lower() == "y":
+		env['HIP_VISIBLE_DEVICES'] = "1"
 
 	# force all environemnts to be string
 	for key, value in env.items():
