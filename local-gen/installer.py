@@ -289,7 +289,7 @@ def comfy_ui_experimental_amd_windows(storage_directory : str) -> None:
 set PYTHON="%~dp0/venv/Scripts/python.exe"
 set GIT=
 set VENV_DIR=./venv
-set COMMANDLINE_ARGS=--use-quad-cross-attention --lowvram --windows-standalone-build --disable-auto-launch
+set COMMANDLINE_ARGS=--use-quad-cross-attention --lowvram --disable-auto-launch --disable-smart-memory --disable-cuda-malloc
 
 set ZLUDA_COMGR_LOG_LEVEL=1
 
