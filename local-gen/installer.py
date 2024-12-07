@@ -355,6 +355,7 @@ echo .....................................................
 	custom_nodes_folder = Path(os.path.join(comfyui_directory, "custom_nodes")).as_posix()
 	clone_custom_nodes_to_folder(custom_nodes_folder)
 
+
 	# pip install custom_nodes requirements.txt
 	print('Installing custom nodes requirements.')
 	for folder_name in os.listdir(custom_nodes_folder):
@@ -366,6 +367,16 @@ echo .....................................................
 			continue # cannot find requirements.txt
 		print(f'Installing {folder_name} requirements.')
 		subprocess.run([f"{comfyui_directory}/venv/Scripts/python.exe", "-m", "pip", "install", "-r", str(folder_requirements)], check=True)
+
+	print('Downloading Models')
+
+	# download all checkpoint models
+	models_folder = Path(os.path.join(comfyui_directory, "models")).as_posix()
+	download_checkpoints_to_subfolder(models_folder)
+
+	# download all lora models
+	models_folder = Path(os.path.join(comfyui_directory, "models")).as_posix()
+	download_loras_to_subfolder(models_folder)
 
 	# install proxy requirements
 	print('Installing proxy requirements.')
