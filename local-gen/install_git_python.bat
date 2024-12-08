@@ -36,7 +36,7 @@ if %errorlevel% equ 0 (
 if "%PYTHON_CMD%"=="" (
 	echo Python is not installed. Downloading and installing...
 	curl -L -o "%TEMP_DIR%\python-installer.exe" !PYTHON_URL!
-	"%TEMP_DIR%\python-installer.exe" /quiet InstallAllUsers=1 PrependPath=1
+	"%TEMP_DIR%\python-installer.exe" /quiet InstallAllUsers=0 PrependPath=1
 ) else (
 	echo Python is already installed.
 )
