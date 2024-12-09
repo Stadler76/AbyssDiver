@@ -400,7 +400,8 @@ echo .....................................................
 
 	zluda_exe = Path(os.path.join(comfyui_directory, 'zluda', 'zluda.exe')).as_posix()
 	py_exe = Path(os.path.join(comfyui_directory, 'venv', 'Scripts', 'python.exe')).as_posix()
-	command1_args = [zluda_exe, "--", py_exe, "main.py"] + arguments
+	main_py = Path(os.path.join(comfyui_directory, 'main.py')).as_posix()
+	command1_args = [zluda_exe, "--", py_exe, main_py] + arguments
 	print("Running ComfyUI with the following commands:")
 	print(command1_args)
 
