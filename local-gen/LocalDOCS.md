@@ -54,7 +54,7 @@ Steps:
 3. Custom Nodes Manager
 4. Install the "ComfyUI-Inspyrenet-Rembg" node
 5. Restart ComfyUI
-6. Open a new terminal
+6. Open a new terminal in the local-gen folder
 7. Run `pip install tqdm requests fastapi pydantic pillow websocket-client aiohttp uvicorn websockets`
 8. Run `python proxy.py` in the local-gen folder
 
