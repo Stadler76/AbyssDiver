@@ -55,7 +55,7 @@ def get_python_and_version() -> tuple[str, str]:
 					print(f"Test Command Output: {test_result.stdout.strip()}")
 					assert "Hello Python!" in test_result.stdout.strip(), "Python command did not execute properly."
 					print(f'Got python command {cmd} with version {version.group(1)}')
-					return cmd, version.group(1)
+					return Path(os.path.abspath(cmd)).as_posix(), version.group(1)
 			else:
 				print("No version match found.")
 		except Exception as e:
