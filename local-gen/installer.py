@@ -449,12 +449,13 @@ def comfy_ui_windows(storage_directory : str) -> None:
 	# install proxy requirements
 	print('Installing proxy requirements.')
 	packages = ["tqdm", "requests", "fastapi", "pydantic", "pillow", "websocket-client", "aiohttp", "uvicorn", "websockets"]
-	_, __ = run_command([python_filepath, "-m", "pip", "install"] + packages)
+	_, __ = run_command([python_filepath, "-m", "pip", "install"] + packages, shell=True)
 
 	# install ComfyUI/requirements.txt
 	print('Installing ComfyUI requirements.')
 	requirements_file = Path(os.path.join(comfyui_directory, "requirements.txt")).as_posix()
-	_, __ = run_command([python_filepath, "-m", "pip", "install", "-r", requirements_file])
+	_, __ = run_command([python_filepath, "-m", "pip", "install", "-r", requirements_file], shell=True)
+	_, __ = run_command([python_filepath, "-m", "pip", "install", "--upgrade", "torch", "torchaudio", "torchvision", "--index-url", "https://download.pytorch.org/whl/cu124"], shell=True)
 
 	# git clone custom_nodes
 	print('Cloning all custom nodes.')
@@ -471,7 +472,7 @@ def comfy_ui_windows(storage_directory : str) -> None:
 		if os.path.exists(folder_requirements) is False:
 			continue # cannot find requirements.txt
 		print(f'Installing {folder_name} requirements.')
-		_, __ = run_command([python_filepath, "-m", "pip", "install", "-r", folder_requirements])
+		_, __ = run_command([python_filepath, "-m", "pip", "install", "-r", folder_requirements], shell=True)
 
 	# download all checkpoint models
 	models_folder = Path(os.path.join(comfyui_directory, "models")).as_posix()
@@ -489,7 +490,7 @@ def comfy_ui_windows(storage_directory : str) -> None:
 		arguments.append("--cpu")
 	elif device_n == 1:
 		try:
-			status, _ = run_command([python_filepath, "-c" "import torch; assert torch.cuda.is_available(), \'cuda not available\'"])
+			status, _ = run_command([python_filepath, "-c" "import torch; assert torch.cuda.is_available(), \'cuda not available\'"], shell=True)
 			assert status == 0, "Torch failed to import."
 		except:
 			print("Installing torch torchaudio and torchvision with CUDA acceleration.")
@@ -504,7 +505,7 @@ def comfy_ui_windows(storage_directory : str) -> None:
 			else:
 				print("Unknown CUDA! Defaulting to CUDA 12.4 (latest).")
 				index_url = "https://download.pytorch.org/whl/cu124"
-			_, __ = run_command([python_filepath, "-m", "pip", "install", "--upgrade", "torch", "torchaudio", "torchvision", "--index-url", index_url])
+			_, __ = run_command([python_filepath, "-m", "pip", "install", "--upgrade", "torch", "torchaudio", "torchvision", "--index-url", index_url], shell=True)
 			print(f"Installed {index_url} cuda acceleration for torch.")
 		arguments.append("--lowvram") # for the sake of compatability across all devices
 
