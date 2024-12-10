@@ -408,16 +408,22 @@ echo .....................................................
 	print("Running ComfyUI with the following commands:")
 	print(command1_args)
 
+	assert os.path.exists(zluda_exe), "Zluda_exe failed to install properly - please manually run the 'install.bat' or if it persists, delete the ComfyUI-Zluda folder in the tools folder."
+	assert os.path.exists(py_exe), 'The ComfyUI-Zluda virtual environment folder does not exist!'
+	assert os.path.exists(main_py), 'The ComfyUI-Zluda main.py file does not exist!'
+
 	proxy_py : str = Path(os.path.join(os.path.dirname(os.path.abspath(__file__)), "proxy.py")).as_posix()
+	assert os.path.exists(proxy_py), "The local image generation proxy.py does not exist!"
+
 	command2_args = [get_installed_python(), proxy_py]
 	print("Running Proxy with the following commands:")
 	print(command2_args)
 
 	print("Starting both ComfyUI and Proxy scripts.")
 
-	thread1 = threading.Thread(target=lambda : subprocess.run(command1_args, cwd=comfyui_directory, env=env))
+	thread1 = threading.Thread(target=lambda : run_command(command1_args, cwd=comfyui_directory, env=env))
 	thread2 = threading.Thread(target=lambda : run_command(command2_args))
-	thread3 = threading.Thread(target=check_for_proxy_and_comfyui_responses)
+	thread3 = threading.Thread(target=lambda : check_for_proxy_and_comfyui_responses())
 	thread1.start()
 	thread2.start()
 	thread3.start()
