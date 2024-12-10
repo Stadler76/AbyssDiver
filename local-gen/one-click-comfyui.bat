@@ -54,4 +54,3 @@ call "%PYTHON_CMD%" installer.py
 
 echo Press enter to exit...
 pause
-+ 

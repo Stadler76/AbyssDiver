@@ -66,6 +66,7 @@ def get_python_and_version() -> tuple[str, str]:
 def get_installed_python() -> str:
 	"""Just return the command of the installed python without the version."""
 	cmd, _ = get_python_and_version()
+	print(cmd)
 	return cmd
 
 def run_subprocess_cmd(arguments : list[str]) -> Optional[subprocess.CompletedProcess]:
@@ -799,8 +800,10 @@ def update_python_pip() -> None:
 	python_cmd, version = get_python_and_version()
 	assert ("3.10" in version) or ("3.11" in version), "You must have python versions 3.10.X or 3.11.X. Please reinstall python."
 	try:
+		print(python_cmd)
 		status = subprocess.run([python_cmd, "-m", "pip", "install", "--upgrade", "pip"]).returncode
-	except:
+	except Exception as e:
+		print('Failed to update pip due to exception: {e}')
 		status = None
 	assert status == 0, "'pip' failed to update. Try running again."
 
