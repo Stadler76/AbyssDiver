@@ -56,8 +56,8 @@ def get_python_and_version() -> tuple[str, str]:
 					assert "Hello Python!" in test_result.stdout.strip(), "Python command did not execute properly."
 					print(f'Got python command {cmd} with version {version.group(1)}')
 					test_result = subprocess.run([cmd, "-c", 'import sys; print(sys.executable)'], capture_output=True, text=True, check=True, shell=True)
-					print(test_result.stdout.strip())
-					return test_result.stdout.strip(), version.group(1)
+					print(Path(test_result.stdout.strip()).as_posix())
+					return Path(test_result.stdout.strip()).as_posix(), version.group(1)
 			else:
 				print("No version match found.")
 		except Exception as e:
