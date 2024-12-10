@@ -70,10 +70,10 @@ def get_installed_python() -> str:
 	print(cmd)
 	return cmd
 
-def run_subprocess_cmd(arguments : list[str]) -> Optional[subprocess.CompletedProcess]:
+def run_subprocess_cmd(arguments : list[str], **kwargs) -> Optional[subprocess.CompletedProcess]:
 	"""Run a subprocess command with the essential kwargs."""
 	try:
-		return subprocess.run(arguments, capture_output=True, text=True, check=True, shell=True)
+		return subprocess.run(arguments, capture_output=True, text=True, check=True, shell=True, **kwargs)
 	except Exception as e:
 		print(e)
 		return None
@@ -319,15 +319,15 @@ def comfy_ui_experimental_amd_windows(storage_directory : str) -> None:
 		if os.path.exists(folder_requirements) is False:
 			continue # cannot find requirements.txt
 		print(f'Installing {folder_name} requirements.')
-		_, __ = run_command([python_filepath, "-m", "pip", "install", "-r", folder_requirements])
+		_ = run_subprocess_cmd([python_filepath, "-m", "pip", "install", "-r", folder_requirements])
 
 	# install proxy requirements
 	print('Installing proxy requirements.')
 	packages = ["tqdm", "requests", "fastapi", "pydantic", "pillow", "websocket-client", "aiohttp", "uvicorn", "websockets"]
-	_, __ = run_command([python_filepath, "-m", "pip", "install"] + packages)
+	_ = run_subprocess_cmd([python_filepath, "-m", "pip", "install"] + packages)
 
 	# start comfyui
-	env = dict(os.environ, ZLUDA_COMGR_LOG_LEVEL="1", VENV_DIR=venv_directory)
+	env = dict(os.environ, ZLUDA_COMGR_LOG_LEVEL="1", python=python_filepath, py=python_filepath, VENV_DIR=venv_directory)
 
 	print("Only certain AMD gpus are actually supported and can be viewed at https://rocm.docs.amd.com/projects/install-on-linux/en/latest/reference/system-requirements.html")
 	print("Do you have an older or unsupported AMD card? (y/n)? ")
@@ -355,7 +355,7 @@ def comfy_ui_experimental_amd_windows(storage_directory : str) -> None:
 	print("Starting both ComfyUI and Proxy scripts.")
 
 	thread1 = threading.Thread(target=lambda : run_command([zluda_install_batch], env=env))
-	thread2 = threading.Thread(target=lambda : run_command(command2_args))
+	thread2 = threading.Thread(target=lambda : run_command(command2_args, env=env))
 	thread3 = threading.Thread(target=lambda : check_for_proxy_and_comfyui_responses())
 	thread1.start()
 	thread2.start()
