@@ -56,8 +56,8 @@ def get_python_and_version() -> tuple[str, str]:
 					assert "Hello Python!" in test_result.stdout.strip(), "Python command did not execute properly."
 					print(f'Got python command {cmd} with version {version.group(1)}')
 					test_result = subprocess.run([cmd, "-c", 'import sys; print(sys.executable)'], capture_output=True, text=True, check=True, shell=True)
-					print(Path(test_result.stdout.strip()).as_posix())
-					return Path(test_result.stdout.strip()).as_posix(), version.group(1)
+					print(test_result.stdout.strip())
+					return test_result.stdout.strip(), version.group(1)
 			else:
 				print("No version match found.")
 		except Exception as e:
@@ -273,83 +273,26 @@ def comfy_ui_experimental_amd_windows(storage_directory : str) -> None:
 
 	print("Dependencies have been installed.")
 
-	custom_install_script : str = rf"""@echo off
-title ComfyUI-Zluda Installer
+	# Setup the virtual environment
+	venv_directory : str = Path(os.path.join(comfyui_directory, "venv")).as_posix()
+	python_filepath : str = Path(os.path.join(venv_directory, "Scripts", "python.exe")).as_posix()
+	if os.path.exists(python_filepath) is False:
+		print(f'No virtual enviornment python located at: {python_filepath}')
+		try:
+			completed_process = run_subprocess_cmd([get_installed_python(), "-m", "venv", venv_directory])
+			assert completed_process, "Failed to run the command."
+			status = completed_process.returncode
+		except:
+			status = None
+		assert status == 0, "Failed to create a virtual environment in the ComfyUI folder."
 
-setlocal EnableDelayedExpansion
-set "startTime=%time: =0%"
-
-cls
-echo -------------------------------------------------------------
-Echo ******************* COMFYUI-ZLUDA INSTALL *******************
-echo -------------------------------------------------------------
-echo.
-echo  ::  %time:~0,8%  ::  - Setting up the virtual enviroment
-Set "VIRTUAL_ENV=venv"
-If Not Exist "%VIRTUAL_ENV%\Scripts\activate.bat" (
-    {get_installed_python()} -m venv %VIRTUAL_ENV%
-)
-
-If Not Exist "%VIRTUAL_ENV%\Scripts\activate.bat" Exit /B 1
-
-echo  ::  %time:~0,8%  ::  - Virtual enviroment activation
-Call "%VIRTUAL_ENV%\Scripts\activate.bat"
-echo  ::  %time:~0,8%  ::  - Updating the pip package 
-python.exe -m pip install --upgrade pip --quiet
-echo.
-echo  ::  %time:~0,8%  ::  Beginning installation ...
-echo.
-echo  ::  %time:~0,8%  ::  - Installing required packages
-pip install -r requirements.txt --quiet
-echo  ::  %time:~0,8%  ::  - Installing torch for AMD GPUs (First file is 2.7 GB, please be patient)
-pip uninstall torch torchvision torchaudio -y --quiet
-pip install torch==2.3.0 torchvision==0.18.0 torchaudio==2.3.0 --index-url https://download.pytorch.org/whl/cu118 --quiet
-echo  ::  %time:~0,8%  ::  - Installing onnxruntime (required by some nodes)
-pip install onnxruntime --quiet
-echo  ::  %time:~0,8%  ::  - (temporary numpy fix)
-pip uninstall numpy -y --quiet
-pip install numpy==1.26.0 --quiet
-echo.
-echo  ::  %time:~0,8%  ::  Custom node(s) installation ...
-echo. 
-echo  ::  %time:~0,8%  ::  - Installing Comfyui Manager
-cd custom_nodes
-git clone https://github.com/ltdrdata/ComfyUI-Manager.git --quiet
-echo  ::  %time:~0,8%  ::  - Installing ComfyUI-deepcache
-git clone https://github.com/styler00dollar/ComfyUI-deepcache.git --quiet
-cd ..
-echo. 
-echo  ::  %time:~0,8%  ::  - Patching ZLUDA (Zluda 3.8.4 for HIP SDK 5.7)
-curl -s -L https://github.com/lshqqytiger/ZLUDA/releases/download/rel.c0804ca624963aab420cb418412b1c7fbae3454b/ZLUDA-windows-rocm5-amd64.zip > zluda.zip
-tar -xf zluda.zip
-del zluda.zip
-copy zluda\cublas.dll venv\Lib\site-packages\torch\lib\cublas64_11.dll /y >NUL
-copy zluda\cusparse.dll venv\Lib\site-packages\torch\lib\cusparse64_11.dll /y >NUL
-copy zluda\nvrtc.dll venv\Lib\site-packages\torch\lib\nvrtc64_112_0.dll /y >NUL
-@echo  ::  %time:~0,8%  ::  - ZLUDA is patched.
-echo. 
-set "endTime=%time: =0%"
-set "end=!endTime:%time:~8,1%=%%100)*100+1!"  &  set "start=!startTime:%time:~8,1%=%%100)*100+1!"
-set /A "elap=((((10!end:%time:~2,1%=%%100)*60+1!%%100)-((((10!start:%time:~2,1%=%%100)*60+1!%%100), elap-=(elap>>31)*24*60*60*100"
-set /A "cc=elap%%100+100,elap/=100,ss=elap%%60+100,elap/=60,mm=elap%%60+100,hh=elap/60+100"
-echo ..................................................... 
-echo *** Installation is completed in %hh:~1%%time:~2,1%%mm:~1%%time:~2,1%%ss:~1%%time:~8,1%%cc:~1% . 
-echo *** You can use "comfyui.bat" to start the app later. 
-echo ..................................................... 
-"""
-
-	setup_batch = Path(os.path.join(comfyui_directory, "custom_install.bat")).as_posix()
-	with open(setup_batch, 'w') as file:
-		file.write(custom_install_script)
-
-	print("Running custom_install.bat")
-	print(setup_batch)
-	subprocess.run([setup_batch], check=True, cwd=comfyui_directory)
-
-	patchzluda_batch = Path(os.path.join(comfyui_directory, "patchzluda.bat")).as_posix()
-	print("Running patchzluda.bat")
-	print(patchzluda_batch)
-	subprocess.run([patchzluda_batch], check=True, cwd=comfyui_directory)
+	# Activate the venv enviornment once for a test
+	try:
+		completed_process = run_subprocess_cmd([python_filepath, "--version"])
+		assert completed_process, "Failed to run the command."
+		status = completed_process.returncode
+	except:
+		status = None
 
 	print('Downloading Models')
 
@@ -366,8 +309,6 @@ echo .....................................................
 	custom_nodes_folder = Path(os.path.join(comfyui_directory, "custom_nodes")).as_posix()
 	clone_custom_nodes_to_folder(custom_nodes_folder)
 
-	py_exe = Path(os.path.join(comfyui_directory, 'venv', 'Scripts', 'python.exe')).as_posix()
-
 	# pip install custom_nodes requirements.txt
 	print('Installing custom nodes requirements.')
 	for folder_name in os.listdir(custom_nodes_folder):
@@ -378,17 +319,15 @@ echo .....................................................
 		if os.path.exists(folder_requirements) is False:
 			continue # cannot find requirements.txt
 		print(f'Installing {folder_name} requirements.')
-		subprocess.run([py_exe, "-m", "pip", "install", "-r", folder_requirements], check=True)
+		subprocess.run([python_filepath, "-m", "pip", "install", "-r", folder_requirements], check=True)
 
 	# install proxy requirements
 	print('Installing proxy requirements.')
 	packages = ["tqdm", "requests", "fastapi", "pydantic", "pillow", "websocket-client", "aiohttp", "uvicorn", "websockets"]
-	subprocess.run([get_installed_python(), "-m", "pip", "install"] + packages, check=True)
+	subprocess.run([python_filepath, "-m", "pip", "install"] + packages, check=True)
 
 	# start comfyui
-	arguments = ["--use-quad-cross-attention"]
-
-	env = dict(os.environ, ZLUDA_COMGR_LOG_LEVEL="1", VENV_DIR=f"{comfyui_directory}/venv")
+	env = dict(os.environ, ZLUDA_COMGR_LOG_LEVEL="1", VENV_DIR=venv_directory)
 
 	print("Only certain AMD gpus are actually supported and can be viewed at https://rocm.docs.amd.com/projects/install-on-linux/en/latest/reference/system-requirements.html")
 	print("Do you have an older or unsupported AMD card? (y/n)? ")
@@ -403,26 +342,19 @@ echo .....................................................
 		if not isinstance(value, str):
 			env[key] = str(value)
 
-	zluda_exe = Path(os.path.join(comfyui_directory, 'zluda', 'zluda.exe')).as_posix()
-	main_py = Path(os.path.join(comfyui_directory, 'main.py')).as_posix()
-	command1_args = [zluda_exe, "--", py_exe, main_py] + arguments
-	print("Running ComfyUI with the following commands:")
-	print(command1_args)
-
-	assert os.path.exists(zluda_exe), "Zluda_exe failed to install properly - please manually run the 'install.bat' or if it persists, delete the ComfyUI-Zluda folder in the tools folder."
-	assert os.path.exists(py_exe), 'The ComfyUI-Zluda virtual environment folder does not exist!'
-	assert os.path.exists(main_py), 'The ComfyUI-Zluda main.py file does not exist!'
+	zluda_install_batch = Path(os.path.join(comfyui_directory, "install.bat")).as_posix()
+	assert os.path.exists(zluda_install_batch), "Could not find the install.bat in the ComfyUI-Zluda directory."
 
 	proxy_py : str = Path(os.path.join(os.path.dirname(os.path.abspath(__file__)), "proxy.py")).as_posix()
 	assert os.path.exists(proxy_py), "The local image generation proxy.py does not exist!"
 
-	command2_args = [get_installed_python(), proxy_py]
+	command2_args = [python_filepath, proxy_py]
 	print("Running Proxy with the following commands:")
 	print(command2_args)
 
 	print("Starting both ComfyUI and Proxy scripts.")
 
-	thread1 = threading.Thread(target=lambda : run_command(command1_args, cwd=comfyui_directory, env=env))
+	thread1 = threading.Thread(target=lambda : run_command([zluda_install_batch], env=env))
 	thread2 = threading.Thread(target=lambda : run_command(command2_args))
 	thread3 = threading.Thread(target=lambda : check_for_proxy_and_comfyui_responses())
 	thread1.start()
@@ -517,12 +449,12 @@ def comfy_ui_windows(storage_directory : str) -> None:
 	# install proxy requirements
 	print('Installing proxy requirements.')
 	packages = ["tqdm", "requests", "fastapi", "pydantic", "pillow", "websocket-client", "aiohttp", "uvicorn", "websockets"]
-	subprocess.run([python_filepath, "-m", "pip", "install"] + packages, check=True)
+	_, __ = run_command([python_filepath, "-m", "pip", "install"] + packages)
 
 	# install ComfyUI/requirements.txt
 	print('Installing ComfyUI requirements.')
 	requirements_file = Path(os.path.join(comfyui_directory, "requirements.txt")).as_posix()
-	subprocess.run([python_filepath, "-m", "pip", "install", "-r", str(requirements_file)], check=True)
+	_, __ = run_command([python_filepath, "-m", "pip", "install", "-r", requirements_file])
 
 	# git clone custom_nodes
 	print('Cloning all custom nodes.')
@@ -539,7 +471,7 @@ def comfy_ui_windows(storage_directory : str) -> None:
 		if os.path.exists(folder_requirements) is False:
 			continue # cannot find requirements.txt
 		print(f'Installing {folder_name} requirements.')
-		subprocess.run([python_filepath, "-m", "pip", "install", "-r", str(folder_requirements)], check=True)
+		_, __ = run_command([python_filepath, "-m", "pip", "install", "-r", folder_requirements])
 
 	# download all checkpoint models
 	models_folder = Path(os.path.join(comfyui_directory, "models")).as_posix()
@@ -557,8 +489,8 @@ def comfy_ui_windows(storage_directory : str) -> None:
 		arguments.append("--cpu")
 	elif device_n == 1:
 		try:
-			process = subprocess.run([python_filepath, "-c" "import torch; assert torch.cuda.is_available(), \'cuda not available\'"], check=True)
-			assert process.returncode == 0, "Torch failed to import."
+			status, _ = run_command([python_filepath, "-c" "import torch; assert torch.cuda.is_available(), \'cuda not available\'"])
+			assert status == 0, "Torch failed to import."
 		except:
 			print("Installing torch torchaudio and torchvision with CUDA acceleration.")
 			print("Please open a new terminal, type 'nvidia-smi' and find the CUDA Version: XX.X.")
@@ -572,7 +504,7 @@ def comfy_ui_windows(storage_directory : str) -> None:
 			else:
 				print("Unknown CUDA! Defaulting to CUDA 12.4 (latest).")
 				index_url = "https://download.pytorch.org/whl/cu124"
-			_ = subprocess.run([python_filepath, "-m", "pip", "install", "--upgrade", "torch", "torchaudio", "torchvision", "--index-url", index_url], check=True)
+			_, __ = run_command([python_filepath, "-m", "pip", "install", "--upgrade", "torch", "torchaudio", "torchvision", "--index-url", index_url])
 			print(f"Installed {index_url} cuda acceleration for torch.")
 		arguments.append("--lowvram") # for the sake of compatability across all devices
 
