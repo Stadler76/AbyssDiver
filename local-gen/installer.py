@@ -311,6 +311,7 @@ def comfy_ui_experimental_amd_windows(storage_directory : str) -> None:
 
 	# pip install custom_nodes requirements.txt
 	print('Installing custom nodes requirements.')
+	print(python_filepath)
 	for folder_name in os.listdir(custom_nodes_folder):
 		if os.path.isdir(Path(os.path.join(custom_nodes_folder, folder_name)).as_posix()) is False:
 			continue # not a folder
@@ -319,12 +320,12 @@ def comfy_ui_experimental_amd_windows(storage_directory : str) -> None:
 		if os.path.exists(folder_requirements) is False:
 			continue # cannot find requirements.txt
 		print(f'Installing {folder_name} requirements.')
-		subprocess.run([python_filepath, "-m", "pip", "install", "-r", folder_requirements], check=True)
+		_, __ = run_command([python_filepath, "-m", "pip", "install", "-r", folder_requirements])
 
 	# install proxy requirements
 	print('Installing proxy requirements.')
 	packages = ["tqdm", "requests", "fastapi", "pydantic", "pillow", "websocket-client", "aiohttp", "uvicorn", "websockets"]
-	subprocess.run([python_filepath, "-m", "pip", "install"] + packages, check=True)
+	_, __ = run_command([python_filepath, "-m", "pip", "install"] + packages)
 
 	# start comfyui
 	env = dict(os.environ, ZLUDA_COMGR_LOG_LEVEL="1", VENV_DIR=venv_directory)
