@@ -273,23 +273,6 @@ def comfy_ui_experimental_amd_windows(storage_directory : str) -> None:
 
 	print("Dependencies have been installed.")
 
-	# install custom_nodes and requirements
-	print('Cloning all custom nodes.')
-	custom_nodes_folder = Path(os.path.join(comfyui_directory, "custom_nodes")).as_posix()
-	clone_custom_nodes_to_folder(custom_nodes_folder)
-
-	# pip install custom_nodes requirements.txt
-	print('Installing custom nodes requirements.')
-	for folder_name in os.listdir(custom_nodes_folder):
-		if os.path.isdir(Path(os.path.join(custom_nodes_folder, folder_name)).as_posix()) is False:
-			continue # not a folder
-		folder_requirements = Path(os.path.join(custom_nodes_folder, folder_name, "requirements.txt")).as_posix()
-		print(folder_requirements)
-		if os.path.exists(folder_requirements) is False:
-			continue # cannot find requirements.txt
-		print(f'Installing {folder_name} requirements.')
-		subprocess.run([f"{comfyui_directory}/venv/Scripts/python.exe", "-m", "pip", "install", "-r", str(folder_requirements)], check=True)
-
 	custom_install_script : str = r"""@echo off
 title ComfyUI-Zluda Installer
 
@@ -378,6 +361,25 @@ echo .....................................................
 	models_folder = Path(os.path.join(comfyui_directory, "models")).as_posix()
 	download_loras_to_subfolder(models_folder)
 
+	# install custom_nodes and requirements
+	print('Cloning all custom nodes.')
+	custom_nodes_folder = Path(os.path.join(comfyui_directory, "custom_nodes")).as_posix()
+	clone_custom_nodes_to_folder(custom_nodes_folder)
+
+	py_exe = Path(os.path.join(comfyui_directory, 'venv', 'Scripts', 'python.exe')).as_posix()
+
+	# pip install custom_nodes requirements.txt
+	print('Installing custom nodes requirements.')
+	for folder_name in os.listdir(custom_nodes_folder):
+		if os.path.isdir(Path(os.path.join(custom_nodes_folder, folder_name)).as_posix()) is False:
+			continue # not a folder
+		folder_requirements = Path(os.path.join(custom_nodes_folder, folder_name, "requirements.txt")).as_posix()
+		print(folder_requirements)
+		if os.path.exists(folder_requirements) is False:
+			continue # cannot find requirements.txt
+		print(f'Installing {folder_name} requirements.')
+		subprocess.run([py_exe, "-m", "pip", "install", "-r", folder_requirements], check=True)
+
 	# install proxy requirements
 	print('Installing proxy requirements.')
 	packages = ["tqdm", "requests", "fastapi", "pydantic", "pillow", "websocket-client", "aiohttp", "uvicorn", "websockets"]
@@ -402,7 +404,6 @@ echo .....................................................
 			env[key] = str(value)
 
 	zluda_exe = Path(os.path.join(comfyui_directory, 'zluda', 'zluda.exe')).as_posix()
-	py_exe = Path(os.path.join(comfyui_directory, 'venv', 'Scripts', 'python.exe')).as_posix()
 	main_py = Path(os.path.join(comfyui_directory, 'main.py')).as_posix()
 	command1_args = [zluda_exe, "--", py_exe, main_py] + arguments
 	print("Running ComfyUI with the following commands:")
