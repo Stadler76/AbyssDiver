@@ -319,12 +319,12 @@ def comfy_ui_experimental_amd_windows(storage_directory : str) -> None:
 		if os.path.exists(folder_requirements) is False:
 			continue # cannot find requirements.txt
 		print(f'Installing {folder_name} requirements.')
-		_ = run_subprocess_cmd([python_filepath, "-m", "pip", "install", "-r", folder_requirements])
+		_, __ = run_command([python_filepath, "-m", "pip", "install", "-r", folder_requirements])
 
 	# install proxy requirements
 	print('Installing proxy requirements.')
 	packages = ["tqdm", "requests", "fastapi", "pydantic", "pillow", "websocket-client", "aiohttp", "uvicorn", "websockets"]
-	_ = run_subprocess_cmd([python_filepath, "-m", "pip", "install"] + packages)
+	_, __ = run_command([python_filepath, "-m", "pip", "install"] + packages)
 
 	# start comfyui
 	env = dict(os.environ, ZLUDA_COMGR_LOG_LEVEL="1", python=python_filepath, py=python_filepath, VENV_DIR=venv_directory)
@@ -341,6 +341,16 @@ def comfy_ui_experimental_amd_windows(storage_directory : str) -> None:
 	for key, value in env.items():
 		if not isinstance(value, str):
 			env[key] = str(value)
+
+	zluda_zip = Path(os.path.join(comfyui_directory, "zluda.zip")).as_posix()
+	if os.path.exists(zluda_zip):
+		print("Left over zluda.zip was found - deleting.")
+		os.remove(zluda_zip)
+
+	zluda_patchzluda_batch = Path(os.path.join(comfyui_directory, "patchzluda.bat")).as_posix()
+	assert os.path.exists(zluda_patchzluda_batch), "Could not find the patchzluda.bat in the ComfyUI-Zluda directory."
+
+	_, __ = run_command([zluda_patchzluda_batch])
 
 	zluda_install_batch = Path(os.path.join(comfyui_directory, "install.bat")).as_posix()
 	assert os.path.exists(zluda_install_batch), "Could not find the install.bat in the ComfyUI-Zluda directory."
