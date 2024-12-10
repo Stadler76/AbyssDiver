@@ -273,7 +273,7 @@ def comfy_ui_experimental_amd_windows(storage_directory : str) -> None:
 
 	print("Dependencies have been installed.")
 
-	custom_install_script : str = r"""@echo off
+	custom_install_script : str = rf"""@echo off
 title ComfyUI-Zluda Installer
 
 setlocal EnableDelayedExpansion
@@ -287,7 +287,7 @@ echo.
 echo  ::  %time:~0,8%  ::  - Setting up the virtual enviroment
 Set "VIRTUAL_ENV=venv"
 If Not Exist "%VIRTUAL_ENV%\Scripts\activate.bat" (
-    python.exe -m venv %VIRTUAL_ENV%
+    {get_installed_python()} -m venv %VIRTUAL_ENV%
 )
 
 If Not Exist "%VIRTUAL_ENV%\Scripts\activate.bat" Exit /B 1
