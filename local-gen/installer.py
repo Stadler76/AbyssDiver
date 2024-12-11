@@ -427,7 +427,6 @@ def comfy_ui_windows(storage_directory : str) -> None:
 			status = completed_process.returncode
 		except:
 			status = None
-		assert status == 0, "git clone has failed - check if you have git installed."
 		os.chdir(previous_directory)
 
 	assert os.path.exists(comfyui_directory), "ComfyUI failed to be cloned."
