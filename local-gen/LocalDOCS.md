@@ -1,10 +1,44 @@
 
-## Models And Nodes
+## Resources
+
+- (ComfyUI GitHub) https://github.com/comfyanonymous/ComfyUI
+- (ComfyUI-Zluda GitHub) https://github.com/patientx/ComfyUI-Zluda
 
 - (PonyXL Checkpoint) https://civitai.com/models/376031/hassaku-xl-pony
 - (PonyXL LORA) https://civitai.com/models/481529/dall-e-3-anime-style-pony
 
 - (RemBG ComfyUI Node) https://github.com/john-mnz/ComfyUI-Inspyrenet-Rembg
+
+## Virus Total
+
+8th December 2024
+
+one-click-comfyui.bat (BATCH)
+https://www.virustotal.com/gui/file/55fb632be3af05c75b9758d21402af77466c440f7d96408b3963bac03370c833
+
+one-click-comfyui.sh (BASH)
+https://www.virustotal.com/gui/file/d5f479f11f3d095e3a5678aabea3dc467e6a8d087cc0b61f4812a73818c11630
+
+install_git_python.bat (BATCH)
+https://www.virustotal.com/gui/file/55fb632be3af05c75b9758d21402af77466c440f7d96408b3963bac03370c833
+
+installer.py  (PYTHON)
+https://www.virustotal.com/gui/file/55fb632be3af05c75b9758d21402af77466c440f7d96408b3963bac03370c833
+
+uninstall-comfyui.bat (BATCH)
+https://www.virustotal.com/gui/file/eaed707ff48f1cae78c708b0c4adab7fd6294279000e35676621c9d7adf4c3ae
+
+uninstall-comfyui.sh (BASH)
+https://www.virustotal.com/gui/file/eaed707ff48f1cae78c708b0c4adab7fd6294279000e35676621c9d7adf4c3ae
+
+uninstaller.py (PYTHON)
+https://www.virustotal.com/gui/file/eaed707ff48f1cae78c708b0c4adab7fd6294279000e35676621c9d7adf4c3ae
+
+proxy.py (PYTHON)
+https://www.virustotal.com/gui/file/a087b0c9aa7e4b610f5ade40ca4276f3f640a0428d1c2d850b9a15170233eb02
+
+all files together
+https://www.virustotal.com/gui/file/54c08e7e88ef16a10700687391b4647414de87322d212e67866fceab7deaf1ae
 
 ## Using Custom ComfyUI
 
@@ -20,7 +54,7 @@ Steps:
 3. Custom Nodes Manager
 4. Install the "ComfyUI-Inspyrenet-Rembg" node
 5. Restart ComfyUI
-6. Open a new terminal
+6. Open a new terminal in the local-gen folder
 7. Run `pip install tqdm requests fastapi pydantic pillow websocket-client aiohttp uvicorn websockets`
 8. Run `python proxy.py` in the local-gen folder
 
@@ -47,6 +81,19 @@ Steps:
 7. Start ComfyUI again
 
 ### Terminal Errors:
+
+### "Python cannot find the file specified...."
+1. Look in the terminal for the PATH to the ABYSS DIVER folder
+2. Move the folder in a location with NO SPACES!
+3. Delete the venv folder in tools/ComfyUI
+4. Launch the one-click-comfyui.bat
+
+### "Failed to find main.py"
+1. Delete the "ComfyUI" folder and head to the ComfyUI GitHub repository
+2. Download the latest SOURCE CODE RELEASE FILE
+3. Extract the folder in the zip file to the local-gen/tools folder
+4. Rename the ComfyUI-X.X.X to ComfyUI
+5. Run the one-click-comfyui.bat
 
 ### "OSError: [WinError 126] The specified module could not be found. ..... Lib\site-packages\torch\lib\caffe2_nvrtc.dll" or one of its dependencies."
 1. Repeat all the dependency installation steps as asked by the installer at https://github.com/patientx/ComfyUI-Zluda?tab=readme-ov-file#dependencies
