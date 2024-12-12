@@ -82,6 +82,19 @@ Steps:
 
 ### Terminal Errors:
 
+### "Python cannot find the file specified...."
+1. Look in the terminal for the PATH to the ABYSS DIVER folder
+2. Move the folder in a location with NO SPACES!
+3. Delete the venv folder in tools/ComfyUI
+4. Launch the one-click-comfyui.bat
+
+### "Failed to find main.py"
+1. Delete the "ComfyUI" folder and head to the ComfyUI GitHub repository
+2. Download the latest SOURCE CODE RELEASE FILE
+3. Extract the folder in the zip file to the local-gen/tools folder
+4. Rename the ComfyUI-X.X.X to ComfyUI
+5. Run the one-click-comfyui.bat
+
 ### "OSError: [WinError 126] The specified module could not be found. ..... Lib\site-packages\torch\lib\caffe2_nvrtc.dll" or one of its dependencies."
 1. Repeat all the dependency installation steps as asked by the installer at https://github.com/patientx/ComfyUI-Zluda?tab=readme-ov-file#dependencies
 2. Make sure you have done them all correctly and reboot
