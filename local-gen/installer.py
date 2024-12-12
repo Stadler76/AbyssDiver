@@ -40,8 +40,8 @@ def get_python_and_version() -> tuple[str, str]:
 	for cmd in ["python3.10", "python3.11", "python3", "python", "py"]:
 		try:
 			# check if the python command returns a version
-			result = subprocess.run([cmd, "--version"], capture_output=True, text=True, check=True, shell=True)
 			print(f"Command: {cmd}")
+			result = subprocess.run([cmd, "--version"], capture_output=True, text=True, check=True, shell=True)
 			print(f"Output: {result.stdout.strip()}")
 			assert result.returncode == 0, f"Python {cmd} is not available."
 			# check the python version
